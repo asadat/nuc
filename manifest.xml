@@ -1,0 +1,23 @@
+<package>
+  <description brief="NUC">
+
+     Non-Uniform Coverage
+
+  </description>
+<author>Seyed Abbas Sadat (sas21@sfu.ca)</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://autonomy.cs.sfu.ca</url>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="rospy" />
+<!--  <depend package="joy" />-->
+
+ <!-- <depend package="tf"/>-->
+ <!-- <depend package="asctec_hl_comm"/>-->  
+ <!-- <depend package="dynamic_reconfigure"/>-->
+</package>
+
+
