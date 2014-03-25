@@ -1,41 +1,46 @@
+#ifndef _NUC_
+#define _NUC_
+
 #include "ros/ros.h"
-#include "asctec_hl_comm/PositionWithCovarianceStamped.h"
-#include "TooN/TooN.h"
-#include "geometry_msgs/PoseWithCovarianceStamped.h"
-class PositionVis
+
+class NUC
 {
 public:
 
-    ~PositionVis();
+    ~NUC();
 
-    static PositionVis * Instance(int argc=0, char **argv=NULL)
+    static NUC * Instance(int argc=0, char **argv=NULL)
     {
         if(instance == NULL)
         {
-            instance = new PositionVis(argc, argv);
+            instance = new NUC(argc, argv);
         }
 
         return instance;
     }
 
     void idle();
-    void mainLoop();
-    void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
+   // void mainLoop();
+//    void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
     void glDraw();
-    void gpsPositionCallback(const asctec_hl_comm::PositionWithCovarianceStamped::Ptr &msg);
-    void gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg);
+//    void gpsPositionCallback(const asctec_hl_comm::PositionWithCovarianceStamped::Ptr &msg);
+//    void gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg);
+
+    bool VisEnabled(){return bVisEnabled;}
 
 private:
 
-    PositionVis(int argc, char **argv);
-    static PositionVis* instance;
+    NUC(int argc, char **argv);
+    static NUC* instance;
 
     ros::NodeHandle nh;
-    ros::Subscriber gpsPos_sub;
-    ros::Subscriber gpsPose_sub;
 
-    std::vector<TooN::Vector<3> > positions;
-    std::vector<TooN::Vector<3> > p_pos;
-    std::vector<TooN::Vector<4> > p_att;
+//    ros::Subscriber gpsPos_sub;
+//    ros::Subscriber gpsPose_sub;
+
+    bool bVisEnabled;
+
 
 };
+
+#endif

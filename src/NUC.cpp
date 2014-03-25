@@ -1,147 +1,119 @@
 
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
+#include "NUC.h"
+#include "GL/glut.h"
 
-#include <ros/ros.h>
-#include <asctec_hl_comm/mav_ctrl.h>
-#include <asctec_hl_comm/mav_ctrl_motors.h>
-#include "PelicanCtrl/start_log.h"
-#include "PelicanCtrl/periodic.h"
 
-bool startPeriodic = false;
+NUC * NUC::instance = NULL;
 
-void usage()
-{
-  std::string text("usage: \n\n");
-  text = "ctrl_test motors [0 | 1]\n";
-  text += "ctrl_test ctrl [acc | vel | pos] x y z yaw\n";
-  std::cout << text << std::endl;
-}
-
-bool start_log(PelicanCtrl::start_logRequest &req, PelicanCtrl::start_logResponse &res)
-{
-    ROS_INFO("Service Called ................");
-    system("~/log.sh");
-   // system("source /media/startlog.sh");
-    return true;
-}
-
-bool periodic(PelicanCtrl::periodicRequest &req, PelicanCtrl::periodicResponse &res)
-{
-    startPeriodic = !startPeriodic;
-    return true;
-}
-
-int main(int argc, char ** argv)
+NUC::NUC(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "PelicanCtrl");
-  ros::NodeHandle nh;
+    bVisEnabled = true;
 
-  ros::Publisher pub;
-  ros::ServiceServer service = nh.advertiseService("start_log", start_log);
-  ros::ServiceServer periodic_service = nh.advertiseService("periodic", periodic);
+//    gpsPos_sub = nh.subscribe("/fcu/gps_position", 100, &NUC::gpsPositionCallback, this);
+//    gpsPose_sub = nh.subscribe("/fcu/gps_pose", 100, &NUC::gpsPoseCallback, this);
 
-
-
-//  ros::Rate r(15);
-
-//  while(ros::ok())
-//  {
-//	r.sleep();
-//	ros::spinOnce();
-//  }
-
-//  if (argc == 1)
-//  {
-//    ROS_ERROR("Wrong number of arguments!!!");
-//    usage();
-//    return -1;
-//  }
-
-//  std::string command = std::string(argv[1]);
-
-//  if (command == "motors")
-//  {
-//    if (argc != 3)
-//    {
-//      ROS_ERROR("Wrong number of arguments!!!");
-//      usage();
-//      return -1;
-//    }
-
-//    asctec_hl_comm::mav_ctrl_motors::Request req;
-//    asctec_hl_comm::mav_ctrl_motors::Response res;
-//    req.startMotors = atoi(argv[2]);
-//    ros::service::call("fcu/motor_control", req, res);
-//    std::cout << "motors running: " << (int)res.motorsRunning << std::endl;
-//  }
-//  else if (command == "ctrl")
-  {
-//    if (argc != 7)
-//    {
-//      ROS_ERROR("Wrong number of arguments!");
-//      usage();
-//      return -1;
-//    }
-    asctec_hl_comm::mav_ctrl msg;
-    msg.x = 0.01;
-    msg.y = 0;
-    msg.z = 0;
-    msg.yaw = 0;
-    msg.v_max_xy = -1; // use max velocity from config
-    msg.v_max_z = -1;
-
-    std::string type("vel");
-    if (type == "acc")
-      msg.type = asctec_hl_comm::mav_ctrl::acceleration;
-    else if (type == "vel")
-      msg.type = asctec_hl_comm::mav_ctrl::velocity;
-    else if (type == "pos")
-      msg.type = asctec_hl_comm::mav_ctrl::position;
-    else
+    for(int i=1; i<argc;i++)
     {
-      ROS_ERROR("Command type not recognized");
-      usage();
-      return -1;
+        if(strcmp(argv[i],"-novis")==0)
+        {
+            bVisEnabled = false;
+        }
     }
 
-    pub = nh.advertise<asctec_hl_comm::mav_ctrl> ("fcu/control", 1);
-    ros::Rate r(15); // ~15 Hz
+    glutInit(&argc, argv);
+}
 
-    while(ros::ok())
+NUC::~NUC()
+{
+
+}
+//void NUC::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg)
+//{
+//    Vector<3> p;
+//    p[0] = msg->pose.pose.position.x;
+//    p[1] = msg->pose.pose.position.y;
+//    p[2] = msg->pose.pose.position.z;
+
+//    p_pos.push_back(p);
+
+//    Vector<4> att;
+//    att[0] = msg->pose.pose.orientation.x;
+//    att[1] = msg->pose.pose.orientation.y;
+//    att[2] = msg->pose.pose.orientation.z;
+//    att[3] = msg->pose.pose.orientation.w;
+
+//    p_att.push_back(att);
+
+//}
+
+//void NUC::gpsPositionCallback(const asctec_hl_comm::PositionWithCovarianceStamped::Ptr &msg)
+//{
+//    Vector<3> p;
+//    p[0] = msg->position.x;
+//    p[1] = msg->position.y;
+//    p[2] = msg->position.z;
+
+//    positions.push_back(p);
+
+//}
+
+void NUC::glDraw()
+{
+     float w=10;
+     glLineWidth(2);
+     glColor3f(0,0,0);
+     glBegin(GL_LINES);
+     for(int i=0; i<=w; i++)
+     {
+     glVertex3f(-w/2, -w/2+i, 0);
+     glVertex3f( w/2, -w/2+i, 0);
+     }
+
+     for(int i=0; i<=w; i++)
+     {
+     glVertex3f(-w/2+i, -w/2, 0);
+     glVertex3f(-w/2+i, w/2, 0);
+     }
+
+     glEnd();
+
+
+
+}
+
+//void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
+//{
+//    updateKey = true;
+
+////    if(key['`'])
+////    {
+////        world->PopulateWorld(20);
+////    }
+
+//}
+
+void NUC::idle()
+{
+    static double rosFreq=15;
+    static double ros_p = 1/rosFreq;
+    static ros::Time lastTime = ros::Time::now();
+    //static int i=0;
+
+    if((ros::Time::now()-lastTime).toSec() > ros_p)
     {
-
-        if(startPeriodic)
+        lastTime = ros::Time::now();
+        if(ros::ok())
         {
-            for (int i = 0; i < 15; i++)
-            {
-              pub.publish(msg);
-              if (!ros::ok())
-                return 0;
-              r.sleep();
-            }
+           //ROS_INFO_THROTTLE(0.5, "Ros spinning ... %d", i);
+            ros::spinOnce();
+           // i++;
         }
-            // reset
-        if (type != "pos")
+        else
         {
-          msg.x = 0;
-          msg.y = 0;
-          msg.z = 0;
-          msg.yaw = 0;
+            exit(0);
         }
-
-        for(int i=0; i<5; i++){
-          pub.publish(msg);
-          r.sleep();
-        }
-
-
-        ros::spinOnce();
     }
 
-  }
-
-  return 0;
 }
+

@@ -15,16 +15,20 @@ rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-#set(PositionVis_LIBRARIES GL GLU glut)
+set(NUC_LIBRARIES GL GLU glut roscpp rostime rosconsole)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 include_directories("./inlcude")
+include_directories("/usr/include")
+
 #include_directories("~/tag")
-#link_directories("~/tag")
+link_directories("/opt/ros/fuerte/lib")
 include_directories("~")
+
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
@@ -41,5 +45,6 @@ include/NUC.h
 #include/PositionVis.h
 #src/PositionVis.cpp
 #)
-#target_link_libraries(  ${PositionVis_LIBRARIES})
+
+target_link_libraries(NUC  ${NUC_LIBRARIES})
 
