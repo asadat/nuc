@@ -124,10 +124,7 @@ void update_event(int ms)
 
 void idle_event()
 {
- NUC::Instance()->idle();
-
-    //if(!ros::ok())
-    // exit(0);
+    NUC::Instance()->Update();
 }
 
 

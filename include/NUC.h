@@ -2,6 +2,9 @@
 #define _NUC_
 
 #include "ros/ros.h"
+#include "CNode.h"
+#include "TraversalStrategy.h"
+#include "DepthFirstStrategy.h"
 
 class NUC
 {
@@ -19,13 +22,10 @@ public:
         return instance;
     }
 
-    void idle();
-   // void mainLoop();
-//    void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
-    void glDraw();
-//    void gpsPositionCallback(const asctec_hl_comm::PositionWithCovarianceStamped::Ptr &msg);
-//    void gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg);
+    void StartTraversing();
 
+    void Update();
+    void glDraw();
     bool VisEnabled(){return bVisEnabled;}
 
 private:
@@ -37,6 +37,10 @@ private:
 
 //    ros::Subscriber gpsPos_sub;
 //    ros::Subscriber gpsPose_sub;
+
+    CNode* tree;
+    TraversalStrategy * traversal;
+    CNode* curGoal;
 
     bool bVisEnabled;
 

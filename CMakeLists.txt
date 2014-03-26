@@ -37,8 +37,17 @@ include_directories("~")
 rosbuild_add_executable(NUC
 src/NUC.cpp
 src/NUC_node.cpp
+src/CNode.cpp
+src/DepthFirstStrategy.cpp
+src/ShortCutStrategy.cpp
+src/LawnmowerStrategy.cpp
 
 include/NUC.h
+include/CNode.h
+include/DepthFirstStrategy.h
+include/ShortCutStrategy.h
+include/LawnmowerStrategy.h
+include/TraversalStrategy.h
 )
 
 #rosbuild_add_executable(PositionVis
