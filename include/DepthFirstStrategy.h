@@ -11,6 +11,7 @@ public:
     ~DepthFirstStrategy();
 
     CNode* GetNextNode();
+    void glDraw();
 
 private:
     std::vector<CNode*> nodeStack;

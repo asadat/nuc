@@ -4,7 +4,7 @@
 
 float CNode::fov = 90 *3.14/(180);
 int CNode::bf_sqrt = 2;
-float CNode::minFootprintWidth = 4;
+float CNode::minFootprintWidth = 1;
 
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
@@ -71,4 +71,24 @@ void CNode::glDraw()
 
     for(int i=0; i<children.size(); i++)
         children[i]->glDraw();
+}
+
+CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
+{
+    if(children.empty())
+        return this;
+
+    int minidx=0;
+    double minDist = 99999999999;
+    for(int i=0; i<children.size(); i++)
+    {
+        double dist = (children[i]->pos-p)*(children[i]->pos-p);
+        if(dist < minDist)
+        {
+            minidx = i;
+            minDist = dist;
+        }
+    }
+
+    return children[minidx]->GetNearestLeaf(p);
 }

@@ -22,6 +22,9 @@ public:
     TooN::Vector<3> GetPos(){return pos;}
     void glDraw();
 
+    CNode* GetNearestLeaf(TooN::Vector<3> p);
+    Rect GetFootPrint(){return footPrint;}
+
     static float fov;
     static int bf_sqrt;
     static float minFootprintWidth;

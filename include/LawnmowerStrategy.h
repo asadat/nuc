@@ -4,12 +4,13 @@
 #include "TraversalStrategy.h"
 #include "CNode.h"
 
-class LawnmowerStrategy: public LawnmowerStrategy
+class LawnmowerStrategy: public TraversalStrategy
 {
 public:
     LawnmowerStrategy(CNode* root);
     ~LawnmowerStrategy();
 
+    void glDraw();
     CNode* GetNextNode();
 
 private:

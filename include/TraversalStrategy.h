@@ -7,6 +7,7 @@ class TraversalStrategy
 {
 public:
     virtual CNode* GetNextNode()=0;
+    virtual void glDraw()=0;
 };
 
 #endif
