@@ -41,6 +41,7 @@ src/CNode.cpp
 src/DepthFirstStrategy.cpp
 src/ShortCutStrategy.cpp
 src/LawnmowerStrategy.cpp
+src/MAV.cpp
 
 include/NUC.h
 include/CNode.h
@@ -48,6 +49,7 @@ include/DepthFirstStrategy.h
 include/ShortCutStrategy.h
 include/LawnmowerStrategy.h
 include/TraversalStrategy.h
+include/MAV.h
 )
 
 #rosbuild_add_executable(PositionVis

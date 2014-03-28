@@ -3,6 +3,7 @@
 #include "GL/glut.h"
 #include "CNode.h"
 #include "TooN/TooN.h"
+#include "DepthFirstStrategy.h"
 
 NUC * NUC::instance = NULL;
 
@@ -26,6 +27,8 @@ NUC::NUC(int argc, char **argv)
     glutInit(&argc, argv);
 
     tree = new CNode(TooN::makeVector(-32,-32,32,32));
+    traversal = new DepthFirstStrategy(tree);
+    StartTraversing();
 }
 
 NUC::~NUC()
@@ -54,13 +57,38 @@ void NUC::glDraw()
      glEnd();
 
      tree->glDraw();
-
+     mav.glDraw();
 
 }
 
 void NUC::StartTraversing()
 {
    curGoal = traversal->GetNextNode();
+   mav.SetGoal(curGoal->GetPos());
+}
+
+void NUC::OnReachedGoal()
+{
+    VisitGoal();
+    curGoal = traversal->GetNextNode();
+    if(curGoal == NULL)
+    {
+      OnTraverseEnd();
+    }
+    else
+    {
+        mav.SetGoal(curGoal->GetPos());
+    }
+}
+
+void NUC::OnTraverseEnd()
+{
+
+}
+
+void NUC::VisitGoal()
+{
+
 }
 
 void NUC::Update()
@@ -69,8 +97,8 @@ void NUC::Update()
     static double ros_p = 1/rosFreq;
     static ros::Time lastTime = ros::Time::now();
     //static int i=0;
-
-    if((ros::Time::now()-lastTime).toSec() > ros_p)
+    double dt = (ros::Time::now()-lastTime).toSec();
+    if( dt > ros_p)
     {
         lastTime = ros::Time::now();
         if(ros::ok())
@@ -83,7 +111,26 @@ void NUC::Update()
         {
             exit(0);
         }
+
+        mav.Update(dt);
+        if(mav.AtGoal())
+        {
+            OnReachedGoal();
+        }
     }
 
 }
 
+void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
+{
+    updateKey = true;
+
+    if(key['='])
+    {
+        MAV::ChangeSpeed(0.5);
+    }
+    else if(key['-'])
+    {
+        MAV::ChangeSpeed(-0.5);
+    }
+}

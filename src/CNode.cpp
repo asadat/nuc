@@ -9,6 +9,7 @@ float CNode::minFootprintWidth = 4;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    isInteresting = true;
     footPrint = target_foot_print;
     pos[0] = (0.5)*(footPrint[0]+footPrint[2]);
     pos[1] = (0.5)*(footPrint[1]+footPrint[3]);

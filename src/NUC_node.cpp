@@ -67,7 +67,8 @@ void update_event(int ms)
 
     doUpdate = false; // any change and we go again. If we don't change anything, we stop updating
 
-    //NUC::Instance()->hanldeKeyPressed(Key, doUpdate);
+    NUC::Instance()->hanldeKeyPressed(Key, doUpdate);
+
     // actions:
     // - W or Left_Mouse = Move Forward constant rate
     // - S or Middle_Mouse = Move Backward constant rate
@@ -115,6 +116,7 @@ void update_event(int ms)
         rotateCamera(Mouse_Change[0] * rate, Mouse_Change[1] * rate, 0);
         Mouse_Change = TooN::makeVector(0,0);
     }
+
 
     glutPostRedisplay();
 

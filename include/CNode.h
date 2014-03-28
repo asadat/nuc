@@ -17,19 +17,25 @@ public:
     // tree related methods
     void CreateChildNode(Rect fp);
 
+    bool IsNodeInteresting(){return isInteresting;}
+    void SetIsInteresting(bool interesting){isInteresting=interesting;}
+    TooN::Vector<3> GetPos(){return pos;}
     void glDraw();
 
     static float fov;
     static int bf_sqrt;
     static float minFootprintWidth;
+    std::vector<CNode*> children;
+
+
 private:
 
     CNode *parent;
-    std::vector<CNode*> children;
+
 
     Rect footPrint;
     TooN::Vector<3> pos;
-
+    bool isInteresting;
 };
 
 #endif

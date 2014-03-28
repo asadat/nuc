@@ -5,6 +5,7 @@
 #include "CNode.h"
 #include "TraversalStrategy.h"
 #include "DepthFirstStrategy.h"
+#include "MAV.h"
 
 class NUC
 {
@@ -23,14 +24,19 @@ public:
     }
 
     void StartTraversing();
+    void OnReachedGoal();
+    void OnTraverseEnd();
 
     void Update();
     void glDraw();
     bool VisEnabled(){return bVisEnabled;}
 
+    void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 private:
 
     NUC(int argc, char **argv);
+    void VisitGoal();
+
     static NUC* instance;
 
     ros::NodeHandle nh;
@@ -41,6 +47,8 @@ private:
     CNode* tree;
     TraversalStrategy * traversal;
     CNode* curGoal;
+
+    MAV mav;
 
     bool bVisEnabled;
 

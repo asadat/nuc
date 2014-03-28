@@ -11,6 +11,9 @@ public:
     ~DepthFirstStrategy();
 
     CNode* GetNextNode();
+
+private:
+    std::vector<CNode*> nodeStack;
 };
 
 #endif

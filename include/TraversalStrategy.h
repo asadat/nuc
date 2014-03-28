@@ -6,7 +6,7 @@
 class TraversalStrategy
 {
 public:
-    virtual CNode* GetNextNode();
+    virtual CNode* GetNextNode()=0;
 };
 
 #endif
