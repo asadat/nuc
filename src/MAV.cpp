@@ -42,7 +42,7 @@ void MAV::glDraw()
 {
     glColor3f(0,0,1);
     glLineWidth(2);
-    double l=1;
+    double l=0.25;
     glBegin(GL_LINES);
     Vector<3> p1,p2,p3,p4;
     p1=pos+makeVector(-l+r(),+r(),0);
@@ -56,10 +56,16 @@ void MAV::glDraw()
     glEnd();
 
     glColor4f(0,0,0,0.5);
-    circle(p1[0]+r(),p1[1]+r(),p1[2], 0.5, 50);
-    circle(p2[0]+r(),p2[1]+r(),p2[2], 0.5, 50);
-    circle(p3[0]+r(),p3[1]+r(),p3[2], 0.5, 50);
-    circle(p4[0]+r(),p4[1]+r(),p4[2], 0.5, 50);
+    circle(p1[0]+r(),p1[1]+r(),p1[2], 0.15, 50);
+    circle(p2[0]+r(),p2[1]+r(),p2[2], 0.15, 50);
+    circle(p3[0]+r(),p3[1]+r(),p3[2], 0.15, 50);
+    circle(p4[0]+r(),p4[1]+r(),p4[2], 0.15, 50);
+
+    glPointSize(10);
+    glColor3f(0,0,1);
+    glBegin(GL_POINTS);
+    glVertex3f(goal[0], goal[1], goal[2]);
+    glEnd();
 }
 
 void MAV::SetGoal(TooN::Vector<3> goalpos)

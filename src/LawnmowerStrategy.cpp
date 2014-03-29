@@ -12,7 +12,7 @@ LawnmowerStrategy::LawnmowerStrategy(CNode *root)
     double ld = l;
 
     int depth =0;
-    while(ld > CNode::bf_sqrt*CNode::minFootprintWidth)
+    while(ld > CNode::minFootprintWidth)
     {
         depth++;
         ld /= CNode::bf_sqrt;
@@ -52,7 +52,7 @@ void LawnmowerStrategy::glDraw()
     if(nodeStack.size() < 2)
         return;
 
-    glColor3f(1,0,0);
+    glColor3f(0.5,0.6,0.6);
     glLineWidth(4);
     glBegin(GL_LINES);
     for(int i=0; i<nodeStack.size()-1;i++)

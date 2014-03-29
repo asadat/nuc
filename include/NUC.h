@@ -36,6 +36,8 @@ private:
 
     NUC(int argc, char **argv);
     void VisitGoal();
+    void PopulateTargets();
+    void MarkNodesInterestingness();
 
     static NUC* instance;
 
@@ -44,6 +46,7 @@ private:
 //    ros::Subscriber gpsPos_sub;
 //    ros::Subscriber gpsPose_sub;
 
+    Rect area;
     CNode* tree;
     TraversalStrategy * traversal;
     CNode* curGoal;
@@ -52,6 +55,7 @@ private:
 
     bool bVisEnabled;
 
+    std::vector<Rect> targets;
 
 };
 

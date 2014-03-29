@@ -6,6 +6,12 @@
 #include "DepthFirstStrategy.h"
 #include "LawnmowerStrategy.h"
 
+#define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
+#define AREA_LENGTH 64
+#define AREA_CX 0
+#define AREA_CY 0
+
+
 NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv)
@@ -26,10 +32,17 @@ NUC::NUC(int argc, char **argv)
     }
 
     glutInit(&argc, argv);
-
-    tree = new CNode(TooN::makeVector(-16,-16,16,16));
+    area = TooN::makeVector(AREA_CX-0.5*AREA_LENGTH,AREA_CY-0.5*AREA_LENGTH,AREA_CX+0.5*AREA_LENGTH,AREA_CY+0.5*AREA_LENGTH);
+    tree = new CNode(area);
     //traversal = new DepthFirstStrategy(tree);
     traversal = new LawnmowerStrategy(tree);
+
+    //For simulating interestingness
+    PopulateTargets();
+    MarkNodesInterestingness();
+    //
+
+
     StartTraversing();
 }
 
@@ -38,22 +51,47 @@ NUC::~NUC()
 
 }
 
+void NUC::PopulateTargets()
+{
+    int n=10;
+    double l =5*CNode::minFootprintWidth;
+    for(int i=0; i<n; i++)
+    {
+        Rect r;
+        r[0] = RAND(area[0], area[2]-l);
+        r[1] = RAND(area[1], area[3]-l);
+        r[2] = r[0]+l;
+        r[3] = r[1]+l;
+
+        targets.push_back(r);
+    }
+}
+
+void NUC::MarkNodesInterestingness()
+{
+    for(int i=0; i<targets.size(); i++)
+    {
+        tree->PropagateInterestingness(targets[i]);
+    }
+}
+
 void NUC::glDraw()
 {
      float w=64;
      glLineWidth(1);
      glColor3f(0.3,0.3,0.3);
      glBegin(GL_LINES);
+
      for(int i=0; i<=w; i++)
      {
-     glVertex3f(-w/2, -w/2+i, 0);
-     glVertex3f( w/2, -w/2+i, 0);
+         glVertex3f(-w/2, -w/2+i, 0);
+         glVertex3f( w/2, -w/2+i, 0);
      }
 
      for(int i=0; i<=w; i++)
      {
-     glVertex3f(-w/2+i, -w/2, 0);
-     glVertex3f(-w/2+i, w/2, 0);
+         glVertex3f(-w/2+i, -w/2, 0);
+         glVertex3f(-w/2+i, w/2, 0);
      }
 
      glEnd();
@@ -61,6 +99,19 @@ void NUC::glDraw()
      tree->glDraw();
      mav.glDraw();
      traversal->glDraw();
+
+     for(int i=0; i<targets.size(); i++)
+     {
+         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+         glColor3f(0.2,1,0.2);
+         glBegin(GL_QUADS);
+         glVertex3f(targets[i][0],targets[i][1], 0.11);
+         glVertex3f(targets[i][0],targets[i][3], 0.11);
+         glVertex3f(targets[i][2],targets[i][3], 0.11);
+         glVertex3f(targets[i][2],targets[i][1], 0.11);
+         glEnd();
+
+     }
 }
 
 void NUC::StartTraversing()
@@ -93,7 +144,9 @@ void NUC::OnTraverseEnd()
 
 void NUC::VisitGoal()
 {
-
+    //simulating interestingness
+    for(int i=0; i<curGoal->children.size();i++)
+        curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
 }
 
 void NUC::Update()
@@ -119,7 +172,6 @@ void NUC::Update()
             exit(0);
         }
     }
-
 
     double dtmav = (ros::Time::now()-lastTimeMav).toSec();
     if(dtmav > 0.001)

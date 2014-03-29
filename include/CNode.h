@@ -17,10 +17,11 @@ public:
     // tree related methods
     void CreateChildNode(Rect fp);
 
-    bool IsNodeInteresting(){return isInteresting;}
+    bool IsNodeInteresting(){return isInteresting || trueIsInteresting;}
     void SetIsInteresting(bool interesting){isInteresting=interesting;}
     TooN::Vector<3> GetPos(){return pos;}
     void glDraw();
+
 
     CNode* GetNearestLeaf(TooN::Vector<3> p);
     Rect GetFootPrint(){return footPrint;}
@@ -30,6 +31,9 @@ public:
     static float minFootprintWidth;
     std::vector<CNode*> children;
 
+    //this is used for simulation only
+    bool trueIsInteresting;
+    bool PropagateInterestingness(Rect r);
 
 private:
 
@@ -39,6 +43,7 @@ private:
     Rect footPrint;
     TooN::Vector<3> pos;
     bool isInteresting;
+
 };
 
 #endif

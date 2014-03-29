@@ -33,6 +33,9 @@ CNode* DepthFirstStrategy::GetNextNode()
 
 void DepthFirstStrategy::glDraw()
 {
+    if(nodeStack.size()<2)
+        return;
+
     glColor3f(1,0,0);
     glLineWidth(4);
     glBegin(GL_LINES);
