@@ -15,6 +15,7 @@ public:
 
 private:
     std::vector<CNode*> nodeStack;
+    CNode * last;
 };
 
 #endif

@@ -57,6 +57,9 @@ private:
 
     std::vector<Rect> targets;
 
+    ros::Time startTime;
+    ros::Time endTime;
+
 };
 
 #endif

@@ -12,6 +12,7 @@ float CNode::minFootprintWidth = 1;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    depth = 0;
     isInteresting = false;
     trueIsInteresting = false;
     footPrint = target_foot_print;
@@ -31,6 +32,7 @@ void CNode::CreateChildNode(Rect fp)
 {
     CNode* cnode = new CNode(fp);
     cnode->parent = this;
+    cnode->depth = depth +1;
     children.push_back(cnode);
 }
 
@@ -100,9 +102,21 @@ void CNode::glDraw()
 
 }
 
+void CNode::PropagateDepth()
+{
+    if(parent == NULL)
+        depth = 0;
+    else
+        depth = parent->depth +1;
+
+    for(int i=0; i<children.size(); i++)
+    {
+        children[i]->PropagateDepth();
+    }
+}
+
 bool CNode::PropagateInterestingness(Rect r)
 {
-
     if(children.empty())
     {
         if(trueIsInteresting)
@@ -125,6 +139,22 @@ bool CNode::PropagateInterestingness(Rect r)
     return trueIsInteresting;
 }
 
+bool CNode::VisitedInterestingDescendentExists()
+{
+    if(children.empty())
+        return (visited && IsNodeInteresting());
+
+    bool flag = false;
+    for(int i=0; i<children.size(); i++)
+    {
+        flag = children[i]->VisitedInterestingDescendentExists();
+        if(flag)
+            return true;
+    }
+
+    return false;
+}
+
 CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
 {
     if(children.empty())
@@ -143,4 +173,25 @@ CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
     }
 
     return children[minidx]->GetNearestLeaf(p);
+}
+
+void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list)
+{
+    if(children.empty())
+        return;
+
+    int minidx=0;
+    double minDist = 99999999999;
+    for(int i=0; i<children.size(); i++)
+    {
+        double dist = (children[i]->pos-p)*(children[i]->pos-p);
+        if(dist < minDist)
+        {
+            minidx = i;
+            minDist = dist;
+        }
+    }
+
+    list.push_back(children[minidx]);
+    return children[minidx]->GetNearestLeafAndParents(p, list);
 }

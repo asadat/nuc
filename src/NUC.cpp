@@ -5,9 +5,10 @@
 #include "TooN/TooN.h"
 #include "DepthFirstStrategy.h"
 #include "LawnmowerStrategy.h"
+#include "ShortCutStrategy.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
-#define AREA_LENGTH 64
+#define AREA_LENGTH 32
 #define AREA_CX 0
 #define AREA_CY 0
 
@@ -17,6 +18,8 @@ NUC * NUC::instance = NULL;
 NUC::NUC(int argc, char **argv)
 {
     bVisEnabled = true;
+
+    int traversalStrategy=-1;
 
     for(int i=1; i<argc;i++)
     {
@@ -28,20 +31,48 @@ NUC::NUC(int argc, char **argv)
         {
            CNode::bf_sqrt = atoi(argv[++i]);
         }
+        else if(strcmp(argv[i],"-s")==0)
+        {
+           MAV::speed = atoi(argv[++i]);
+        }
+        else if(strcmp(argv[i],"-dfs")==0)
+        {
+            traversalStrategy = 0;
+        }
+        else if(strcmp(argv[i],"-scs")==0)
+        {
+            traversalStrategy = 1;
+        }
+        else if(strcmp(argv[i],"-lms")==0)
+        {
+            traversalStrategy = 2;
+        }
 
     }
 
     glutInit(&argc, argv);
     area = TooN::makeVector(AREA_CX-0.5*AREA_LENGTH,AREA_CY-0.5*AREA_LENGTH,AREA_CX+0.5*AREA_LENGTH,AREA_CY+0.5*AREA_LENGTH);
     tree = new CNode(area);
-    //traversal = new DepthFirstStrategy(tree);
-    traversal = new LawnmowerStrategy(tree);
+    tree->PropagateDepth();
+
+    if(traversalStrategy == 0)
+    {
+        traversal = new DepthFirstStrategy(tree);
+    }
+    else if(traversalStrategy == 1)
+    {
+        traversal = new ShortCutStrategy(tree);
+    }
+    else
+    {
+        traversal = new LawnmowerStrategy(tree);
+    }
+
 
     //For simulating interestingness
     PopulateTargets();
     MarkNodesInterestingness();
     //
-
 
     StartTraversing();
 }
@@ -53,6 +84,7 @@ NUC::~NUC()
 
 void NUC::PopulateTargets()
 {
+    srand(time(NULL));
     int n=10;
     double l =5*CNode::minFootprintWidth;
     for(int i=0; i<n; i++)
@@ -116,13 +148,14 @@ void NUC::glDraw()
 
 void NUC::StartTraversing()
 {
+   startTime = ros::Time::now();
    curGoal = traversal->GetNextNode();
    mav.SetGoal(curGoal->GetPos());
 }
 
 void NUC::OnReachedGoal()
 {
-    ROS_INFO("Reached Goal");
+    //ROS_INFO("Reached Goal");
     VisitGoal();
     curGoal = traversal->GetNextNode();
     if(curGoal == NULL)
@@ -132,18 +165,23 @@ void NUC::OnReachedGoal()
     }
     else
     {
-        ROS_INFO("New goal ...");
+        //ROS_INFO("New goal ... depth %d", curGoal->depth);
         mav.SetGoal(curGoal->GetPos());
     }
 }
 
 void NUC::OnTraverseEnd()
 {
+    endTime = ros::Time::now();
+    ROS_INFO("Coverage duration: %f\n", (endTime-startTime).toSec());
     exit(0);
 }
 
 void NUC::VisitGoal()
 {
+    curGoal->visited = true;
+    curGoal->SetIsInteresting(curGoal->trueIsInteresting);
+
     //simulating interestingness
     for(int i=0; i<curGoal->children.size();i++)
         curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
@@ -191,10 +229,10 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 
     if(key['='])
     {
-        MAV::ChangeSpeed(0.5);
+        MAV::ChangeSpeed(0.1);
     }
     else if(key['-'])
     {
-        MAV::ChangeSpeed(-0.5);
+        MAV::ChangeSpeed(-0.1);
     }
 }

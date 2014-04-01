@@ -3,6 +3,7 @@
 
 DepthFirstStrategy::DepthFirstStrategy(CNode *root)
 {
+    last = NULL;
     nodeStack.push_back(root);
 }
 
@@ -16,19 +17,30 @@ CNode* DepthFirstStrategy::GetNextNode()
     if(nodeStack.empty())
         return NULL;
 
-    CNode * node = nodeStack.back();
-    nodeStack.pop_back();
-
-    for(int i=0; i<node->children.size(); i++)
+    if(last == NULL)
     {
-        CNode* child = node->children[i];
-        if(child->IsNodeInteresting())
-        {
-            nodeStack.push_back(child);
-        }
+        last = nodeStack.back();
+        return nodeStack.back();
     }
+    else
+    {
+        nodeStack.pop_back();
 
-    return node;
+        for(int i=0; i<last->children.size(); i++)
+        {
+            CNode* child = last->children[i];
+            if(child->IsNodeInteresting())
+            {
+                nodeStack.push_back(child);
+            }
+        }
+
+        if(nodeStack.empty())
+            return NULL;
+
+        last = nodeStack.back();
+        return nodeStack.back();
+    }
 }
 
 void DepthFirstStrategy::glDraw()
