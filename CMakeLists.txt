@@ -25,7 +25,7 @@ include_directories("./inlcude")
 include_directories("/usr/include")
 
 #include_directories("~/tag")
-link_directories("/opt/ros/fuerte/lib")
+link_directories("/opt/ros/groovy/lib")
 include_directories("~")
 
 
