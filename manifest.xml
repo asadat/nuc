@@ -16,8 +16,8 @@
   <depend package="PelicanCtrl" />
 <!--  <depend package="joy" />-->
 
- <!-- <depend package="tf"/>-->
- <!-- <depend package="asctec_hl_comm"/>-->  
+ <depend package="cv_bridge"/>
+ <depend package="image_transport"/>  
  <!-- <depend package="dynamic_reconfigure"/>-->
 </package>
 
