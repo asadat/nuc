@@ -1,5 +1,6 @@
 #include "MAV.h"
 #include "GL/glut.h"
+#include "PelicanCtrl/gotoPos.h"
 
 using namespace TooN;
 
@@ -11,9 +12,22 @@ MAV::MAV()
     speed = 1;
 }
 
-MAV::~MAV()
+void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
 {
+    nh = nh_;
+    simulation = simulation_;
 
+    if(!simulation)
+    {
+        gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("gotoPos");
+        atGoalSub = nh->subscribe("at_goal", 10, &MAV::atGoalCallback, this);
+    }
+}
+
+void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)
+{
+    if(msg->data == true)
+        atGoal = true;
 }
 
 void circle(float x, float y, float z, float r, int segments)
@@ -71,27 +85,54 @@ void MAV::glDraw()
 void MAV::SetGoal(TooN::Vector<3> goalpos)
 {
     goal = goalpos;
-    toGoalNorm = (goal-pos);
-    normalize(toGoalNorm);
     atGoal = false;
 
+    if(simulation)
+    {
+        toGoalNorm = (goal-pos);
+        normalize(toGoalNorm);
+    }
+    else
+    {
+        PelicanCtrl::gotoPos srv;
+        srv.request.x = goal[0];
+        srv.request.y = goal[1];
+        srv.request.z = goal[2];
+
+        if(gotoPosService.call(srv))
+        {
+            ROS_INFO("Waypoint is sent to Pelican Controller");
+        }
+        else
+        {
+            ROS_INFO("** Unable to call gotoPos service on Pelican Controller");
+        }
+    }
 }
 
 void MAV::Update(double dt)
 {
-    if(atGoal)
-        return;
-
-    double step = dt * speed;
-    double goalDistSqr = (goal - pos)*(goal-pos);
-    if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
+    if(simulation)
     {
-        pos = goal;
-        atGoal = true;
+        if(atGoal)
+            return;
 
+        double step = dt * speed;
+        double goalDistSqr = (goal - pos)*(goal-pos);
+        if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
+        {
+            pos = goal;
+            atGoal = true;
+
+        }
+        else
+        {
+            pos += step*toGoalNorm;
+        }
     }
     else
     {
-        pos += step*toGoalNorm;
+        //We don't need to check if MAV is at goal since
+        //it will be set in upon receiving the AtGoal message
     }
 }

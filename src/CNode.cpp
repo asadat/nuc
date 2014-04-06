@@ -85,7 +85,7 @@ void CNode::glDraw()
     glVertex3f(pos[0],pos[1],pos[2]);
     glEnd();
 
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -109,7 +109,7 @@ void CNode::PropagateDepth()
     else
         depth = parent->depth +1;
 
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
     {
         children[i]->PropagateDepth();
     }
@@ -128,7 +128,7 @@ bool CNode::PropagateInterestingness(Rect r)
     }
 
     bool flag = false;
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
     {
         bool res = children[i]->PropagateInterestingness(r);
         flag  = flag || res;
@@ -145,7 +145,7 @@ bool CNode::VisitedInterestingDescendentExists()
         return (visited && IsNodeInteresting());
 
     bool flag = false;
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
     {
         flag = children[i]->VisitedInterestingDescendentExists();
         if(flag)
@@ -162,7 +162,7 @@ CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
 
     int minidx=0;
     double minDist = 99999999999;
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
     {
         double dist = (children[i]->pos-p)*(children[i]->pos-p);
         if(dist < minDist)
@@ -182,7 +182,7 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
 
     int minidx=0;
     double minDist = 99999999999;
-    for(int i=0; i<children.size(); i++)
+    for(unsigned int i=0; i<children.size(); i++)
     {
         double dist = (children[i]->pos-p)*(children[i]->pos-p);
         if(dist < minDist)

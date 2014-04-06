@@ -6,6 +6,7 @@
 #include "DepthFirstStrategy.h"
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
+#include "InterestingnessSensor.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 #define AREA_LENGTH 32
@@ -14,16 +15,22 @@
 
 
 NUC * NUC::instance = NULL;
+bool NUC::simulation = true;
 
-NUC::NUC(int argc, char **argv)
+NUC::NUC(int argc, char **argv):nh("NUC")
 {
     bVisEnabled = true;
+
 
     int traversalStrategy=-1;
 
     for(int i=1; i<argc;i++)
     {
-        if(strcmp(argv[i],"-novis")==0)
+        if(strcmp(argv[i],"-real")==0)
+        {
+             simulation = false;
+        }
+        else if(strcmp(argv[i],"-novis")==0)
         {
             bVisEnabled = false;
         }
@@ -50,6 +57,9 @@ NUC::NUC(int argc, char **argv)
 
     }
 
+    InterestingnessSensor::Instance(&nh);
+    mav.Init(&nh, simulation);
+
     glutInit(&argc, argv);
     area = TooN::makeVector(AREA_CX-0.5*AREA_LENGTH,AREA_CY-0.5*AREA_LENGTH,AREA_CX+0.5*AREA_LENGTH,AREA_CY+0.5*AREA_LENGTH);
     tree = new CNode(area);
@@ -70,8 +80,11 @@ NUC::NUC(int argc, char **argv)
 
 
     //For simulating interestingness
-    PopulateTargets();
-    MarkNodesInterestingness();
+    if(simulation)
+    {
+        PopulateTargets();
+        MarkNodesInterestingness();
+    }
     //
 
     StartTraversing();
@@ -101,7 +114,7 @@ void NUC::PopulateTargets()
 
 void NUC::MarkNodesInterestingness()
 {
-    for(int i=0; i<targets.size(); i++)
+    for(unsigned int i=0; i<targets.size(); i++)
     {
         tree->PropagateInterestingness(targets[i]);
     }
@@ -132,17 +145,20 @@ void NUC::glDraw()
      mav.glDraw();
      traversal->glDraw();
 
-     for(int i=0; i<targets.size(); i++)
+     if(simulation)
      {
-         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-         glColor3f(0.2,1,0.2);
-         glBegin(GL_QUADS);
-         glVertex3f(targets[i][0],targets[i][1], 0.11);
-         glVertex3f(targets[i][0],targets[i][3], 0.11);
-         glVertex3f(targets[i][2],targets[i][3], 0.11);
-         glVertex3f(targets[i][2],targets[i][1], 0.11);
-         glEnd();
+         for(unsigned int i=0; i<targets.size(); i++)
+         {
+             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+             glColor3f(0.2,1,0.2);
+             glBegin(GL_QUADS);
+             glVertex3f(targets[i][0],targets[i][1], 0.11);
+             glVertex3f(targets[i][0],targets[i][3], 0.11);
+             glVertex3f(targets[i][2],targets[i][3], 0.11);
+             glVertex3f(targets[i][2],targets[i][1], 0.11);
+             glEnd();
 
+         }
      }
 }
 
@@ -180,11 +196,20 @@ void NUC::OnTraverseEnd()
 void NUC::VisitGoal()
 {
     curGoal->visited = true;
-    curGoal->SetIsInteresting(curGoal->trueIsInteresting);
 
-    //simulating interestingness
-    for(int i=0; i<curGoal->children.size();i++)
-        curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
+    if(simulation)
+    {
+        // In simulations it uses the precomputed interestingness
+        curGoal->SetIsInteresting(curGoal->trueIsInteresting);
+        //simulating interestingness
+        for(unsigned int i=0; i<curGoal->children.size();i++)
+            curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
+    }
+    else
+    {
+        // in real experiments it uses the image data to decide
+        //InterestingnessSensor::Instance()->GetInterestingness(for all children);
+    }
 }
 
 void NUC::Update()

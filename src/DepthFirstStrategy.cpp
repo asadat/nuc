@@ -26,7 +26,7 @@ CNode* DepthFirstStrategy::GetNextNode()
     {
         nodeStack.pop_back();
 
-        for(int i=0; i<last->children.size(); i++)
+        for(unsigned int i=0; i<last->children.size(); i++)
         {
             CNode* child = last->children[i];
             if(child->IsNodeInteresting())
@@ -51,7 +51,7 @@ void DepthFirstStrategy::glDraw()
     glColor3f(1,0,0);
     glLineWidth(4);
     glBegin(GL_LINES);
-    for(int i=0; i<nodeStack.size()-1;i++)
+    for(unsigned int i=0; i<nodeStack.size()-1;i++)
     {
         TooN::Vector<3> p1 = nodeStack[i+1]->GetPos();
         TooN::Vector<3> p2 = nodeStack[i]->GetPos();

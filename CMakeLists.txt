@@ -15,7 +15,7 @@ rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-set(NUC_LIBRARIES GL GLU glut roscpp rostime rosconsole)
+set(NUC_LIBRARIES GL GLU glut roscpp rostime rosconsole roscpp_serialization opencv_core opencv_video opencv_highgui opencv_imgproc opencv_contrib image_transport cv_bridge)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
@@ -42,6 +42,8 @@ src/DepthFirstStrategy.cpp
 src/ShortCutStrategy.cpp
 src/LawnmowerStrategy.cpp
 src/MAV.cpp
+src/InterestingnessSensor.cpp
+include/InterestingnessSensor.h
 
 include/NUC.h
 include/CNode.h

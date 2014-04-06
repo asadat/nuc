@@ -1,4 +1,4 @@
-#include "ShortCutStrategy.h".h"
+#include "ShortCutStrategy.h"
 #include "GL/glut.h"
 #include <stdio.h>
 
@@ -43,7 +43,7 @@ CNode* ShortCutStrategy::GetNextNode()
                         CNode * ignoredParent = nodeStack.back();
                         nodeStack.pop_back();
 
-                        for(int i=0; i<node->children.size(); i++)
+                        for(unsigned int i=0; i<node->children.size(); i++)
                         {
                             if(!node->children[i]->waiting && !node->children[i]->visited)
                             {
@@ -75,7 +75,7 @@ CNode* ShortCutStrategy::GetNextNode()
 
                     node->waiting = true;
 
-                    for(int i=0; i<branch.size(); i++)
+                    for(unsigned int i=0; i<branch.size(); i++)
                     {
                         CNode *pnode = branch[i];
                         pnode->waiting = true;
@@ -96,7 +96,7 @@ CNode* ShortCutStrategy::GetNextNode()
         }
         else
         {
-            for(int i=0; i<last->children.size(); i++)
+            for(unsigned int i=0; i<last->children.size(); i++)
             {
                 CNode* child = last->children[i];
                 if(child->IsNodeInteresting())

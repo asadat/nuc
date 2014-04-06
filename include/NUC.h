@@ -32,6 +32,9 @@ public:
     bool VisEnabled(){return bVisEnabled;}
 
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
+
+    static bool simulation;
+
 private:
 
     NUC(int argc, char **argv);

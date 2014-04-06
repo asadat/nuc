@@ -77,7 +77,7 @@ void update_event(int ms)
     // - A = Rotate Left constant rate
     // - D = Rotate Right constant rate
     // - R = Ascend constant rate
-    // - F = Descend constant rate
+    // - F = Descend constant http://www.bbc.co.uk/persian/rate
     // - Right Click = Yaw + Pitch camera variable rate
 
     double moveRate = (static_cast<double>(ms) / 1000.0) * 20.;

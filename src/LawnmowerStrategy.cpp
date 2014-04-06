@@ -55,7 +55,7 @@ void LawnmowerStrategy::glDraw()
     glColor3f(0.5,0.6,0.6);
     glLineWidth(4);
     glBegin(GL_LINES);
-    for(int i=0; i<nodeStack.size()-1;i++)
+    for(unsigned int i=0; i<nodeStack.size()-1;i++)
     {
         TooN::Vector<3> p1 = nodeStack[i+1]->GetPos();
         TooN::Vector<3> p2 = nodeStack[i]->GetPos();
