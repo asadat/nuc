@@ -172,6 +172,7 @@ void NUC::StartTraversing()
 void NUC::OnReachedGoal()
 {
     //ROS_INFO("Reached Goal");
+
     VisitGoal();
     curGoal = traversal->GetNextNode();
     if(curGoal == NULL)

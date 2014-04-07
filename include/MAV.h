@@ -16,7 +16,7 @@ public:
     void Update(double dt);
     bool AtGoal(){return atGoal;}
     void atGoalCallback(const std_msgs::Bool::Ptr &msg);
-
+    void test();
     static void ChangeSpeed(double ds){speed +=ds;}
     static double speed;
 private:

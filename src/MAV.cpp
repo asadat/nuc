@@ -19,9 +19,15 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
 
     if(!simulation)
     {
-        gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("gotoPos");
-        atGoalSub = nh->subscribe("at_goal", 10, &MAV::atGoalCallback, this);
+        gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("/PelicanCtrl/gotoPos");
+        atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
+        //test();
     }
+}
+
+void MAV::test()
+{
+    SetGoal(makeVector(0,0,-5));
 }
 
 void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)
@@ -54,6 +60,8 @@ void glVertex(Vector<3> p)
 
 void MAV::glDraw()
 {
+    //ROS_INFO_THROTTLE(1, "AtGoal:%d", atGoal);
+
     glColor3f(0,0,1);
     glLineWidth(2);
     double l=0.25;
@@ -134,5 +142,6 @@ void MAV::Update(double dt)
     {
         //We don't need to check if MAV is at goal since
         //it will be set in upon receiving the AtGoal message
+        //ROS_INFO_THROTTLE(1, "AtGoal:%d", atGoal);
     }
 }
