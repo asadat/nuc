@@ -1,0 +1,6 @@
+<launch>
+    <node name="NUC" pkg="NUC" type="NUC" clear_params="true" output="screen" args="-real">
+	    <remap from="at_goal" to="/PelicanCtrl/at_goal" />
+    </node>
+</launch>
+

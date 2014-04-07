@@ -20,7 +20,7 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
     if(!simulation)
     {
         gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("/PelicanCtrl/gotoPos");
-        atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
+        atGoalSub = nh->subscribe("at_goal", 10, &MAV::atGoalCallback, this);
         //test();
     }
 }
