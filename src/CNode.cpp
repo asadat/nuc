@@ -7,7 +7,7 @@
 
 float CNode::fov = 90 *3.14/(180);
 int CNode::bf_sqrt = 2;
-float CNode::minFootprintWidth = 1;
+float CNode::minFootprintWidth = 3;
 
 
 CNode::CNode(Rect target_foot_print):parent(NULL)

@@ -9,7 +9,7 @@
 #include "InterestingnessSensor.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
-#define AREA_LENGTH 32
+#define AREA_LENGTH 8
 #define AREA_CX 0
 #define AREA_CY 0
 

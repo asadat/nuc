@@ -20,7 +20,9 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
     if(!simulation)
     {
         gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("/PelicanCtrl/gotoPos");
-        atGoalSub = nh->subscribe("at_goal", 10, &MAV::atGoalCallback, this);
+        atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
+        gpsPose_sub = nh->subscribe("/PelicanCtrl/fixedPose", 10, &MAV::gpsPoseCallback, this);
+
         //test();
     }
 }
@@ -28,6 +30,15 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
 void MAV::test()
 {
     SetGoal(makeVector(0,0,-5));
+}
+
+void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg)
+{
+    realpos[0] = msg->pose.pose.position.x;
+    realpos[1] = msg->pose.pose.position.y;
+    realpos[2] = msg->pose.pose.position.z;
+
+    realpos[3] = 0;
 }
 
 void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)
@@ -61,16 +72,25 @@ void glVertex(Vector<3> p)
 void MAV::glDraw()
 {
     //ROS_INFO_THROTTLE(1, "AtGoal:%d", atGoal);
+    Vector<3> p;
+    if(simulation)
+    {
+        p = pos;
+    }
+    else
+    {
+        p[0] = realpos[0];p[1] = realpos[1];p[2] = realpos[2];
+    }
 
     glColor3f(0,0,1);
     glLineWidth(2);
     double l=0.25;
     glBegin(GL_LINES);
     Vector<3> p1,p2,p3,p4;
-    p1=pos+makeVector(-l+r(),+r(),0);
-    p2=pos+makeVector(+l+r(),+r(),0);
-    p3=pos+makeVector(+r(),-l+r(),0);
-    p4=pos+makeVector(+r(),+l+r(),0);
+    p1=p+makeVector(-l+r(),+r(),0);
+    p2=p+makeVector(+l+r(),+r(),0);
+    p3=p+makeVector(+r(),-l+r(),0);
+    p4=p+makeVector(+r(),+l+r(),0);
     glVertex(p1);
     glVertex(p2);
     glVertex(p3);
