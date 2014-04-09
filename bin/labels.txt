@@ -1,0 +1,3 @@
+grass 10
+sand 10
+

@@ -4,23 +4,25 @@
 #include "opencv2/opencv.hpp"
 #include "cv_bridge/cv_bridge.h"
 #include "image_transport/image_transport.h"
+#include "opencv2/ml/ml.hpp"
 
 class InterestingnessSensor
 {
 public:
-    ~InterestingnessSensor(){};
+    ~InterestingnessSensor();
 
     static InterestingnessSensor * Instance(ros::NodeHandle * nh_=NULL)
     {
         if(instance == NULL && nh_!=NULL)
         {
-            instance = new InterestingnessSensor(nh_);
+            instance = new InterestingnessSensor(nh_);            
         }
 
         return instance;
     }
 
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
+    void TrainDTree();
 
 private:
 
@@ -30,6 +32,10 @@ private:
     image_transport::Subscriber img_sub;
     ros::NodeHandle * nh;
     cv_bridge::CvImagePtr imagePtr;
+
+    cv::DecisionTree dtree;
+    std::vector<char*> labels;
+
 };
 
 #endif
