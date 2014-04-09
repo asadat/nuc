@@ -10,6 +10,7 @@ MAV::MAV()
 {
     pos = makeVector(0,0,10);
     speed = 1;
+    realpos = makeVector(0,0,0,0);
 }
 
 void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
@@ -37,7 +38,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     realpos[0] = msg->pose.pose.position.x;
     realpos[1] = msg->pose.pose.position.y;
     realpos[2] = msg->pose.pose.position.z;
-
+    ROS_INFO_THROTTLE(3, "POS: %f %f %f", realpos[0], realpos[1], realpos[2]);
     realpos[3] = 0;
 }
 

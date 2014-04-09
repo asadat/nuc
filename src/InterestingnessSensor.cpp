@@ -12,7 +12,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     image_transport::ImageTransport it(*nh);
     img_sub = it.subscribe("camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
 
-    TrainDTree();
+    //TrainDTree();
 
 //    cv::Mat data(100,5,CV_32F);
 //    cv::Mat res(100,1,CV_32F);
