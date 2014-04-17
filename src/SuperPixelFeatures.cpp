@@ -18,8 +18,8 @@ void SuperPixelFeatures::GetSuperPixelFeatures(vector<cv::Mat> &features)
     //cv::cvtColor(img, lab_image, CV_BGR2Lab);
 
     int w = img.cols, h = img.rows;
-    int nr_superpixels = 100;
-    int nc = 200;
+    int nr_superpixels = 200;
+    int nc = 100;
     double step = sqrt((w * h) / (double) nr_superpixels);
     generate_superpixels(img,step,nc);
     PopulateFeatures(features);
