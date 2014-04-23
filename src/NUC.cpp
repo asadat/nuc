@@ -21,7 +21,6 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 {
     bVisEnabled = true;
 
-
     nh.param<bool>("simulation", simulation, true);
     nh.param<bool>("visualization", bVisEnabled, true);
     nh.param<int>("branching_sqrt",CNode::bf_sqrt,2);
@@ -42,7 +41,6 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     {
         traversalStrategy = 1;
     }
-
 
 
 //    for(int i=1; i<argc;i++)
@@ -78,7 +76,11 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
 //    }
 
-    InterestingnessSensor::Instance(&nh);
+    if(!simulation)
+    {
+        InterestingnessSensor::Instance(&nh);
+    }
+
     mav.Init(&nh, simulation);
 
     glutInit(&argc, argv);
