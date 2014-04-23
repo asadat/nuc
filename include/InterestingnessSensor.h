@@ -21,6 +21,7 @@ public:
         return instance;
     }
 
+
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
     void TrainDTree();
 
@@ -28,6 +29,10 @@ private:
 
     InterestingnessSensor(ros::NodeHandle * nh_);
     static InterestingnessSensor *instance;
+    void TestDTree(char* filename);
+    inline bool exists_test(const std::string& name) {
+        return ( access( name.c_str(), F_OK ) != -1 );
+    }
 
     image_transport::Subscriber img_sub;
     ros::NodeHandle * nh;

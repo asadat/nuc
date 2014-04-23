@@ -58,10 +58,9 @@ include/TraversalStrategy.h
 include/MAV.h
 )
 
-#rosbuild_add_executable(PositionVis
-#include/PositionVis.h
-#src/PositionVis.cpp
-#)
-
 target_link_libraries(NUC  ${NUC_LIBRARIES})
 
+
+rosbuild_add_executable(ImagePublisher
+src/ImagePublisher.cpp
+)

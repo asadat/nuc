@@ -1,3 +1,4 @@
 grass 10
 sand 10
+tree 10
 
