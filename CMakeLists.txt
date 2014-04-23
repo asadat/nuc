@@ -24,9 +24,9 @@ opencv_ml opencv_imgproc opencv_contrib image_transport cv_bridge)
 #rosbuild_gensrv()
 include_directories("./inlcude")
 include_directories("/usr/include")
-
+include_directories("~/ros/stacks/PelicanCtrl/srv_gen/cpp")
 #include_directories("~/tag")
-link_directories("/opt/ros/groovy/lib")
+link_directories("/opt/ros/fuerte/lib")
 include_directories("~")
 
 

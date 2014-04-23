@@ -26,6 +26,7 @@ private:
 
     TooN::Vector<4> realpos; // onlu for visualization of real MAV
     TooN::Vector<3> pos;
+    double yaw;
     TooN::Vector<3> goal;
     TooN::Vector<3> toGoalNorm;
     bool atGoal;

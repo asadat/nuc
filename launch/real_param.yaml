@@ -1,0 +1,5 @@
+simulation: false
+visualization: true
+branching_sqrt: 2
+speed: 10
+strategy: lm

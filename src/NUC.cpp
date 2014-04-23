@@ -9,7 +9,7 @@
 #include "InterestingnessSensor.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
-#define AREA_LENGTH 8
+#define AREA_LENGTH 16
 #define AREA_CX 0
 #define AREA_CY 0
 
@@ -22,40 +22,61 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     bVisEnabled = true;
 
 
+    nh.param<bool>("simulation", simulation, true);
+    nh.param<bool>("visualization", bVisEnabled, true);
+    nh.param<int>("branching_sqrt",CNode::bf_sqrt,2);
+    nh.param<double>("speed",MAV::speed,1.0);
+
     int traversalStrategy=-1;
-
-    for(int i=1; i<argc;i++)
+    std::string strategy_str;
+    nh.param("strategy", strategy_str, std::string("lm"));
+    if(strategy_str == "lm")
     {
-        if(strcmp(argv[i],"-real")==0)
-        {
-             simulation = false;
-        }
-        else if(strcmp(argv[i],"-novis")==0)
-        {
-            bVisEnabled = false;
-        }
-        else if(strcmp(argv[i],"-b")==0)
-        {
-           CNode::bf_sqrt = atoi(argv[++i]);
-        }
-        else if(strcmp(argv[i],"-s")==0)
-        {
-           MAV::speed = atoi(argv[++i]);
-        }
-        else if(strcmp(argv[i],"-dfs")==0)
-        {
-            traversalStrategy = 0;
-        }
-        else if(strcmp(argv[i],"-scs")==0)
-        {
-            traversalStrategy = 1;
-        }
-        else if(strcmp(argv[i],"-lms")==0)
-        {
-            traversalStrategy = 2;
-        }
-
+        traversalStrategy = 2;
     }
+    else if(strategy_str == "df")
+    {
+        traversalStrategy = 0;
+    }
+    else if(strategy_str == "sc")
+    {
+        traversalStrategy = 1;
+    }
+
+
+
+//    for(int i=1; i<argc;i++)
+//    {
+//        /*if(strcmp(argv[i],"-real")==0)
+//        {
+//             simulation = false;
+//        }
+//        else *//*if(strcmp(argv[i],"-novis")==0)
+//        {
+//            bVisEnabled = false;
+//        }*/
+////        else if(strcmp(argv[i],"-b")==0)
+////        {
+////           CNode::bf_sqrt = atoi(argv[++i]);
+////        }
+////        else if(strcmp(argv[i],"-s")==0)
+////        {
+////           MAV::speed = atoi(argv[++i]);
+////        }
+////        else if(strcmp(argv[i],"-dfs")==0)
+////        {
+////            traversalStrategy = 0;
+////        }
+////        else if(strcmp(argv[i],"-scs")==0)
+////        {
+////            traversalStrategy = 1;
+////        }
+////        else if(strcmp(argv[i],"-lms")==0)
+////        {
+////            traversalStrategy = 2;
+////        }
+
+//    }
 
     InterestingnessSensor::Instance(&nh);
     mav.Init(&nh, simulation);
@@ -98,7 +119,7 @@ NUC::~NUC()
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    int n=10;
+    int n=1;
     double l =5*CNode::minFootprintWidth;
     for(int i=0; i<n; i++)
     {
@@ -140,6 +161,23 @@ void NUC::glDraw()
      }
 
      glEnd();
+
+     glLineWidth(5);
+     glBegin(GL_LINES);
+     glColor3f(1,0,0);
+     glVertex3f(0,0,0.1);
+     glVertex3f(1,0,0.1);
+
+     glColor3f(0,1,0);
+     glVertex3f(0,0,0.1);
+     glVertex3f(0,1,0.1);
+
+     glColor3f(0,0,1);
+     glVertex3f(0,0,0.1);
+     glVertex3f(0,0,1);
+     glEnd();
+
+
 
      tree->glDraw();
      mav.glDraw();
