@@ -42,40 +42,6 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         traversalStrategy = 1;
     }
 
-
-//    for(int i=1; i<argc;i++)
-//    {
-//        /*if(strcmp(argv[i],"-real")==0)
-//        {
-//             simulation = false;
-//        }
-//        else *//*if(strcmp(argv[i],"-novis")==0)
-//        {
-//            bVisEnabled = false;
-//        }*/
-////        else if(strcmp(argv[i],"-b")==0)
-////        {
-////           CNode::bf_sqrt = atoi(argv[++i]);
-////        }
-////        else if(strcmp(argv[i],"-s")==0)
-////        {
-////           MAV::speed = atoi(argv[++i]);
-////        }
-////        else if(strcmp(argv[i],"-dfs")==0)
-////        {
-////            traversalStrategy = 0;
-////        }
-////        else if(strcmp(argv[i],"-scs")==0)
-////        {
-////            traversalStrategy = 1;
-////        }
-////        else if(strcmp(argv[i],"-lms")==0)
-////        {
-////            traversalStrategy = 2;
-////        }
-
-//    }
-
     if(!simulation)
     {
         InterestingnessSensor::Instance(&nh);
@@ -248,7 +214,7 @@ void NUC::VisitGoal()
     }
     else
     {
-        // in real experiments it uses the image data to decide
+        //in real experiments it uses the image data to decide
         //InterestingnessSensor::Instance()->GetInterestingness(for all children);
     }
 }

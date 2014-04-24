@@ -2,6 +2,7 @@
 #include "InterestingnessSensor.h"
 #include "SuperPixelFeatures.h"
 #include "ros/ros.h"
+#include "interestingness/ROIs.h"
 
 //#include "opencv2/opencv.hpp"
 
@@ -12,6 +13,8 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     nh = nh_;
     image_transport::ImageTransport it(*nh);
     img_sub = it.subscribe("camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
+
+    int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
 
     TrainDTree();
 
@@ -46,6 +49,16 @@ InterestingnessSensor::~InterestingnessSensor()
         labels.pop_back();
         delete [] s;
     }
+}
+
+void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
+{
+    if(ROIs.size() > 10)
+    {
+        ROIs.erase(ROIs.begin());
+    }
+
+    ROIs.push_back(msg->regions);
 }
 
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
