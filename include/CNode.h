@@ -20,7 +20,7 @@ public:
     void PopulateChildren();
 
     // tree related methods
-    void CreateChildNode(Rect fp);
+    CNode* CreateChildNode(Rect fp);
 
     bool IsNodeInteresting(){return isInteresting;}// || trueIsInteresting;}
     void SetIsInteresting(bool interesting){isInteresting=interesting;}
@@ -55,6 +55,7 @@ private:
     bool visited;
     bool waiting;
 
+    int grd_x, grd_y;
     int depth;
     Rect footPrint;
     TooN::Vector<3> pos;

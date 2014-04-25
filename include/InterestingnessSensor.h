@@ -27,6 +27,8 @@ public:
     void interestingCallback(const interestingness::ROIsConstPtr &msg);
     void TrainDTree();
 
+    void GetInterestingnessGrid(std::vector< std::vector<bool> > & int_grd, int grd_s);
+
 private:
 
     InterestingnessSensor(ros::NodeHandle * nh_);

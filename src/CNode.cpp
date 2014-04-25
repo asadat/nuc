@@ -12,6 +12,8 @@ float CNode::minFootprintWidth = 3;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    grd_x = 0;
+    grd_y = 0;
     depth = 0;
     isInteresting = false;
     trueIsInteresting = false;
@@ -28,12 +30,13 @@ CNode::~CNode()
 
 }
 
-void CNode::CreateChildNode(Rect fp)
+CNode * CNode::CreateChildNode(Rect fp)
 {
     CNode* cnode = new CNode(fp);
     cnode->parent = this;
     cnode->depth = depth +1;
     children.push_back(cnode);
+    return cnode;
 }
 
 void CNode::PopulateChildren()
@@ -53,7 +56,9 @@ void CNode::PopulateChildren()
             fp[2] = fp[0]+dl;
             fp[3] = fp[1]+dl;
 
-            CreateChildNode(fp);
+            CNode* ch = CreateChildNode(fp);
+            ch->grd_x = i;
+            ch->grd_y = j;
 
         }
 }

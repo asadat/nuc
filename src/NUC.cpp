@@ -214,8 +214,20 @@ void NUC::VisitGoal()
     }
     else
     {
+        bool curNodeInterest = false;
         //in real experiments it uses the image data to decide
-        //InterestingnessSensor::Instance()->GetInterestingness(for all children);
+        int grd_s = CNode::bf_sqrt;
+        std::vector< std::vector<bool> > grd_int;
+        InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
+
+        for(unsigned int i=0; i<curGoal->children.size();i++)
+        {
+            CNode * nd = curGoal->children[i];
+            curGoal->children[i]->SetIsInteresting(grd_int[nd->grd_x][nd->grd_y]);
+            curNodeInterest = curNodeInterest || grd_int[nd->grd_x][nd->grd_y];
+        }
+
+        curGoal->SetIsInteresting(curNodeInterest);
     }
 }
 

@@ -51,6 +51,11 @@ InterestingnessSensor::~InterestingnessSensor()
     }
 }
 
+void InterestingnessSensor::GetInterestingnessGrid(std::vector< std::vector<bool> > & int_grd, int grd_s)
+{
+
+}
+
 void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
 {
     if(ROIs.size() > 10)
