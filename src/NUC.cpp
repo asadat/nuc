@@ -214,20 +214,21 @@ void NUC::VisitGoal()
     }
     else
     {
-        bool curNodeInterest = false;
-        //in real experiments it uses the image data to decide
-        int grd_s = CNode::bf_sqrt;
-        std::vector< std::vector<bool> > grd_int;
-        InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
+//        bool curNodeInterest = false;
+//        //in real experiments it uses the image data to decide
+//        int grd_s = CNode::bf_sqrt;
 
-        for(unsigned int i=0; i<curGoal->children.size();i++)
-        {
-            CNode * nd = curGoal->children[i];
-            curGoal->children[i]->SetIsInteresting(grd_int[nd->grd_x][nd->grd_y]);
-            curNodeInterest = curNodeInterest || grd_int[nd->grd_x][nd->grd_y];
-        }
+//        TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+//        InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
 
-        curGoal->SetIsInteresting(curNodeInterest);
+//        for(unsigned int i=0; i<curGoal->children.size();i++)
+//        {
+//            CNode * nd = curGoal->children[i];
+//            curGoal->children[i]->SetIsInteresting((grd_int[nd->grd_x][nd->grd_y]>0));
+//            curNodeInterest = curNodeInterest || (grd_int[nd->grd_x][nd->grd_y]>0);
+//        }
+
+//        curGoal->SetIsInteresting(curNodeInterest);
     }
 }
 
@@ -248,6 +249,9 @@ void NUC::Update()
            //ROS_INFO_THROTTLE(0.5, "Ros spinning ... %d", i);
             ros::spinOnce();
            // i++;
+
+            //TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+            //InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
         }
         else
         {

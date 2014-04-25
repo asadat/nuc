@@ -14,9 +14,14 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     image_transport::ImageTransport it(*nh);
     img_sub = it.subscribe("camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
 
-    int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
+    ROS_INFO("before int sub");
+    //int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
+    ROS_INFO("after int sub");
 
     TrainDTree();
+
+    nh->param<int>("image_w",image_w,640);
+    nh->param<int>("image_h",image_h,480);
 
 //    cv::Mat data(100,5,CV_32F);
 //    cv::Mat res(100,1,CV_32F);
@@ -51,19 +56,63 @@ InterestingnessSensor::~InterestingnessSensor()
     }
 }
 
-void InterestingnessSensor::GetInterestingnessGrid(std::vector< std::vector<bool> > & int_grd, int grd_s)
+void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s)
 {
+    ROS_INFO("int_grid: test");
+    return;
 
+
+    double grd_xstep = image_w/grd_s;
+    double grd_ystep = image_h/grd_s;
+
+    std::vector<sensor_msgs::RegionOfInterest> rois = ROIs.back();
+    for(int i=0; i<rois.size(); i++)
+    {
+        sensor_msgs::RegionOfInterest roi = rois[i];
+        for(int grd_i=0; grd_i < grd_s; grd_i++)
+            for(int grd_j=0; grd_j < grd_s; grd_j++)
+            {
+                double grdl,grdr,grdt,grdd;
+                grdl = grd_i*grd_xstep;
+                grdr = grdl+grd_xstep;
+                grdt =grd_j*grd_ystep;
+                grdd = grdt + grd_ystep;
+
+                bool int_cell = !( roi.x_offset > grdr
+                       || roi.x_offset+roi.width < grdl
+                       || roi.y_offset > grdd
+                       || roi.y_offset+roi.height < grdt );
+                if(int_cell)
+                {
+                    int_grd[grd_j][grd_i] +=1;
+                }
+            }
+
+    }
+
+    ROS_INFO("int_grid: START");
+    for(int grd_j=0; grd_j < grd_s; grd_j++)
+    {
+        for(int grd_i=0; grd_i < grd_s; grd_i++)
+        {
+            printf("%d/t", int_grd[grd_j][grd_i]);
+        }
+        printf("\n");
+    }
+    ROS_INFO("int_grid: END");
 }
 
 void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
 {
+    ROS_INFO("int_grid: here1");
     if(ROIs.size() > 10)
     {
+        ROS_INFO("int_grid: here3");
         ROIs.erase(ROIs.begin());
     }
 
     ROIs.push_back(msg->regions);
+    ROS_INFO("int_grid: here2");
 }
 
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)

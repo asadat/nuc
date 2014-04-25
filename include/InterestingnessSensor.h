@@ -6,6 +6,7 @@
 #include "image_transport/image_transport.h"
 #include "opencv2/ml/ml.hpp"
 #include "interestingness/ROIs.h"
+#include "TooN/TooN.h"
 
 class InterestingnessSensor
 {
@@ -27,7 +28,7 @@ public:
     void interestingCallback(const interestingness::ROIsConstPtr &msg);
     void TrainDTree();
 
-    void GetInterestingnessGrid(std::vector< std::vector<bool> > & int_grd, int grd_s);
+    void GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s);
 
 private:
 
@@ -37,6 +38,8 @@ private:
     inline bool exists_test(const std::string& name) {
         return ( access( name.c_str(), F_OK ) != -1 );
     }
+
+    int image_w,image_h;
 
     ros::Subscriber int_sub;
     image_transport::Subscriber img_sub;
