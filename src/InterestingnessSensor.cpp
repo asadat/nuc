@@ -15,10 +15,10 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     img_sub = it.subscribe("camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
 
     ROS_INFO("before int sub");
-    //int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
+    int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
     ROS_INFO("after int sub");
 
-    TrainDTree();
+   // TrainDTree();
 
     nh->param<int>("image_w",image_w,640);
     nh->param<int>("image_h",image_h,480);
@@ -58,8 +58,8 @@ InterestingnessSensor::~InterestingnessSensor()
 
 void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s)
 {
-    ROS_INFO("int_grid: test");
-    return;
+   // ROS_INFO("int_grid: test");
+    //return;
 
 
     double grd_xstep = image_w/grd_s;
@@ -95,24 +95,24 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     {
         for(int grd_i=0; grd_i < grd_s; grd_i++)
         {
-            printf("%d/t", int_grd[grd_j][grd_i]);
+            printf("%d\t", int_grd[grd_j][grd_i]);
         }
         printf("\n");
     }
-    ROS_INFO("int_grid: END");
+   ROS_INFO("int_grid: END");
 }
 
 void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
 {
-    ROS_INFO("int_grid: here1");
+   // ROS_INFO("int_grid: here1");
     if(ROIs.size() > 10)
     {
-        ROS_INFO("int_grid: here3");
+       // ROS_INFO("int_grid: here3");
         ROIs.erase(ROIs.begin());
     }
 
     ROIs.push_back(msg->regions);
-    ROS_INFO("int_grid: here2");
+    //ROS_INFO("int_grid: here2");
 }
 
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)

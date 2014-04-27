@@ -170,6 +170,7 @@ void NUC::glDraw()
 
 void NUC::StartTraversing()
 {
+   ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
    curGoal = traversal->GetNextNode();
    mav.SetGoal(curGoal->GetPos());
@@ -177,7 +178,7 @@ void NUC::StartTraversing()
 
 void NUC::OnReachedGoal()
 {
-    //ROS_INFO("Reached Goal");
+    ROS_INFO("Reached Goal");
 
     VisitGoal();
     curGoal = traversal->GetNextNode();
@@ -188,7 +189,7 @@ void NUC::OnReachedGoal()
     }
     else
     {
-        //ROS_INFO("New goal ... depth %d", curGoal->depth);
+        ROS_INFO("New goal ... depth %d", curGoal->depth);
         mav.SetGoal(curGoal->GetPos());
     }
 }
@@ -250,8 +251,8 @@ void NUC::Update()
             ros::spinOnce();
            // i++;
 
-            //TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
-            //InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
+            TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+            InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
         }
         else
         {
