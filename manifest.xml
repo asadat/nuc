@@ -18,7 +18,7 @@
 
  <depend package="cv_bridge"/>
  <depend package="image_transport"/>  
- <!-- <depend package="dynamic_reconfigure"/>-->
+ <depend package="gps_waypoint_publisher"/>
 </package>
 
 

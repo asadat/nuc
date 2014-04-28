@@ -13,6 +13,7 @@ float CNode::minFootprintWidth = 3;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    visited = false;
     grd_x = 0;
     grd_y = 0;
     depth = 0;

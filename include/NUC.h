@@ -38,7 +38,7 @@ public:
 private:
 
     NUC(int argc, char **argv);
-    void VisitGoal();
+    bool VisitGoal();
     void PopulateTargets();
     void MarkNodesInterestingness();
 

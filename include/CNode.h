@@ -34,6 +34,7 @@ public:
 
     Rect GetFootPrint(){return footPrint;}
 
+    bool IsLeaf(){return children.empty();}
 
     static float fov;
     static int bf_sqrt;

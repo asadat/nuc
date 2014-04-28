@@ -65,31 +65,33 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     double grd_xstep = image_w/grd_s;
     double grd_ystep = image_h/grd_s;
 
-    std::vector<sensor_msgs::RegionOfInterest> rois = ROIs.back();
-    for(int i=0; i<rois.size(); i++)
+    for(int j=0; j<ROIs.size(); j++)
     {
-        sensor_msgs::RegionOfInterest roi = rois[i];
-        for(int grd_i=0; grd_i < grd_s; grd_i++)
-            for(int grd_j=0; grd_j < grd_s; grd_j++)
-            {
-                double grdl,grdr,grdt,grdd;
-                grdl = grd_i*grd_xstep;
-                grdr = grdl+grd_xstep;
-                grdt =grd_j*grd_ystep;
-                grdd = grdt + grd_ystep;
-
-                bool int_cell = !( roi.x_offset > grdr
-                       || roi.x_offset+roi.width < grdl
-                       || roi.y_offset > grdd
-                       || roi.y_offset+roi.height < grdt );
-                if(int_cell)
+        std::vector<sensor_msgs::RegionOfInterest> rois = ROIs[j];
+        for(int i=0; i<rois.size(); i++)
+        {
+            sensor_msgs::RegionOfInterest roi = rois[i];
+            for(int grd_i=0; grd_i < grd_s; grd_i++)
+                for(int grd_j=0; grd_j < grd_s; grd_j++)
                 {
-                    int_grd[grd_j][grd_i] +=1;
+                    double grdl,grdr,grdt,grdd;
+                    grdl = grd_i*grd_xstep;
+                    grdr = grdl+grd_xstep;
+                    grdt =grd_j*grd_ystep;
+                    grdd = grdt + grd_ystep;
+
+                    bool int_cell = !( roi.x_offset > grdr
+                           || roi.x_offset+roi.width < grdl
+                           || roi.y_offset > grdd
+                           || roi.y_offset+roi.height < grdt );
+                    if(int_cell)
+                    {
+                        int_grd[grd_j][grd_i] +=1;
+                    }
                 }
-            }
 
+        }
     }
-
     ROS_INFO("int_grid: START");
     for(int grd_j=0; grd_j < grd_s; grd_j++)
     {

@@ -208,18 +208,19 @@ void NUC::StartTraversing()
 void NUC::OnReachedGoal()
 {
    // ROS_INFO("Reached Goal");
-
-    VisitGoal();
-    curGoal = traversal->GetNextNode();
-    if(curGoal == NULL)
+    if(VisitGoal())
     {
-      //ROS_INFO("Finished ...");
-      OnTraverseEnd();
-    }
-    else
-    {
-        //ROS_INFO("New goal ... depth %d", curGoal->depth);
-        mav.SetGoal(curGoal->GetMAVWaypoint());
+        curGoal = traversal->GetNextNode();
+        if(curGoal == NULL)
+        {
+          //ROS_INFO("Finished ...");
+          OnTraverseEnd();
+        }
+        else
+        {
+            //ROS_INFO("New goal ... depth %d", curGoal->depth);
+            mav.SetGoal(curGoal->GetMAVWaypoint());
+        }
     }
 }
 
@@ -230,9 +231,16 @@ void NUC::OnTraverseEnd()
     exit(0);
 }
 
-void NUC::VisitGoal()
+bool NUC::VisitGoal()
 {
-    curGoal->visited = true;
+    static ros::Time sensingStart = ros::Time::now();
+
+    if(!curGoal->visited)
+    {
+        ROS_INFO("start sensing ....");
+        sensingStart = ros::Time::now();
+        curGoal->visited = true;
+    }
 
     if(simulation)
     {
@@ -241,25 +249,39 @@ void NUC::VisitGoal()
         //simulating interestingness
         for(unsigned int i=0; i<curGoal->children.size();i++)
             curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
+
+        return true;
     }
     else
     {
-//        bool curNodeInterest = false;
-//        //in real experiments it uses the image data to decide
-//        int grd_s = CNode::bf_sqrt;
+        if((ros::Time::now()-sensingStart).toSec() > 2)
+        {
+            bool curNodeInterest = false;
+            //in real experiments it uses the image data to decide
+            int grd_s = CNode::bf_sqrt;
 
-//        TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
-//        InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
+            TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+            InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
 
-//        for(unsigned int i=0; i<curGoal->children.size();i++)
-//        {
-//            CNode * nd = curGoal->children[i];
-//            curGoal->children[i]->SetIsInteresting((grd_int[nd->grd_x][nd->grd_y]>0));
-//            curNodeInterest = curNodeInterest || (grd_int[nd->grd_x][nd->grd_y]>0);
-//        }
+            for(unsigned int i=0; i<curGoal->children.size();i++)
+            {
+                CNode * nd = curGoal->children[i];
+                curGoal->children[i]->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
+                curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
+            }
 
-//        curGoal->SetIsInteresting(curNodeInterest);
+            curGoal->SetIsInteresting(curNodeInterest);
+
+            return true;
+        }
+        else
+        {
+            ROS_INFO_THROTTLE(0.5,"Sensing ...");
+        }
+
     }
+
+    return false;
 }
 
 void NUC::Update()

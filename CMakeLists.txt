@@ -46,6 +46,8 @@ src/InterestingnessSensor.cpp
 src/slic.cpp
 src/SuperPixelFeatures.cpp
 src/NUCParam.cpp
+src/HuskyInterface.cpp
+include/HuskyInterface.h
 include/SuperPixelFeatures.h
 include/slic.h
 include/InterestingnessSensor.h

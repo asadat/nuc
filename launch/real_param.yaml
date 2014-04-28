@@ -2,6 +2,6 @@ simulation: false
 visualization: true
 branching_sqrt: 2
 speed: 10
-strategy: lm
+strategy: df
 area_length: 16.0
 area_rotation: 0.0
