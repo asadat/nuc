@@ -1,5 +1,5 @@
 <launch>
-    <node name="NUC" pkg="NUC" type="NUC" clear_params="true">
+    <node name="NUC" pkg="NUC" type="NUC" clear_params="true" output="screen">
                 <rosparam file="$(find NUC)/launch/sim_param.yaml" />
 	      <!--  <remap to="at_goal" from="/PelicanCtrl/at_goal" /> -->
           <!--  <remap from="fixedPose" to="/PelicanCtrl/fixedPose" /> -->

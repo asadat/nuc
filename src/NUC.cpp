@@ -7,12 +7,14 @@
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
 #include "InterestingnessSensor.h"
+#include "NUCParam.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
-#define AREA_LENGTH 16
-#define AREA_CX 0
-#define AREA_CY 0
+//#define AREA_LENGTH 16
+//#define AREA_CX 0
+//#define AREA_CY 0
 
+using namespace TooN;
 
 NUC * NUC::instance = NULL;
 bool NUC::simulation = true;
@@ -20,11 +22,14 @@ bool NUC::simulation = true;
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
     bVisEnabled = true;
+    double area_length = 0;
 
     nh.param<bool>("simulation", simulation, true);
     nh.param<bool>("visualization", bVisEnabled, true);
     nh.param<int>("branching_sqrt",CNode::bf_sqrt,2);
     nh.param<double>("speed",MAV::speed,1.0);
+    nh.param<double>("area_length",area_length,16);
+    nh.param<double>("area_rotation",NUCParam::area_rotation,0);
 
     int traversalStrategy=-1;
     std::string strategy_str;
@@ -50,7 +55,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     mav.Init(&nh, simulation);
 
     glutInit(&argc, argv);
-    area = TooN::makeVector(AREA_CX-0.5*AREA_LENGTH,AREA_CY-0.5*AREA_LENGTH,AREA_CX+0.5*AREA_LENGTH,AREA_CY+0.5*AREA_LENGTH);
+    area = TooN::makeVector(NUCParam::cx-0.5*area_length,NUCParam::cy-0.5*area_length,NUCParam::cx+0.5*area_length,NUCParam::cy+0.5*area_length);
     tree = new CNode(area);
     tree->PropagateDepth();
 
@@ -76,7 +81,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     }
     //
 
-    StartTraversing();
+    StartTraversing();   
 }
 
 NUC::~NUC()
@@ -87,8 +92,8 @@ NUC::~NUC()
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    int n=1;
-    double l =5*CNode::minFootprintWidth;
+    int n=5;
+    double l =1*CNode::minFootprintWidth;
     for(int i=0; i<n; i++)
     {
         Rect r;
@@ -146,22 +151,46 @@ void NUC::glDraw()
      glEnd();
 
 
-
      tree->glDraw();
      mav.glDraw();
      traversal->glDraw();
+
+     TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
+     TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
+                                      -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
+
+     //ROS_INFO("%f\t%f\n%f\t%f", rot[0][0], rot[0][1], rot[1][0], rot[1][1]);
 
      if(simulation)
      {
          for(unsigned int i=0; i<targets.size(); i++)
          {
+             TooN::Vector<2,double> p1,p2,v1,v2,v3,v4;
+             p1[0] = targets[i][0];
+             p1[1] = targets[i][1];
+             p2[0] = targets[i][2];
+             p2[1] = targets[i][3];
+
+             v1 = p1;
+             v2 = makeVector(p1[0], p2[1]);
+             v3 = p2;
+             v4 = makeVector(p2[0],p1[1]);
+
+             Vector<2,double> r1 = c + rot*(v1-c);
+             Vector<2,double> r2 = c + rot*(v2-c);
+             Vector<2,double> r3 = c + rot*(v3-c);
+             Vector<2,double> r4 = c + rot*(v4-c);
+
+
              glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
              glColor3f(0.2,1,0.2);
-             glBegin(GL_QUADS);
-             glVertex3f(targets[i][0],targets[i][1], 0.11);
-             glVertex3f(targets[i][0],targets[i][3], 0.11);
-             glVertex3f(targets[i][2],targets[i][3], 0.11);
-             glVertex3f(targets[i][2],targets[i][1], 0.11);
+             glBegin(GL_POLYGON);
+             glVertex3f(r1[0],r1[1], 0.11);
+             glVertex3f(r2[0],r2[1], 0.11);
+             glVertex3f(r3[0],r3[1], 0.11);
+             glVertex3f(r4[0],r4[1], 0.11);
+             glVertex3f(r1[0],r1[1], 0.11);
+
              glEnd();
 
          }
@@ -173,24 +202,24 @@ void NUC::StartTraversing()
    ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
    curGoal = traversal->GetNextNode();
-   mav.SetGoal(curGoal->GetPos());
+   mav.SetGoal(curGoal->GetMAVWaypoint());
 }
 
 void NUC::OnReachedGoal()
 {
-    ROS_INFO("Reached Goal");
+   // ROS_INFO("Reached Goal");
 
     VisitGoal();
     curGoal = traversal->GetNextNode();
     if(curGoal == NULL)
     {
-      ROS_INFO("Finished ...");
+      //ROS_INFO("Finished ...");
       OnTraverseEnd();
     }
     else
     {
-        ROS_INFO("New goal ... depth %d", curGoal->depth);
-        mav.SetGoal(curGoal->GetPos());
+        //ROS_INFO("New goal ... depth %d", curGoal->depth);
+        mav.SetGoal(curGoal->GetMAVWaypoint());
     }
 }
 
@@ -251,8 +280,11 @@ void NUC::Update()
             ros::spinOnce();
            // i++;
 
-            TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
-            InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
+            //if(!simulation)
+            //{
+            //TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+            //InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
+            //}
         }
         else
         {

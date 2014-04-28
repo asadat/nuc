@@ -1,6 +1,7 @@
 #include "CNode.h"
 #include <math.h>
 #include <GL/glut.h>
+#include "NUCParam.h"
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
@@ -63,15 +64,56 @@ void CNode::PopulateChildren()
         }
 }
 
+TooN::Vector<3> CNode::GetMAVWaypoint()
+{
+    TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
+    TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
+                                     -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
+    TooN::Vector<2> v = TooN::makeVector(pos[0],pos[1]);
+    v = c+rot*(v-c);
+
+    return TooN::makeVector(v[0], v[1], pos[2]);
+}
+
+TooN::Vector<2> CNode::Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2> c)
+{
+    TooN::Matrix<2,2,double> rot = TooN::Data(cos(deg*D2R), sin(deg*D2R),
+                                     -sin(deg*D2R), cos(deg*D2R));
+
+
+
+    return (c+ rot*(v-c));
+}
+
+TooN::Vector<3> CNode::Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2> c)
+{
+    TooN::Matrix<2,2,double> rot = TooN::Data(cos(deg*D2R), sin(deg*D2R),
+                                     -sin(deg*D2R), cos(deg*D2R));
+
+    TooN::Vector<2> v2 = TooN::makeVector(v[0],v[1]);
+    v2 = c+rot*(v2-c);
+
+    return TooN::makeVector(v2[0], v2[1], v[2]);
+}
+
 void CNode::glDraw()
 {
+//    TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
+//    TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
+//                                     -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
+
+    TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
+    //v2 = c+rot*(v2-c);
+
     if(parent != NULL)
     {
         glLineWidth(1);
         glColor3f(.2,.2,.2);
         glBegin(GL_LINES);
-        glVertex3f(parent->pos[0],parent->pos[1],parent->pos[2]);
-        glVertex3f(pos[0],pos[1],pos[2]);
+        TooN::Vector<3> v1 = Rotation2D(parent->pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
+
+        glVertex3f(v1[0],v1[1],v1[2]);
+        glVertex3f(v2[0],v2[1],v2[2]);
         glEnd();
     }
 
@@ -87,7 +129,7 @@ void CNode::glDraw()
     }
 
     glBegin(GL_POINTS);
-    glVertex3f(pos[0],pos[1],pos[2]);
+    glVertex3f(v2[0],v2[1],v2[2]);
     glEnd();
 
     for(unsigned int i=0; i<children.size(); i++)
@@ -96,12 +138,35 @@ void CNode::glDraw()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     if(children.empty())
     {
+        TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
+        p1[0] = footPrint[0];
+        p1[1] = footPrint[1];
+        p2[0] = footPrint[2];
+        p2[1] = footPrint[3];
+
+        p3 = TooN::makeVector(p1[0], p2[1]);
+        p4 = TooN::makeVector(p2[0], p1[1]);
+
+        v1 = Rotation2D(p1, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v2 = Rotation2D(p3, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v3 = Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v4 = Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+
+//        TooN::Vector<2,double> r1 = c + rot*(v1-c);
+//        TooN::Vector<2,double> r2 = c + rot*(v2-c);
+//        TooN::Vector<2,double> r3 = c + rot*(v3-c);
+//        TooN::Vector<2,double> r4 = c + rot*(v4-c);
+
         glColor3f(0.95,1,0.95);
-        glBegin(GL_QUADS);
-        glVertex3f(footPrint[0],footPrint[1], 0.1);
-        glVertex3f(footPrint[0],footPrint[3], 0.1);
-        glVertex3f(footPrint[2],footPrint[3], 0.1);
-        glVertex3f(footPrint[2],footPrint[1], 0.1);
+        glBegin(GL_POLYGON);
+        glVertex3f(v1[0],v1[1], 0.1);
+        glVertex3f(v2[0],v2[1], 0.1);
+        glVertex3f(v3[0],v3[1], 0.1);
+        glVertex3f(v4[0],v4[1], 0.1);
+        glVertex3f(v1[0],v1[1], 0.1);
+        //glVertex3f(footPrint[0],footPrint[3], 0.1);
+        //glVertex3f(footPrint[2],footPrint[3], 0.1);
+        //glVertex3f(footPrint[2],footPrint[1], 0.1);
         glEnd();
     }
 

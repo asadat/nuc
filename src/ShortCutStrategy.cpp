@@ -126,8 +126,8 @@ void ShortCutStrategy::glDraw()
 //    glBegin(GL_LINES);
 //    for(int i=0; i<nodeStack.size()-1;i++)
 //    {
-//        TooN::Vector<3> p1 = nodeStack[i+1]->GetPos();
-//        TooN::Vector<3> p2 = nodeStack[i]->GetPos();
+//        TooN::Vector<3> p1 = nodeStack[i+1]->GetMAVWaypoint();
+//        TooN::Vector<3> p2 = nodeStack[i]->GetMAVWaypoint();
 
 //        glVertex3f(p1[0],p1[1],p1[2]);
 //        glVertex3f(p2[0],p2[1],p2[2]);

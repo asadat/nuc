@@ -25,6 +25,7 @@ public:
     bool IsNodeInteresting(){return isInteresting;}// || trueIsInteresting;}
     void SetIsInteresting(bool interesting){isInteresting=interesting;}
     TooN::Vector<3> GetPos(){return pos;}
+    TooN::Vector<3> GetMAVWaypoint();
     void glDraw();
 
 
@@ -38,6 +39,9 @@ public:
     static int bf_sqrt;
     static float minFootprintWidth;
 
+    static TooN::Vector<3> Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2> c);
+
+    static TooN::Vector<2> Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2> c);
 
 private:
 

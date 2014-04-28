@@ -45,6 +45,7 @@ src/MAV.cpp
 src/InterestingnessSensor.cpp
 src/slic.cpp
 src/SuperPixelFeatures.cpp
+src/NUCParam.cpp
 include/SuperPixelFeatures.h
 include/slic.h
 include/InterestingnessSensor.h
@@ -55,6 +56,7 @@ include/ShortCutStrategy.h
 include/LawnmowerStrategy.h
 include/TraversalStrategy.h
 include/MAV.h
+include/NUCParam.h
 )
 
 target_link_libraries(NUC  ${NUC_LIBRARIES})
