@@ -8,6 +8,7 @@
 #include "ShortCutStrategy.h"
 #include "InterestingnessSensor.h"
 #include "NUCParam.h"
+#include "HuskyInterface.h"
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 //#define AREA_LENGTH 16
@@ -50,6 +51,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     if(!simulation)
     {
         InterestingnessSensor::Instance(&nh);
+        HuskyInterafce::Instance(&nh);
     }
 
     mav.Init(&nh, simulation);
@@ -272,6 +274,11 @@ bool NUC::VisitGoal()
 
             curGoal->SetIsInteresting(curNodeInterest);
 
+            if(curNodeInterest && curGoal->IsLeaf())
+            {
+                sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
+                HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
+            }
             return true;
         }
         else

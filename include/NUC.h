@@ -46,9 +46,6 @@ private:
 
     ros::NodeHandle nh;
 
-//    ros::Subscriber gpsPos_sub;
-//    ros::Subscriber gpsPose_sub;
-
     Rect area;
     CNode* tree;
     TraversalStrategy * traversal;

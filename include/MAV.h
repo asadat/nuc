@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "sensor_msgs/NavSatFix.h"
 
 class MAV
 {
@@ -18,6 +19,8 @@ public:
     bool AtGoal(){return atGoal;}
     void atGoalCallback(const std_msgs::Bool::Ptr &msg);
     void gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg);
+    void gpsCallback(const sensor_msgs::NavSatFixPtr &msg);
+    sensor_msgs::NavSatFix GetLastGPSLocation(){return gpsLocation;}
 
     void test();
     static void ChangeSpeed(double ds){speed +=ds;}
@@ -36,6 +39,10 @@ private:
     ros::ServiceClient gotoPosService;
     ros::Subscriber atGoalSub;
     ros::Subscriber gpsPose_sub;
+    ros::Subscriber gps_sub;
+
+    sensor_msgs::NavSatFix gpsLocation;
+
 };
 
 #endif

@@ -25,7 +25,7 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
         gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("/PelicanCtrl/gotoPos");
         atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
         gpsPose_sub = nh->subscribe("/PelicanCtrl/fixedPose", 10, &MAV::gpsPoseCallback, this);
-
+        gps_sub = nh->subscribe("/fcu/gps", 10, &MAV::gpsCallback, this);
         //test();
     }
 }
@@ -44,6 +44,11 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
 
     ROS_INFO_THROTTLE(3, "POS: %f %f %f", realpos[0], realpos[1], realpos[2]);
     realpos[3] = 0;
+}
+
+void MAV::gpsCallback(const sensor_msgs::NavSatFixPtr &msg)
+{
+    gpsLocation = (*msg);
 }
 
 void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)

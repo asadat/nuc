@@ -7,11 +7,11 @@
 class HuskyInterafce
 {
 public:
-    static HuskyInterafce* Instance(ros::NodeHandle* nh_, bool simulation_)
+    static HuskyInterafce* Instance(ros::NodeHandle* nh_=NULL)
     {
         if(instance == NULL)
         {
-            instance = new HuskyInterafce(nh_, simulation_);
+            instance = new HuskyInterafce(nh_);
         }
 
         return instance;
@@ -19,7 +19,7 @@ public:
 
     void SendWaypoint(sensor_msgs::NavSatFix & wp);
 private:
-    HuskyInterafce(ros::NodeHandle* nh_, bool simulation_);
+    HuskyInterafce(ros::NodeHandle* nh_);
     static HuskyInterafce* instance;
     ros::ServiceClient addWPService;
 
