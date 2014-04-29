@@ -5,3 +5,6 @@ speed: 10
 strategy: df
 area_length: 16.0
 area_rotation: 0.0
+#interesting_label: human
+interesting_label: grass
+training_set_dir: /home/autolab/ros/stacks/NUC/bin

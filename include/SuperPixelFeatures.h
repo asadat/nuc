@@ -10,6 +10,7 @@ public:
     void GetSuperPixelFeatures(std::vector<cv::Mat> &features);
     int SPCount(){return centers.size();}
     void SuperPixelLabelMap(cv::Mat &labelMap, std::vector<CvScalar> &labelColor);
+    bool GetSuperPixelCenter(int super_pixel_i, int &x, int &y);
 private:
 
     void PopulateFeatures(std::vector<cv::Mat> &features);

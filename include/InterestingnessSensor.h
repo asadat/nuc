@@ -50,6 +50,11 @@ private:
     cv::DecisionTree dtree;
     std::vector<char*> labels;
 
+    bool human_interesting;
+    std::string interesting_label;
+    std::string dtreeFile;
+    std::string trainingSetDir;
+
 };
 
 #endif

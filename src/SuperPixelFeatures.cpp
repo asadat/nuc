@@ -75,3 +75,17 @@ void SuperPixelFeatures::SuperPixelLabelMap(cv::Mat &labelMap, std::vector<CvSca
     }
 
 }
+
+bool SuperPixelFeatures::GetSuperPixelCenter(int super_pixel_i, int &x, int &y)
+{
+    if(super_pixel_i >= SPCount())
+    {
+        return false;
+    }
+    else
+    {
+        x = centers[super_pixel_i][3];
+        y = centers[super_pixel_i][4];
+    }
+    return true;
+}
