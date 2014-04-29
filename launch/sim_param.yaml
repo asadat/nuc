@@ -4,4 +4,4 @@ branching_sqrt: 2
 speed: 10
 strategy: df
 area_length: 32.0
-area_rotation: 0.0
+area_rotation: 30.0

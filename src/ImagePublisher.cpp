@@ -10,21 +10,26 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "image_publisher");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::Publisher pub = it.advertise("camera/image", 1);
+    image_transport::Publisher pub = it.advertise("camera/image_raw", 1);
 
     //cv::WImageBuffer3_b image( cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR) );
     //sensor_msgs::ImagePtr msg = cv_bridge:: cvToImgMsg(image.Ipl(), "bgr8");
     int n = atoi(argv[2]);
     int hz = atoi(argv[3]);
-    int i=0;
+    int i=100;
 
     ros::Rate loop_rate(hz);
 
-    char imgName[32];
+    char imgName[256];
     ROS_INFO("%s %d %d", argv[1], n, hz);
 
-    while (nh.ok() && i<n)
+    while (nh.ok())
     {
+        if(i-100<n)
+        {
+            i=100;
+        }
+
         i++;
         char tmp[5];
         if(i<10)
@@ -40,6 +45,7 @@ int main(int argc, char** argv)
         cv::Mat mt = cv::imread(imgName);
         cv::cvtColor(mt,img.image,CV_RGB2RGBA);
         img.encoding="bgra8";
+        img.header.stamp = ros::Time::now();
         //mt.copyTo(img.image);
         pub.publish(img.toImageMsg());
         ros::spinOnce();

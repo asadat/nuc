@@ -1,0 +1,69 @@
+%YAML:1.0
+my_tree: !!opencv-ml-tree
+   is_classifier: 1
+   var_all: 4
+   var_count: 4
+   ord_var_count: 4
+   cat_var_count: 0
+   training_params:
+      use_surrogates: 1
+      max_categories: 10
+      max_depth: 25
+      min_sample_count: 10
+      cross_validation_folds: 10
+      use_1se_rule: 1
+      truncate_pruned_tree: 1
+      priors: !!opencv-matrix
+         rows: 1
+         cols: 2
+         dt: d
+         data: [ 1., 1. ]
+   var_type: [ 0, 0, 0, 0 ]
+   cat_count: !!opencv-matrix
+      rows: 1
+      cols: 1
+      dt: i
+      data: [ 2 ]
+   cat_map: !!opencv-matrix
+      rows: 1
+      cols: 2
+      dt: i
+      data: [ 0, 1 ]
+   best_tree_idx: 2
+   nodes:
+      -
+         depth: 0
+         sample_count: 3484
+         value: 0.
+         norm_class_idx: 0
+         Tn: 3
+         complexity: 2
+         alpha: 1515.
+         node_risk: 1732.
+         tree_risk: 42.
+         tree_error: 2.
+         splits:
+            - { var:1, quality:3.3981801757812500e+03,
+                le:1.1386236572265625e+02 }
+      -
+         depth: 1
+         sample_count: 1708
+         value: 0.
+         norm_class_idx: 0
+         Tn: 2147483647
+         complexity: 1
+         alpha: 0.
+         node_risk: 0.
+         tree_risk: 0.
+         tree_error: 0.
+      -
+         depth: 1
+         sample_count: 1776
+         value: 1.
+         norm_class_idx: 1
+         Tn: 2
+         complexity: 1
+         alpha: 38.
+         node_risk: 44.
+         tree_risk: 42.
+         tree_error: 2.

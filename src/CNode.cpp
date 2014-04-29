@@ -120,8 +120,8 @@ void CNode::glDraw()
 
     if(IsNodeInteresting())
     {
-        glPointSize(6);
-        glColor3f(0.6,0,0);
+        glPointSize(10);
+        glColor3f(0,1,0);
     }
     else
     {

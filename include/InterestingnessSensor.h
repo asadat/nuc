@@ -46,7 +46,8 @@ private:
     ros::NodeHandle * nh;
     cv_bridge::CvImagePtr imagePtr;
 
-    std::vector< std::vector<sensor_msgs::RegionOfInterest> > ROIs;
+
+    std::vector< std::pair<double,std::vector<sensor_msgs::RegionOfInterest> > > ROIs;
     cv::DecisionTree dtree;
     std::vector<char*> labels;
 

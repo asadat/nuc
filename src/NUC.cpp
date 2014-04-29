@@ -22,6 +22,7 @@ bool NUC::simulation = true;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    NUCParam::GetParams(nh);
     bVisEnabled = true;
     double area_length = 0;
 
@@ -30,7 +31,6 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     nh.param<int>("branching_sqrt",CNode::bf_sqrt,2);
     nh.param<double>("speed",MAV::speed,1.0);
     nh.param<double>("area_length",area_length,16);
-    nh.param<double>("area_rotation",NUCParam::area_rotation,0);
 
     int traversalStrategy=-1;
     std::string strategy_str;
@@ -256,7 +256,7 @@ bool NUC::VisitGoal()
     }
     else
     {
-        if((ros::Time::now()-sensingStart).toSec() > 2)
+        if((ros::Time::now()-sensingStart).toSec() > NUCParam::sensingTime)
         {
             bool curNodeInterest = false;
             //in real experiments it uses the image data to decide

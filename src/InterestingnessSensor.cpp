@@ -3,6 +3,7 @@
 #include "SuperPixelFeatures.h"
 #include "ros/ros.h"
 #include "interestingness/ROIs.h"
+#include "NUCParam.h"
 
 //#include "opencv2/opencv.hpp"
 
@@ -22,7 +23,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
         nh->param<std::string>("training_set_dir",trainingSetDir, "");
 
         image_transport::ImageTransport it(*nh);
-        img_sub = it.subscribe("camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
+        img_sub = it.subscribe("/camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
         TrainDTree();
     }
     else
@@ -82,7 +83,10 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
 
         for(int j=0; j<ROIs.size(); j++)
         {
-            std::vector<sensor_msgs::RegionOfInterest> rois = ROIs[j];
+            if((ros::Time::now().toSec() - ROIs[j].first) > NUCParam::sensingTime)
+                continue;
+
+            std::vector<sensor_msgs::RegionOfInterest> rois = ROIs[j].second;
             for(int i=0; i<rois.size(); i++)
             {
                 sensor_msgs::RegionOfInterest roi = rois[i];
@@ -110,43 +114,49 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     }
     else // a specific label is interesting
     {
-        int interestingLabelIdx = -1;
-        for(int i=0; i<labels.size();i++)
+        if(imagePtr != NULL && (ros::Time::now()-imagePtr->header.stamp).toSec() < NUCParam::sensingTime)
         {
-            if(interesting_label == std::string(labels[i]))
+            int interestingLabelIdx = -1;
+            for(int i=0; i<labels.size();i++)
             {
-                interestingLabelIdx = i;
-                break;
-            }
-        }
-
-        SuperPixelFeatures sptest(imagePtr->image);
-        vector<cv::Mat> fs;
-        sptest.GetSuperPixelFeatures(fs);
-        //vector<CvScalar> labelcolor;
-        for(int i=0; i<fs.size(); i++)
-        {
-
-            double c = dtree.predict(fs[i].row(0))->value;
-            if(((int)c) == interestingLabelIdx)
-            {
-                int x=0,y=0;
-                if(sptest.GetSuperPixelCenter(i,x,y))
+                if(interesting_label == std::string(labels[i]))
                 {
-                    int grdx = floor(x/grd_xstep);
-                    int grdy = floor(y/grd_ystep);
-                    int_grd[grdy][grdx] += 1;
+                    interestingLabelIdx = i;
+                    break;
                 }
             }
-            //labelcolor.push_back(cl[(int)c]);
+
+            SuperPixelFeatures sptest(imagePtr->image);
+            vector<cv::Mat> fs;
+            sptest.GetSuperPixelFeatures(fs);
+            //vector<CvScalar> labelcolor;
+            for(int i=0; i<fs.size(); i++)
+            {
+
+                double c = dtree.predict(fs[i].row(0))->value;
+                if(((int)c) == interestingLabelIdx)
+                {
+                    int x=0,y=0;
+                    if(sptest.GetSuperPixelCenter(i,x,y))
+                    {
+                        int grdx = floor(x/grd_xstep);
+                        int grdy = floor(y/grd_ystep);
+                        int_grd[grdy][grdx] += 1;
+                    }
+                }
+                //labelcolor.push_back(cl[(int)c]);
+            }
+
+            //cv::Mat labelmap(testMat.rows, testMat.cols, CV_8UC3);
+            //sptest.SuperPixelLabelMap(labelmap, labelcolor);
+            //char outputf[128];
+            //sprintf(outputf, "%s%s","output-",filename);
+            //cv::imwrite(outputf, labelmap);
         }
-
-        //cv::Mat labelmap(testMat.rows, testMat.cols, CV_8UC3);
-        //sptest.SuperPixelLabelMap(labelmap, labelcolor);
-        //char outputf[128];
-        //sprintf(outputf, "%s%s","output-",filename);
-        //cv::imwrite(outputf, labelmap);
-
+        else
+        {
+            ROS_WARN("No recent image is available!");
+        }
     }
     ROS_INFO("int_grid: START");
     for(int grd_j=0; grd_j < grd_s; grd_j++)
@@ -169,13 +179,14 @@ void InterestingnessSensor::interestingCallback(const interestingness::ROIsConst
         ROIs.erase(ROIs.begin());
     }
 
-    ROIs.push_back(msg->regions);
+    ROIs.push_back(std::pair<double, std::vector<sensor_msgs::RegionOfInterest > >(ros::Time::now().toSec(), msg->regions));
     //ROS_INFO("int_grid: here2");
 }
 
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
     imagePtr = cv_bridge::toCvCopy(msg);
+    imagePtr->header.stamp = ros::Time::now();
 }
 
 void InterestingnessSensor::TrainDTree()
