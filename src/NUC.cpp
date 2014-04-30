@@ -48,13 +48,15 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         traversalStrategy = 1;
     }
 
+     mav.Init(&nh, simulation);
+
     if(!simulation)
     {
         InterestingnessSensor::Instance(&nh);
         HuskyInterafce::Instance(&nh);
     }
 
-    mav.Init(&nh, simulation);
+
 
     glutInit(&argc, argv);
     area = TooN::makeVector(NUCParam::cx-0.5*area_length,NUCParam::cy-0.5*area_length,NUCParam::cx+0.5*area_length,NUCParam::cy+0.5*area_length);
@@ -204,7 +206,7 @@ void NUC::StartTraversing()
    ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
    curGoal = traversal->GetNextNode();
-   mav.SetGoal(curGoal->GetMAVWaypoint());
+   mav.SetGoal(curGoal->GetMAVWaypoint(), true);
 }
 
 void NUC::OnReachedGoal()

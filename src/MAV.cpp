@@ -2,6 +2,7 @@
 #include "GL/glut.h"
 #include "PelicanCtrl/gotoPos.h"
 #include "tf/tf.h"
+#include "HuskyInterface.h"
 
 using namespace TooN;
 
@@ -48,7 +49,16 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
 
 void MAV::gpsCallback(const sensor_msgs::NavSatFixPtr &msg)
 {
+    //static bool sent=false;
     gpsLocation = (*msg);
+
+//    if(!sent)
+//    {
+//        HuskyInterafce::Instance()->SendWaypoint(gpsLocation);
+//        ROS_INFO("Sent GPS to husky.");
+//        sent = true;
+//    }
+
 }
 
 void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)
@@ -120,7 +130,7 @@ void MAV::glDraw()
     glEnd();
 }
 
-void MAV::SetGoal(TooN::Vector<3> goalpos)
+void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
 {
     goal = goalpos;
     atGoal = false;
@@ -136,6 +146,8 @@ void MAV::SetGoal(TooN::Vector<3> goalpos)
         srv.request.x = goal[0];
         srv.request.y = goal[1];
         srv.request.z = goal[2];
+        srv.request.yaw = 0;
+        srv.request.set_orig = set_orig;
 
         if(gotoPosService.call(srv))
         {

@@ -14,7 +14,7 @@ public:
 
     void Init(ros::NodeHandle* nh_, bool simulation_);
     void glDraw();
-    void SetGoal(TooN::Vector<3> goalpos);
+    void SetGoal(TooN::Vector<3> goalpos, bool set_orig=false);
     void Update(double dt);
     bool AtGoal(){return atGoal;}
     void atGoalCallback(const std_msgs::Bool::Ptr &msg);

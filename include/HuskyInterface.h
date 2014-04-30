@@ -22,6 +22,7 @@ private:
     HuskyInterafce(ros::NodeHandle* nh_);
     static HuskyInterafce* instance;
     ros::ServiceClient addWPService;
+    //ros::Publisher gps;
 
 };
 
