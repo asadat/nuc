@@ -1,6 +1,7 @@
 #include "LawnmowerStrategy.h"
 #include "GL/glut.h"
 #include <stdio.h>
+#include "NUCParam.h"
 
 using namespace TooN;
 
@@ -12,7 +13,7 @@ LawnmowerStrategy::LawnmowerStrategy(CNode *root)
     double ld = l;
 
     int depth =0;
-    while(ld > CNode::minFootprintWidth)
+    while(ld > NUCParam::min_footprint)
     {
         depth++;
         ld /= CNode::bf_sqrt;

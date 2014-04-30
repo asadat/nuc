@@ -1,10 +1,11 @@
 simulation: false
 visualization: true
 branching_sqrt: 2
+min_footprint: 4.0
 speed: 10
-strategy: df
+strategy: lm
 area_length: 16.0
-area_rotation: 30.0
+area_rotation: 45.0
 sensing_time: 2
 #interesting_label: human
 interesting_label: grass

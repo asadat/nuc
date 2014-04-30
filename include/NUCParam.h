@@ -13,6 +13,7 @@ public:
     static double cx;
     static double cy;
     static double sensingTime;
+    static double min_footprint;
 };
 
 #endif

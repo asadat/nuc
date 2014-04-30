@@ -1,6 +1,7 @@
 simulation: True
 visualization: True
 branching_sqrt: 2
+min_footprint: 4.0
 speed: 10
 strategy: df
 area_length: 32.0

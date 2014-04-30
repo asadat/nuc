@@ -38,7 +38,7 @@ public:
 
     static float fov;
     static int bf_sqrt;
-    static float minFootprintWidth;
+    //static float minFootprintWidth;
 
     static TooN::Vector<3> Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2> c);
 

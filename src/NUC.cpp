@@ -97,7 +97,7 @@ void NUC::PopulateTargets()
 {
     srand(time(NULL));
     int n=5;
-    double l =1*CNode::minFootprintWidth;
+    double l =1*NUCParam::min_footprint;
     for(int i=0; i<n; i++)
     {
         Rect r;
