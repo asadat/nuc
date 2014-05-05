@@ -10,6 +10,12 @@
 #include "NUCParam.h"
 #include "HuskyInterface.h"
 
+#define LOG( ... ) if(NUCParam::logging){printf( __VA_ARGS__ );fprintf(NUC::logFile,"%f ", ros::Time::now().toSec());fprintf(NUC::logFile, __VA_ARGS__ );fflush(NUC::logFile);}
+#define SAVE_LOG() if(NUCParam::logging){fclose(NUC::logFile);NUC::logFile = fopen(NUC::logFileName.c_str(), "a+");}
+
+FILE *NUC::logFile = NULL;
+std::string NUC::logFileName = std::string("");
+
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 //#define AREA_LENGTH 16
 //#define AREA_CX 0
@@ -23,6 +29,25 @@ bool NUC::simulation = true;
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
     NUCParam::GetParams(nh);
+
+    if(NUCParam::logging)
+    {
+        time_t now = time(0);
+        char* dt = ctime(&now);
+        logFileName = std::string(dt);
+        for(int i=0; i<logFileName.length();i++)
+        {
+            printf("%d ",logFileName[i]);
+            if(logFileName[i] == ' ' || logFileName[i] == ':' || logFileName[i] == 10)
+                logFileName[i] = '_';
+        }
+
+        logFileName = NUCParam::log_folder+"/"+logFileName+".log";
+
+        ROS_INFO("log file path: %s", logFileName.c_str());
+        logFile = fopen(logFileName.c_str(), "w");
+    }
+
     bVisEnabled = true;
     double area_length = 0;
 
@@ -35,6 +60,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     int traversalStrategy=-1;
     std::string strategy_str;
     nh.param("strategy", strategy_str, std::string("lm"));
+
     if(strategy_str == "lm")
     {
         traversalStrategy = 2;
@@ -55,8 +81,6 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         InterestingnessSensor::Instance(&nh);
         HuskyInterafce::Instance(&nh);
     }
-
-
 
     glutInit(&argc, argv);
     area = TooN::makeVector(NUCParam::cx-0.5*area_length,NUCParam::cy-0.5*area_length,NUCParam::cx+0.5*area_length,NUCParam::cy+0.5*area_length);
@@ -90,7 +114,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
 NUC::~NUC()
 {
-
+    if(NUCParam::logging)
+    {
+        fclose(logFile);
+    }
 }
 
 void NUC::PopulateTargets()
@@ -205,8 +232,17 @@ void NUC::StartTraversing()
 {
    ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
-   curGoal = traversal->GetNextNode();
+   LOG("starttime: %f \n", startTime.toSec());
+   SetNextGoal();
+   SAVE_LOG();
    mav.SetGoal(curGoal->GetMAVWaypoint(), true);
+}
+
+void NUC::SetNextGoal()
+{
+    curGoal = traversal->GetNextNode();
+    LOG("NEXT_WAY_POINT: %f %f %f %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
+        curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 }
 
 void NUC::OnReachedGoal()
@@ -214,7 +250,7 @@ void NUC::OnReachedGoal()
    // ROS_INFO("Reached Goal");
     if(VisitGoal())
     {
-        curGoal = traversal->GetNextNode();
+        SetNextGoal();
         if(curGoal == NULL)
         {
           //ROS_INFO("Finished ...");
@@ -232,6 +268,7 @@ void NUC::OnTraverseEnd()
 {
     endTime = ros::Time::now();
     ROS_INFO("Coverage duration: %f\n", (endTime-startTime).toSec());
+    LOG("DURATION %f\n", (endTime-startTime).toSec());
     exit(0);
 }
 
@@ -241,7 +278,9 @@ bool NUC::VisitGoal()
 
     if(!curGoal->visited)
     {
+
         ROS_INFO("start sensing ....");
+        LOG("SENSING_START %f \n", sensingStart.toSec());
         sensingStart = ros::Time::now();
         curGoal->visited = true;
     }
@@ -268,9 +307,11 @@ bool NUC::VisitGoal()
             InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
 
             for(unsigned int i=0; i<curGoal->children.size();i++)
-            {
+            {                
                 CNode * nd = curGoal->children[i];
-                curGoal->children[i]->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
+                nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
+                LOG("INTERSTINGNESS %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x]);
+
                 curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
             }
 
@@ -280,7 +321,11 @@ bool NUC::VisitGoal()
             {
                 sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
                 HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
+                LOG("WAYPOINT_TO_HUSKY %f %f %f %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
             }
+
+            SAVE_LOG();
+
             return true;
         }
         else

@@ -14,6 +14,8 @@ public:
     static double cy;
     static double sensingTime;
     static double min_footprint;
+    static std::string log_folder;
+    static bool logging;
 };
 
 #endif

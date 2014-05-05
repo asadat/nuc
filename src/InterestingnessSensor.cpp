@@ -23,7 +23,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
         nh->param<std::string>("training_set_dir",trainingSetDir, "");
 
         image_transport::ImageTransport it(*nh);
-        img_sub = it.subscribe("/camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("raw", ros::TransportHints().tcpNoDelay(true)));
+        img_sub = it.subscribe("/camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("compressed", ros::TransportHints().tcpNoDelay(true)));
         TrainDTree();
     }
     else

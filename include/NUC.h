@@ -26,6 +26,7 @@ public:
     void StartTraversing();
     void OnReachedGoal();
     void OnTraverseEnd();
+    void SetNextGoal();
 
     void Update();
     void glDraw();
@@ -59,6 +60,9 @@ private:
 
     ros::Time startTime;
     ros::Time endTime;
+
+    static FILE* logFile;
+    static std::string logFileName;
 
 };
 

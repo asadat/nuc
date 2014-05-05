@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
     while (nh.ok())
     {
-        if(i-100<n)
+        if(i-100>n)
         {
             i=100;
         }
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
             sprintf(tmp,"%s","");
 
         sprintf(imgName,"%s%s%d.jpg", argv[1], tmp, i);
-
+        ROS_INFO("image: %s", imgName);
         cv_bridge::CvImage img;
         cv::Mat mt = cv::imread(imgName);
         cv::cvtColor(mt,img.image,CV_RGB2RGBA);
