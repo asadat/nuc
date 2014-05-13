@@ -9,6 +9,7 @@ class NUCParam
 {
 public:
     static void GetParams(ros::NodeHandle &nh);
+    static double FOV;
     static double area_rotation;
     static double cx;
     static double cy;

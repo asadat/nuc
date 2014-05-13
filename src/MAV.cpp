@@ -54,7 +54,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
 
 void MAV::gpsCallback(const sensor_msgs::NavSatFixPtr &msg)
 {
-    //static bool sent=false;
+    static bool sent=false;
     gpsLocation = (*msg);
 
 //    if(!sent)

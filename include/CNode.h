@@ -36,7 +36,7 @@ public:
 
     bool IsLeaf(){return children.empty();}
 
-    static float fov;
+   // static float fov;
     static int bf_sqrt;
     //static float minFootprintWidth;
 

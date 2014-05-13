@@ -6,7 +6,7 @@
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
 
-float CNode::fov = 90 *3.14/(180);
+//float CNode::fov = 90 *3.14/(180);
 int CNode::bf_sqrt = 2;
 //float CNode::minFootprintWidth = 3;
 
@@ -22,7 +22,7 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
     footPrint = target_foot_print;
     pos[0] = (0.5)*(footPrint[0]+footPrint[2]);
     pos[1] = (0.5)*(footPrint[1]+footPrint[3]);
-    pos[2] = (0.5)*fabs((footPrint[0]-footPrint[2])/tan(fov/2.0));
+    pos[2] = (0.5)*fabs((footPrint[0]-footPrint[2])/tan(NUCParam::FOV/2.0));
 
     PopulateChildren();
 }
