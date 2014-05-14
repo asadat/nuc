@@ -7,6 +7,10 @@
 #include "DepthFirstStrategy.h"
 #include "MAV.h"
 
+#define LOG( ... ) if(NUCParam::logging){printf( __VA_ARGS__ );fprintf(NUC::logFile,"%f ", ros::Time::now().toSec());fprintf(NUC::logFile, __VA_ARGS__ );fflush(NUC::logFile);}
+#define SAVE_LOG() if(NUCParam::logging){fclose(NUC::logFile);NUC::logFile = fopen(NUC::logFileName.c_str(), "a+");}
+
+
 class NUC
 {
 public:
@@ -35,6 +39,7 @@ public:
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 
     static bool simulation;
+    static FILE* logFile;
 
 private:
 
@@ -61,7 +66,7 @@ private:
     ros::Time startTime;
     ros::Time endTime;
 
-    static FILE* logFile;
+
     static std::string logFileName;
 
 };

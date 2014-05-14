@@ -3,6 +3,8 @@
 #include "PelicanCtrl/gotoPos.h"
 #include "tf/tf.h"
 #include "HuskyInterface.h"
+#include "NUC.h"
+#include "NUCParam.h"
 
 using namespace TooN;
 
@@ -42,11 +44,14 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     realpos[1] = msg->pose.pose.position.y;
     realpos[2] = msg->pose.pose.position.z;
     yaw = tf::getYaw(msg->pose.pose.orientation);
+    LOG("POSE: %f %f %f %f\n", realpos[0], realpos[1], realpos[2], yaw);
+
     tf::Matrix3x3 rm;
     tf::Quaternion qtr(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
     rm.setRotation(qtr);
     double r1,r2,r3;
     rm.getEulerYPR(r1,r2,r3);
+
 
     ROS_INFO_THROTTLE(3, "POS: %f %f %f rot: %f %f %f", realpos[0], realpos[1], realpos[2], r1, r2, r3);
     realpos[3] = 0;

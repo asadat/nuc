@@ -11,5 +11,5 @@ sensing_time: 2
 interesting_label: human
 #interesting_label: grass
 training_set_dir: /home/autolab/ros/stacks/NUC/bin
-logging: false
+logging: true
 log_folder: /home/autolab/ros/stacks/NUC/log
