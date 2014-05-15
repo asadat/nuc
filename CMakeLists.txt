@@ -47,6 +47,8 @@ src/slic.cpp
 src/SuperPixelFeatures.cpp
 src/NUCParam.cpp
 src/HuskyInterface.cpp
+src/TestStrategy.cpp
+include/TestStrategy.h
 include/HuskyInterface.h
 include/SuperPixelFeatures.h
 include/slic.h

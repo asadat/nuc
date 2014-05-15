@@ -103,9 +103,10 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
                                || roi.x_offset+roi.width < grdl
                                || roi.y_offset > grdd
                                || roi.y_offset+roi.height < grdt );
+
                         if(int_cell)
                         {
-                            int_grd[grd_j][grd_i] +=1;
+                            int_grd[grd_s-grd_i-1][grd_s-grd_j-1] +=1;
                         }
                     }
 

@@ -7,6 +7,7 @@
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
 #include "InterestingnessSensor.h"
+#include "TestStrategy.h"
 #include "NUCParam.h"
 #include "HuskyInterface.h"
 
@@ -71,8 +72,12 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     {
         traversalStrategy = 1;
     }
+    else if(strategy_str == "ts")
+    {
+        traversalStrategy = 3;
+    }
 
-     mav.Init(&nh, simulation);
+    mav.Init(&nh, simulation);
 
     if(!simulation)
     {
@@ -92,6 +97,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     else if(traversalStrategy == 1)
     {
         traversal = new ShortCutStrategy(tree);
+    }
+    else if(traversalStrategy == 3)
+    {
+        traversal = new TestStrategy(tree);
     }
     else
     {
@@ -239,8 +248,13 @@ void NUC::StartTraversing()
 void NUC::SetNextGoal()
 {
     curGoal = traversal->GetNextNode();
-    LOG("NEXT_WAY_POINT: %f %f %f %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
-        curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
+    if(curGoal != NULL)
+    {
+        LOG("NEXT_WAY_POINT: %f %f %f %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
+            curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
+
+        ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+    }
 }
 
 void NUC::OnReachedGoal()
@@ -267,6 +281,8 @@ void NUC::OnTraverseEnd()
     endTime = ros::Time::now();
     ROS_INFO("Coverage duration: %f\n", (endTime-startTime).toSec());
     LOG("DURATION %f\n", (endTime-startTime).toSec());
+    SAVE_LOG();
+
     exit(0);
 }
 

@@ -52,7 +52,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     double r1,r2,r3;
     rm.getEulerYPR(r1,r2,r3);
 
-
+    ROS_INFO_THROTTLE(0.5, "Height: %f\t Goal height: %f", realpos[2], goal[2]);
     ROS_INFO_THROTTLE(3, "POS: %f %f %f rot: %f %f %f", realpos[0], realpos[1], realpos[2], r1, r2, r3);
     realpos[3] = 0;
 }

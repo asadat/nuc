@@ -27,11 +27,11 @@ public:
     static double speed;
 private:
 
-    TooN::Vector<4> realpos; // onlu for visualization of real MAV
-    TooN::Vector<3> pos;
+    TooN::Vector<4,double> realpos; // onlu for visualization of real MAV
+    TooN::Vector<3,double> pos;
     double yaw;
-    TooN::Vector<3> goal;
-    TooN::Vector<3> toGoalNorm;
+    TooN::Vector<3,double> goal;
+    TooN::Vector<3,double> toGoalNorm;
     bool atGoal;
     bool simulation;
 

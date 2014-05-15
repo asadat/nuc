@@ -7,6 +7,7 @@ typedef TooN::Vector<4> Rect;
 class LawnmowerStrategy;
 class DepthFirstStrategy;
 class ShortCutStrategy;
+class TestStrategy;
 class NUC;
 
 
@@ -69,6 +70,7 @@ private:
     friend class LawnmowerStrategy;
     friend class DepthFirstStrategy;
     friend class ShortCutStrategy;
+    friend class TestStrategy;
     friend class NUC;
 };
 
