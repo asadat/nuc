@@ -1,6 +1,6 @@
 <launch>
-    <node name="NUC" pkg="NUC" type="NUC" clear_params="true" output="screen">
-          <rosparam file="$(find NUC)/launch/real_param.yaml" />
+    <node name="nuc" pkg="nuc" type="NUC" clear_params="true" output="screen">
+          <rosparam file="$(find nuc)/launch/real_param.yaml" />
 	      <!--  <remap to="at_goal" from="/PelicanCtrl/at_goal" /> -->
           <!--  <remap from="fixedPose" to="/PelicanCtrl/fixedPose" /> -->
  	<remap from="camera/image_raw" to="camera/image_raw"/>

@@ -1,8 +1,8 @@
 #include "MAV.h"
 #include "GL/glut.h"
-#include "PelicanCtrl/gotoPos.h"
+#include "pelican_ctrl/gotoPos.h"
 #include "tf/tf.h"
-#include "HuskyInterface.h"
+//#include "HuskyInterface.h"
 #include "NUC.h"
 #include "NUCParam.h"
 
@@ -25,7 +25,7 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
 
     if(!simulation)
     {
-        gotoPosService = nh->serviceClient<PelicanCtrl::gotoPos>("/PelicanCtrl/gotoPos");
+        gotoPosService = nh->serviceClient<pelican_ctrl::gotoPos>("/PelicanCtrl/gotoPos");
         atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
         gpsPose_sub = nh->subscribe("/PelicanCtrl/fixedPose", 10, &MAV::gpsPoseCallback, this);
         gps_sub = nh->subscribe("/fcu/gps", 10, &MAV::gpsCallback, this);
@@ -152,7 +152,7 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
     }
     else
     {
-        PelicanCtrl::gotoPos srv;
+        pelican_ctrl::gotoPos srv;
         srv.request.x = goal[0];
         srv.request.y = goal[1];
         srv.request.z = goal[2];

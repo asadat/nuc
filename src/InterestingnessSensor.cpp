@@ -2,7 +2,7 @@
 #include "InterestingnessSensor.h"
 #include "SuperPixelFeatures.h"
 #include "ros/ros.h"
-#include "interestingness/ROIs.h"
+//#include "interestingness/ROIs.h"
 #include "NUCParam.h"
 
 //#include "opencv2/opencv.hpp"
@@ -29,7 +29,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     else
     {
         //ROS_INFO("before int sub");
-        int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
+        //int_sub = nh->subscribe<interestingness::ROIs>("/interesting/regions", 10,&InterestingnessSensor::interestingCallback, this);
         //ROS_INFO("after int sub");
     }
 
@@ -171,7 +171,7 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
    ROS_INFO("int_grid: END");
 }
 
-void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
+/*void InterestingnessSensor::interestingCallback(const interestingness::ROIsConstPtr &msg)
 {
    // ROS_INFO("int_grid: here1");
     if(ROIs.size() > 10)
@@ -182,7 +182,7 @@ void InterestingnessSensor::interestingCallback(const interestingness::ROIsConst
 
     ROIs.push_back(std::pair<double, std::vector<sensor_msgs::RegionOfInterest > >(ros::Time::now().toSec(), msg->regions));
     //ROS_INFO("int_grid: here2");
-}
+}*/
 
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {

@@ -5,7 +5,7 @@
 #include "cv_bridge/cv_bridge.h"
 #include "image_transport/image_transport.h"
 #include "opencv2/ml/ml.hpp"
-#include "interestingness/ROIs.h"
+//#include "interestingness/ROIs.h"
 #include "TooN/TooN.h"
 
 class InterestingnessSensor
@@ -25,7 +25,7 @@ public:
 
 
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-    void interestingCallback(const interestingness::ROIsConstPtr &msg);
+    //void interestingCallback(const interestingness::ROIsConstPtr &msg);
     void TrainDTree();
 
     void GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s);

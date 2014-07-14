@@ -5,7 +5,7 @@ HuskyInterafce* HuskyInterafce::instance = NULL;
 HuskyInterafce::HuskyInterafce(ros::NodeHandle *nh_)
 {
     addWPService = nh_->serviceClient<gps_waypoint_publisher::AddWaypoint>("/add_waypoint");
-    //gps = nh_->advertise<sensor_msgs::NavSatFix>("/navsat/goal_fix",1);
+    
 }
 
 void HuskyInterafce::SendWaypoint(sensor_msgs::NavSatFix &wp)

@@ -9,7 +9,7 @@
 #include "InterestingnessSensor.h"
 #include "TestStrategy.h"
 #include "NUCParam.h"
-#include "HuskyInterface.h"
+//#include "HuskyInterface.h"
 
 
 FILE *NUC::logFile = NULL;
@@ -82,7 +82,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     if(!simulation)
     {
         InterestingnessSensor::Instance(&nh);
-        HuskyInterafce::Instance(&nh);
+        //HuskyInterafce::Instance(&nh);
     }
 
     glutInit(&argc, argv);
@@ -334,7 +334,7 @@ bool NUC::VisitGoal()
             if(curNodeInterest && curGoal->IsLeaf())
             {
                 sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
-                HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
+                //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
                 LOG("WAYPOINT_TO_HUSKY %f %f %f %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
             }
 

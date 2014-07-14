@@ -1,71 +1,95 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+project(nuc)
 
-rosbuild_init()
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -Wall") # For G++ <4.7; also appears to be supported in G++ 4.7+ as alias to c++11
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-set(NUC_LIBRARIES GL GLU glut roscpp rostime rosconsole roscpp_serialization opencv_core opencv_video opencv_highgui
-opencv_ml opencv_imgproc opencv_contrib image_transport cv_bridge)
+set(NUC_LIBRARIES GL GLU glut)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-#include_directories("./inlcude")
-#include_directories("/usr/include")
-#include_directories("/home/autolab/ros/stacks/PelicanCtrl/srv_gen/cpp")
-include_directories("~")
-
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(NUC
-src/NUC.cpp
-src/NUC_node.cpp
-src/CNode.cpp
-src/DepthFirstStrategy.cpp
-src/ShortCutStrategy.cpp
-src/LawnmowerStrategy.cpp
-src/MAV.cpp
-src/InterestingnessSensor.cpp
-src/slic.cpp
-src/SuperPixelFeatures.cpp
-src/NUCParam.cpp
-src/HuskyInterface.cpp
-src/TestStrategy.cpp
-include/TestStrategy.h
-include/HuskyInterface.h
-include/SuperPixelFeatures.h
-include/slic.h
-include/InterestingnessSensor.h
-include/NUC.h
-include/CNode.h
-include/DepthFirstStrategy.h
-include/ShortCutStrategy.h
-include/LawnmowerStrategy.h
-include/TraversalStrategy.h
-include/MAV.h
-include/NUCParam.h
+set(NUC_SOURCES
+    src/NUC.cpp
+    src/NUC_node.cpp
+    src/CNode.cpp
+    src/DepthFirstStrategy.cpp
+    src/ShortCutStrategy.cpp
+    src/LawnmowerStrategy.cpp
+    src/MAV.cpp
+    src/InterestingnessSensor.cpp
+    src/slic.cpp
+    src/SuperPixelFeatures.cpp
+    src/NUCParam.cpp
+    #src/HuskyInterface.cpp
+    src/TestStrategy.cpp
+    include/TestStrategy.h
+    #include/HuskyInterface.h
+    include/SuperPixelFeatures.h
+    include/slic.h
+    include/InterestingnessSensor.h
+    include/NUC.h
+    include/CNode.h
+    include/DepthFirstStrategy.h
+    include/ShortCutStrategy.h
+    include/LawnmowerStrategy.h
+    include/TraversalStrategy.h
+    include/MAV.h
+    include/NUCParam.h
 )
 
-target_link_libraries(NUC  ${NUC_LIBRARIES})
 
 
-rosbuild_add_executable(ImagePublisher
-src/ImagePublisher.cpp
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  geometry_msgs
+  std_msgs
+  nav_msgs
+  message_generation
+  image_transport
+  cv_bridge
+  pelican_ctrl
+  )
+
+#generate_dynamic_reconfigure_options(
+#  cfg/UEyeCam.cfg
+#  )
+
+add_service_files(FILES
+   periodic.srv  
+   start_log.srv
 )
+
+generate_messages()
+
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES 
+  CATKIN_DEPENDS roscpp rospy  geometry_msgs  std_msgs  nav_msgs  message_generation  image_transport  cv_bridge  pelican_ctrl  )
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  )
+
+  
+add_executable(NUC ${NUC_SOURCES})
+target_link_libraries(NUC  ${NUC_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(ImagePublisher src/ImagePublisher.cpp)
+target_link_libraries(ImagePublisher ${catkin_LIBRARIES})
+
+
+#install(TARGETS ${UEYECAM_LIB_NAME} ${UEYECAM_NODELET_NAME}
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#  )
+
+#install(FILES nodelet_plugins.xml
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#  )
+
+#install(DIRECTORY launch/
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+#  )
+
