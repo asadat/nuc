@@ -34,11 +34,11 @@ public:
 
     void Update();
     void glDraw();
-    bool VisEnabled(){return bVisEnabled;}
+    bool VisEnabled(){return NUCParam::visualization;}
 
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 
-    static bool simulation;
+    //static bool simulation;
     static FILE* logFile;
 
 private:
@@ -59,7 +59,7 @@ private:
 
     MAV mav;
 
-    bool bVisEnabled;
+    //bool bVisEnabled;
 
     std::vector<Rect> targets;
 

@@ -5,7 +5,7 @@
     Non-Uniform Coverage Planner 
   </description>
   <maintainer email="asadat@autonomylab.org">Seyed Abbas Sadat</maintainer>
-  <license></license>
+  <license>MIT</license>
   <author email="asadat@autonomylab.org">Seyed Abbas Sadat</author>
 
   <buildtool_depend>catkin</buildtool_depend>

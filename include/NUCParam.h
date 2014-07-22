@@ -17,6 +17,18 @@ public:
     static double min_footprint;
     static std::string log_folder;
     static bool logging;
+
+    static std::string interesting_label;
+    static std::string training_set_dir;
+    static int image_w;
+    static int image_h;
+
+    static bool simulation;
+    static bool visualization;
+    static int bf_sqrt;
+    static double speed;
+    static double area_length;
+
 };
 
 #endif

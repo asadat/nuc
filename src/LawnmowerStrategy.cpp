@@ -16,7 +16,7 @@ LawnmowerStrategy::LawnmowerStrategy(CNode *root)
     while(ld > NUCParam::min_footprint)
     {
         depth++;
-        ld /= CNode::bf_sqrt;
+        ld /= NUCParam::bf_sqrt;
     }
 
     int n = l/ld;

@@ -5,6 +5,7 @@
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "sensor_msgs/NavSatFix.h"
+#include "NUCParam.h"
 
 class MAV
 {
@@ -23,8 +24,8 @@ public:
     sensor_msgs::NavSatFix GetLastGPSLocation(){return gpsLocation;}
 
     void test();
-    static void ChangeSpeed(double ds){speed +=ds;}
-    static double speed;
+    static void ChangeSpeed(double ds){NUCParam::speed +=ds;}
+    //static double speed;
 private:
 
     TooN::Vector<4,double> realpos; // onlu for visualization of real MAV
