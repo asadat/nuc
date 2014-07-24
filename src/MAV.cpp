@@ -50,7 +50,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     realpos[0] = msg->pose.pose.position.x;
     realpos[1] = msg->pose.pose.position.y;
     realpos[2] = msg->pose.pose.position.z;
-    yaw = tf::getYaw(msg->pose.pose.orientation);
+    //yaw = tf::getYaw(msg->pose.pose.orientation);
 
 
     tf::Matrix3x3 rm;
@@ -58,9 +58,8 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     rm.setRotation(qtr);
     double r1,r2,r3;
     rm.getEulerYPR(r1,r2,r3);
-
-    if(simulation)
-        yaw = r2;
+//    if(simulation)
+     yaw = r1;
 
     ROS_INFO_THROTTLE(1, "Yaw: %f", yaw);
     ROS_INFO_THROTTLE(0.5, "Height: %f\t Goal height: %f", realpos[2], goal[2]);
@@ -103,9 +102,9 @@ void circle(float x, float y, float z, float r, int segments)
     glEnd();
 }
 
-double r()
+double r(double half_p=0.5)
 {
-    return 0;//(-50.0+rand()%100)/5000.0;
+    return (-half_p*10.0+rand()%((int)ceil(2.0*half_p*10.0)))/10.0;
 }
 
 void glVertex(Vector<3> p)
@@ -136,10 +135,10 @@ void MAV::glDraw()
                            0        , 0        , 0);
 
     ROS_INFO_THROTTLE(1,"%f %f %f %f", rot_m[0][0], rot_m[0][1], rot_m[1][0], rot_m[1][1]);
-    p1=p+rot_m*makeVector(-l+r(),+r(),0);
-    p2=p+rot_m*makeVector(+l+r(),+r(),0);
-    p3=p+rot_m*makeVector(+r(),-l+r(),0);
-    p4=p+rot_m*makeVector(+r(),+l+r(),0);
+    p1=p+rot_m*makeVector(-l+r()*0.01,+r()*0.01,0);
+    p2=p+rot_m*makeVector(+l+r()*0.01,+r()*0.01,0);
+    p3=p+rot_m*makeVector(+r()*0.01,-l+r()*0.01,0);
+    p4=p+rot_m*makeVector(+r()*0.01,+l+r()*0.01,0);
     glVertex(p1);
     glVertex(p2);
     glVertex(p3);
@@ -147,13 +146,13 @@ void MAV::glDraw()
     glEnd();
 
     glColor4f(0,0,0,0.5);
-    circle(p1[0]+r(),p1[1]+r(),p1[2], 0.15, 50);
+    circle(p1[0]+r()*0.01,p1[1]+r()*0.01,p1[2], 0.15, 50);
     glColor4f(0,1,0,0.9);
-    circle(p2[0]+r(),p2[1]+r(),p2[2], 0.15, 50);
+    circle(p2[0]+r()*0.01,p2[1]+r()*0.01,p2[2], 0.15, 50);
     glColor4f(0,0,0,0.5);
-    circle(p3[0]+r(),p3[1]+r(),p3[2], 0.15, 50);
+    circle(p3[0]+r()*0.01,p3[1]+r()*0.01,p3[2], 0.15, 50);
     glColor4f(0,0,0,0.5);
-    circle(p4[0]+r(),p4[1]+r(),p4[2], 0.15, 50);
+    circle(p4[0]+r()*0.01,p4[1]+r()*0.01,p4[2], 0.15, 50);
 
     glPointSize(10);
     glColor3f(0,0,1);
@@ -226,7 +225,7 @@ void MAV::Update(double dt)
 
 MAV::AsctecFCU::AsctecFCU()
 {
-    this->pose = makeVector(0,0,2,0);
+    this->pose = makeVector(0,0,2,3.14);
 }
 
 void MAV::AsctecFCU::Init(ros::NodeHandle *nh_)
@@ -248,6 +247,7 @@ void MAV::AsctecFCU::Update()
 
     if((t-last_pose).toSec() > 0.02) // = 5 hz
     {
+
         last_pose = t;
 
         p_seq++;
@@ -297,10 +297,14 @@ void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
 
     Vector<2> p = msg->x*bodyX + msg->y*bodyY;
 
+    static Vector<3> sigv = makeVector(0,0,0);
+    Vector<3> sig = 0.01 * makeVector(r(),r(),r());
+    //sigv += sig;
+
     Vector<4> dp;
-    dp[0] = p[0];
-    dp[1] = p[1];
-    dp[2] = msg->z;
+    dp[0] = p[0] + sigv[0];
+    dp[1] = p[1] + sigv[1];
+    dp[2] = msg->z + sigv[2];
     dp[3] = msg->yaw;
 
     pose += dt * dp;
