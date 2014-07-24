@@ -23,18 +23,19 @@ std::string NUC::logFileName = std::string("");
 using namespace TooN;
 
 NUC * NUC::instance = NULL;
-bool NUC::simulation = true;
+//bool NUC::simulation = true;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
-    NUCParam::GetParams(nh);
+    ros::NodeHandle private_node_handle_("~");
+    NUCParam::GetParams(private_node_handle_);
 
     if(NUCParam::logging)
     {
         time_t now = time(0);
         char* dt = ctime(&now);
         logFileName = std::string(dt);
-        for(int i=0; i<logFileName.length();i++)
+        for(unsigned int i=0; i<logFileName.length();i++)
         {
             printf("%d ",logFileName[i]);
             if(logFileName[i] == ' ' || logFileName[i] == ':' || logFileName[i] == 10)
@@ -47,18 +48,19 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         logFile = fopen(logFileName.c_str(), "w");
     }
 
-    bVisEnabled = true;
-    double area_length = 0;
+    //bVisEnabled = true;
+    //double area_length = 0;
 
-    nh.param<bool>("simulation", simulation, true);
-    nh.param<bool>("visualization", bVisEnabled, true);
-    nh.param<int>("branching_sqrt",CNode::bf_sqrt,2);
-    nh.param<double>("speed",MAV::speed,1.0);
-    nh.param<double>("area_length",area_length,16);
+//    NUCParam::simulation;
+//    private_node_handle_.param<bool>("simulation", simulation, true);
+//    private_node_handle_.param<bool>("visualization", bVisEnabled, true);
+//    private_node_handle_.param<int>("branching_sqrt",CNode::bf_sqrt,2);
+//    private_node_handle_.param<double>("speed",MAV::speed,1.0);
+//    private_node_handle_.param<double>("area_length",area_length,16);
 
     int traversalStrategy=-1;
     std::string strategy_str;
-    nh.param("strategy", strategy_str, std::string("lm"));
+    private_node_handle_.param("strategy", strategy_str, std::string("lm"));
 
     if(strategy_str == "lm")
     {
@@ -74,19 +76,22 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     }
     else if(strategy_str == "ts")
     {
+        ROS_INFO("test strategy");
+
         traversalStrategy = 3;
     }
 
-    mav.Init(&nh, simulation);
+    mav.Init(&nh, NUCParam::simulation);
 
-    if(!simulation)
+    if(!NUCParam::simulation)
     {
         InterestingnessSensor::Instance(&nh);
         //HuskyInterafce::Instance(&nh);
     }
 
     glutInit(&argc, argv);
-    area = TooN::makeVector(NUCParam::cx-0.5*area_length,NUCParam::cy-0.5*area_length,NUCParam::cx+0.5*area_length,NUCParam::cy+0.5*area_length);
+    area = TooN::makeVector(NUCParam::cx-0.5*NUCParam::area_length,NUCParam::cy-0.5*NUCParam::area_length,
+                            NUCParam::cx+0.5*NUCParam::area_length,NUCParam::cy+0.5*NUCParam::area_length);
     tree = new CNode(area);
     tree->PropagateDepth();
 
@@ -107,9 +112,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         traversal = new LawnmowerStrategy(tree);
     }
 
+    ROS_INFO("test strategy %d", traversalStrategy);
 
     //For simulating interestingness
-    if(simulation)
+    if(NUCParam::simulation)
     {
         PopulateTargets();
         MarkNodesInterestingness();
@@ -199,7 +205,7 @@ void NUC::glDraw()
 
      //ROS_INFO("%f\t%f\n%f\t%f", rot[0][0], rot[0][1], rot[1][0], rot[1][1]);
 
-     if(simulation)
+     if(NUCParam::simulation)
      {
          for(unsigned int i=0; i<targets.size(); i++)
          {
@@ -250,7 +256,7 @@ void NUC::SetNextGoal()
     curGoal = traversal->GetNextNode();
     if(curGoal != NULL)
     {
-        LOG("NEXT_WAY_POINT: %f %f %f %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
+        LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
         ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
@@ -299,7 +305,7 @@ bool NUC::VisitGoal()
         curGoal->visited = true;
     }
 
-    if(simulation)
+    if(NUCParam::simulation)
     {
         // In simulations it uses the precomputed interestingness
         curGoal->SetIsInteresting(curGoal->trueIsInteresting);
@@ -315,7 +321,7 @@ bool NUC::VisitGoal()
         {
             bool curNodeInterest = false;
             //in real experiments it uses the image data to decide
-            int grd_s = CNode::bf_sqrt;
+            int grd_s = NUCParam::bf_sqrt;
 
             TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
             InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
@@ -335,7 +341,7 @@ bool NUC::VisitGoal()
             {
                 sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
                 //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
-                LOG("WAYPOINT_TO_HUSKY %f %f %f %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
+                LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
             }
 
             SAVE_LOG();

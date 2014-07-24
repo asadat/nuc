@@ -7,7 +7,7 @@
 
 
 //float CNode::fov = 90 *3.14/(180);
-int CNode::bf_sqrt = 2;
+//int CNode::bf_sqrt = 2;
 //float CNode::minFootprintWidth = 3;
 
 
@@ -50,10 +50,10 @@ void CNode::PopulateChildren()
         return;
     }
 
-    double dl = fps/bf_sqrt;
+    double dl = fps/NUCParam::bf_sqrt;
 
-    for(int i=0; i<bf_sqrt; i++)
-        for(int j=0; j<bf_sqrt; j++)
+    for(int i=0; i<NUCParam::bf_sqrt; i++)
+        for(int j=0; j<NUCParam::bf_sqrt; j++)
         {
             Rect fp;
             fp[0] = footPrint[0]+i*dl;

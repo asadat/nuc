@@ -12,7 +12,8 @@ InterestingnessSensor * InterestingnessSensor::instance;
 InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
 {
     nh = nh_;
-    nh->param<std::string>("interesting_label", interesting_label, "human");
+    interesting_label = NUCParam::interesting_label;
+    //nh->param<std::string>("interesting_label", interesting_label, "human");
     human_interesting = (interesting_label == "human");
 
     ROS_INFO("interesting_label: %s", interesting_label.c_str());
@@ -20,7 +21,8 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
     if(!human_interesting)
     {
         //nh->param<std::string>("decision_tree_file",dtreeFile, "");
-        nh->param<std::string>("training_set_dir",trainingSetDir, "");
+        //nh->param<std::string>("training_set_dir",trainingSetDir, "");
+        trainingSetDir = NUCParam::training_set_dir;
 
         image_transport::ImageTransport it(*nh);
         img_sub = it.subscribe("/camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("compressed", ros::TransportHints().tcpNoDelay(true)));
@@ -33,8 +35,10 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
         //ROS_INFO("after int sub");
     }
 
-    nh->param<int>("image_w",image_w,640);
-    nh->param<int>("image_h",image_h,480);
+    image_w = NUCParam::image_w;
+    image_h = NUCParam::image_h;
+    //nh->param<int>("image_w",image_w,640);
+    //nh->param<int>("image_h",image_h,480);
 
 //    cv::Mat data(100,5,CV_32F);
 //    cv::Mat res(100,1,CV_32F);
@@ -81,17 +85,17 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     if(human_interesting) // humans are interesting
     {
 
-        for(int j=0; j<ROIs.size(); j++)
+        for(unsigned int j=0; j<ROIs.size(); j++)
         {
             if((ros::Time::now().toSec() - ROIs[j].first) > NUCParam::sensingTime)
                 continue;
 
             std::vector<sensor_msgs::RegionOfInterest> rois = ROIs[j].second;
-            for(int i=0; i<rois.size(); i++)
+            for(unsigned int i=0; i<rois.size(); i++)
             {
                 sensor_msgs::RegionOfInterest roi = rois[i];
-                for(int grd_i=0; grd_i < grd_s; grd_i++)
-                    for(int grd_j=0; grd_j < grd_s; grd_j++)
+                for( int grd_i=0; grd_i < grd_s; grd_i++)
+                    for( int grd_j=0; grd_j < grd_s; grd_j++)
                     {
                         double grdl,grdr,grdt,grdd;
                         grdl = grd_i*grd_xstep;
@@ -118,7 +122,7 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
         if(imagePtr != NULL && (ros::Time::now()-imagePtr->header.stamp).toSec() < NUCParam::sensingTime)
         {
             int interestingLabelIdx = -1;
-            for(int i=0; i<labels.size();i++)
+            for(unsigned int i=0; i<labels.size();i++)
             {
                 if(interesting_label == std::string(labels[i]))
                 {
@@ -131,7 +135,7 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
             vector<cv::Mat> fs;
             sptest.GetSuperPixelFeatures(fs);
             //vector<CvScalar> labelcolor;
-            for(int i=0; i<fs.size(); i++)
+            for(unsigned int i=0; i<fs.size(); i++)
             {
 
                 double c = dtree.predict(fs[i].row(0))->value;
@@ -226,9 +230,9 @@ void InterestingnessSensor::TrainDTree()
     {
         int nrows = 0;
 
-        for(int i=0; i<labels.size(); i++)
+        for(unsigned int i=0; i<labels.size(); i++)
         {
-            for(int j=0; j<train_size[i]; j++)
+            for( int j=0; j<train_size[i]; j++)
             {
                 char num[256];
                 sprintf(num, "%s/%s%d.jpg",trainingSetDir.c_str(),labels[i],j);
@@ -248,11 +252,11 @@ void InterestingnessSensor::TrainDTree()
 
         int it=0;
         int imgn = 0;
-        for(int i=0; i<labels.size(); i++)
+        for(unsigned int i=0; i<labels.size(); i++)
         {
-            for(int j=0; j<train_size[i]; j++)
+            for( int j=0; j<train_size[i]; j++)
             {
-                for(int k=0; k<features[imgn].size(); k++)
+                for(unsigned int k=0; k<features[imgn].size(); k++)
                 {
                     trainRe.at<float>(it) = i;
                     trainMat.at<float>(it,0) = features[imgn][k].at<float>(0,0);
@@ -302,7 +306,7 @@ void InterestingnessSensor::TestDTree(char *filename)
     vector<cv::Mat> fs;
     sptest.GetSuperPixelFeatures(fs);
     vector<CvScalar> labelcolor;
-    for(int i=0; i<fs.size(); i++)
+    for(unsigned int i=0; i<fs.size(); i++)
     {
 
         double c = dtree.predict(fs[i].row(0))->value;

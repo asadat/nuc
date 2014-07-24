@@ -10,12 +10,12 @@
 
 using namespace TooN;
 
-double MAV::speed = 1;
+//double MAV::speed = 1;
 
 MAV::MAV()
 {
     pos = makeVector(0,0,10);
-    speed = 1;
+    //NUCParam::speed = 1;
     realpos = makeVector(0,0,0,0);
     yaw = 0;
 }
@@ -66,7 +66,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
 
 void MAV::gpsCallback(const sensor_msgs::NavSatFixPtr &msg)
 {
-    static bool sent=false;
+    //static bool sent=false;
     gpsLocation = (*msg);
 
 //    if(!sent)
@@ -183,10 +183,11 @@ void MAV::Update(double dt)
     {
         asctecPelican.Update();
 
+
 //        if(atGoal)
 //            return;
 
-//        double step = dt * speed;
+//        double step = dt * NUCParam::speed;
 //        double goalDistSqr = (goal - pos)*(goal-pos);
 //        if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
 //        {
