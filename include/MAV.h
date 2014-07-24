@@ -7,7 +7,6 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "asctec_hl_comm/mav_ctrl.h"
 #include "NUCParam.h"
->>>>>>> 32de1f2fb358fd2b93c0715cba197d0855f2394e
 
 class MAV
 {
@@ -47,7 +46,7 @@ public:
     //static double speed;
 private:
 
-    TooN::Vector<4,double> realpos; // onlu for visualization of real MAV
+    TooN::Vector<3,double> realpos; // onlu for visualization of real MAV
     TooN::Vector<3,double> pos;
     double yaw;
     TooN::Vector<3,double> goal;
