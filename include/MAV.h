@@ -5,12 +5,30 @@
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "sensor_msgs/NavSatFix.h"
+#include "asctec_hl_comm/mav_ctrl.h"
 
 class MAV
 {
 public:
     MAV();
     ~MAV(){}
+
+    class AsctecFCU
+    {
+        public:
+            AsctecFCU();
+
+            void Init(ros::NodeHandle* nh_);
+            void fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg);
+            void Update();
+
+        private:
+            ros::Publisher fcuPose_pub;
+            ros::Publisher fcuMag_pub;
+            ros::Subscriber fcuCtrl_sub;
+
+            TooN::Vector<4> pose;
+    };
 
     void Init(ros::NodeHandle* nh_, bool simulation_);
     void glDraw();
@@ -42,7 +60,7 @@ private:
     ros::Subscriber gps_sub;
 
     sensor_msgs::NavSatFix gpsLocation;
-
+    AsctecFCU asctecPelican;
 };
 
 #endif

@@ -5,6 +5,8 @@
 //#include "HuskyInterface.h"
 #include "NUC.h"
 #include "NUCParam.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "geometry_msgs/Vector3Stamped.h"
 
 using namespace TooN;
 
@@ -23,13 +25,18 @@ void MAV::Init(ros::NodeHandle *nh_, bool simulation_)
     nh = nh_;
     simulation = simulation_;
 
-    if(!simulation)
+    //if(!simulation)
     {
         gotoPosService = nh->serviceClient<pelican_ctrl::gotoPos>("/PelicanCtrl/gotoPos");
         atGoalSub = nh->subscribe("/PelicanCtrl/at_goal", 10, &MAV::atGoalCallback, this);
         gpsPose_sub = nh->subscribe("/PelicanCtrl/fixedPose", 10, &MAV::gpsPoseCallback, this);
         gps_sub = nh->subscribe("/fcu/gps", 10, &MAV::gpsCallback, this);
         //test();
+    }
+
+    if(simulation)
+    {
+        asctecPelican.Init(nh_);
     }
 }
 
@@ -145,12 +152,12 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
     goal = goalpos;
     atGoal = false;
 
-    if(simulation)
-    {
-        toGoalNorm = (goal-pos);
-        normalize(toGoalNorm);
-    }
-    else
+//    if(simulation)
+//    {
+//        toGoalNorm = (goal-pos);
+//        normalize(toGoalNorm);
+//    }
+//    else
     {
         pelican_ctrl::gotoPos srv;
         srv.request.x = goal[0];
@@ -174,21 +181,23 @@ void MAV::Update(double dt)
 {
     if(simulation)
     {
-        if(atGoal)
-            return;
+        asctecPelican.Update();
 
-        double step = dt * speed;
-        double goalDistSqr = (goal - pos)*(goal-pos);
-        if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
-        {
-            pos = goal;
-            atGoal = true;
+//        if(atGoal)
+//            return;
 
-        }
-        else
-        {
-            pos += step*toGoalNorm;
-        }
+//        double step = dt * speed;
+//        double goalDistSqr = (goal - pos)*(goal-pos);
+//        if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
+//        {
+//            pos = goal;
+//            atGoal = true;
+
+//        }
+//        else
+//        {
+//            pos += step*toGoalNorm;
+//        }
     }
     else
     {
@@ -196,4 +205,85 @@ void MAV::Update(double dt)
         //it will be set in upon receiving the AtGoal message
         //ROS_INFO_THROTTLE(1, "AtGoal:%d", atGoal);
     }
+}
+
+
+MAV::AsctecFCU::AsctecFCU()
+{
+    this->pose = makeVector(0,0,0,0);
+}
+
+void MAV::AsctecFCU::Init(ros::NodeHandle *nh_)
+{
+    fcuPose_pub = nh_->advertise<geometry_msgs::PoseWithCovarianceStamped>("/fcu/gps_pose", 10);
+    fcuMag_pub = nh_->advertise<geometry_msgs::Vector3Stamped>("/fcu/mag", 50);
+    fcuCtrl_sub = nh_->subscribe("/fcu/control", 20, &MAV::AsctecFCU::fcuCtrlCallback, this);
+}
+
+void MAV::AsctecFCU::Update()
+{
+    static ros::Time last_mag = ros::Time::now();
+    static ros::Time last_pose = ros::Time::now();
+
+    static unsigned int p_seq = 0;
+    static unsigned int m_seq = 0;
+
+    ros::Time t = ros::Time::now();
+
+    if((t-last_pose).toSec() > 0.2) // = 5 hz
+    {
+        last_pose = t;
+
+        p_seq++;
+        geometry_msgs::PoseWithCovarianceStamped p_msg;
+        p_msg.pose.pose.position.x = pose[0];
+        p_msg.pose.pose.position.y = pose[1];
+        p_msg.pose.pose.position.z = pose[2];
+        p_msg.header.stamp = t;
+        p_msg.header.seq = p_seq;
+
+        fcuPose_pub.publish(p_msg);
+    }
+
+    if((t-last_mag).toSec() > 1/50) // = 50 hz
+    {
+        last_mag = t;
+
+        m_seq++;
+        geometry_msgs::Vector3Stamped m_msg;
+
+        m_msg.vector.x = cos(pose[3]+1.57/2);
+        m_msg.vector.y = sin(pose[3]+1.57/2);
+
+        m_msg.header.stamp = t;
+        m_msg.header.seq = m_seq;
+
+        fcuMag_pub.publish(m_msg);
+    }
+}
+
+void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
+{
+    static ros::Time last_t = ros::Time::now();
+    ros::Time t = ros::Time::now();
+
+    double dt = (t-last_t).toSec();
+    if(dt > 0.5)
+    {
+        ROS_INFO("Delay in publishing control commands. Ignoring /fcu/control ....");
+        dt = 0;
+    }
+
+    Vector<2> bodyX = makeVector(-cos(pose[3]+1.57), -sin(pose[3]+1.57));
+    Vector<2> bodyY = makeVector(cos(pose[3]+3.14), sin(pose[3]+3.14));
+
+    Vector<2> p = msg->x*bodyX + msg->y*bodyY;
+
+    Vector<4> dp;
+    dp[0] = p[0];
+    dp[1] = p[1];
+    dp[2] += msg->z;
+    dp[4] += msg->yaw;
+
+    pose = dt * dp;
 }
