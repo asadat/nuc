@@ -136,7 +136,7 @@ NUC::~NUC()
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    int n=5;
+    int n=3;
     double l =1*NUCParam::min_footprint;
     for(int i=0; i<n; i++)
     {
@@ -205,7 +205,7 @@ void NUC::glDraw()
 
      //ROS_INFO("%f\t%f\n%f\t%f", rot[0][0], rot[0][1], rot[1][0], rot[1][1]);
 
-     if(NUCParam::simulation)
+     if(NUCParam::interesting_simulation)
      {
          for(unsigned int i=0; i<targets.size(); i++)
          {
