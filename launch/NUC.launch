@@ -3,7 +3,7 @@
           <rosparam file="$(find nuc)/launch/real_param.yaml" />
 	      <!--  <remap to="at_goal" from="/PelicanCtrl/at_goal" /> -->
           <!--  <remap from="fixedPose" to="/PelicanCtrl/fixedPose" /> -->
- 	<remap from="camera/image_raw" to="camera/image_raw"/>
+ 	<!--remap from="camera/image_raw" to="camera/image_raw"/-->
     </node>
 </launch>
 

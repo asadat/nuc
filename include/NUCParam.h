@@ -24,6 +24,7 @@ public:
     static int image_h;
 
     static bool simulation;
+    static bool interesting_simulation;
     static bool visualization;
     static int bf_sqrt;
     static double speed;

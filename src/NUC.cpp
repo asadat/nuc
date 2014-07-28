@@ -83,7 +83,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
     mav.Init(&nh, NUCParam::simulation);
 
-    if(!NUCParam::simulation)
+    if(!NUCParam::simulation && !NUCParam::interesting_simulation)
     {
         InterestingnessSensor::Instance(&nh);
         //HuskyInterafce::Instance(&nh);
@@ -115,7 +115,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     ROS_INFO("test strategy %d", traversalStrategy);
 
     //For simulating interestingness
-    if(NUCParam::simulation)
+    if(NUCParam::simulation || NUCParam::interesting_simulation)
     {
         PopulateTargets();
         MarkNodesInterestingness();
@@ -265,18 +265,18 @@ void NUC::SetNextGoal()
 
 void NUC::OnReachedGoal()
 {
-   // ROS_INFO("Reached Goal");
+    ROS_INFO("Reached Goal");
     if(VisitGoal())
     {
         SetNextGoal();
         if(curGoal == NULL)
         {
-          //ROS_INFO("Finished ...");
+          ROS_INFO("Finished ...");
           OnTraverseEnd();
         }
         else
         {
-            //ROS_INFO("New goal ... depth %d", curGoal->depth);
+            ROS_INFO("New goal ... depth %d", curGoal->depth);
             mav.SetGoal(curGoal->GetMAVWaypoint());
         }
     }
@@ -321,27 +321,39 @@ bool NUC::VisitGoal()
         {
             bool curNodeInterest = false;
             //in real experiments it uses the image data to decide
-            int grd_s = NUCParam::bf_sqrt;
 
-            TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
-            InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
-
-            for(unsigned int i=0; i<curGoal->children.size();i++)
-            {                
-                CNode * nd = curGoal->children[i];
-                nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
-                LOG("INTERSTINGNESS %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x]);
-
-                curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
-            }
-
-            curGoal->SetIsInteresting(curNodeInterest);
-
-            if(curNodeInterest && curGoal->IsLeaf())
+            if(NUCParam::interesting_simulation)
             {
-                sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
-                //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
-                LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
+                // In simulations it uses the precomputed interestingness
+                curGoal->SetIsInteresting(curGoal->trueIsInteresting);
+                //simulating interestingness
+                for(unsigned int i=0; i<curGoal->children.size();i++)
+                    curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
+            }
+            else
+            {
+                int grd_s = NUCParam::bf_sqrt;
+
+                TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
+                InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
+
+                for(unsigned int i=0; i<curGoal->children.size();i++)
+                {
+                    CNode * nd = curGoal->children[i];
+                    nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
+                    LOG("INTERSTINGNESS %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x]);
+
+                    curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
+                }
+
+                curGoal->SetIsInteresting(curNodeInterest);
+
+                if(curNodeInterest && curGoal->IsLeaf())
+                {
+                    sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
+                    //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
+                    LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
+                }
             }
 
             SAVE_LOG();

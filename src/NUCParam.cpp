@@ -13,6 +13,7 @@ std::string NUCParam::training_set_dir = "";
 int NUCParam::image_w = 640;
 int NUCParam::image_h = 480;
 bool NUCParam::simulation = true;
+bool NUCParam::interesting_simulation = false;
 bool NUCParam::visualization = true;
 int NUCParam::bf_sqrt = 2;
 double NUCParam::speed = 1.0;
@@ -33,6 +34,7 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<int>("image_h",image_h,480);
 
     nh.param<bool>("simulation", simulation, true);
+    nh.param<bool>("interesting_simulation", interesting_simulation, true);
     nh.param<bool>("visualization", visualization, true);
     nh.param<int>("branching_sqrt",bf_sqrt,2);
     nh.param<double>("speed",speed,1.0);
