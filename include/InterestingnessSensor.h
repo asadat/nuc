@@ -30,6 +30,8 @@ public:
 
     void GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s);
 
+    int sensingCounter;
+
 private:
 
     InterestingnessSensor(ros::NodeHandle * nh_);
@@ -55,6 +57,7 @@ private:
     std::string interesting_label;
     std::string dtreeFile;
     std::string trainingSetDir;
+
 
 };
 

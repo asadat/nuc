@@ -265,7 +265,7 @@ void NUC::SetNextGoal()
 
 void NUC::OnReachedGoal()
 {
-    ROS_INFO("Reached Goal");
+   // ROS_INFO("Reached Goal");
     if(VisitGoal())
     {
         SetNextGoal();
@@ -341,7 +341,7 @@ bool NUC::VisitGoal()
                 {
                     CNode * nd = curGoal->children[i];
                     nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
-                    LOG("INTERSTINGNESS %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x]);
+                    LOG("INTERSTINGNESS %d %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x], InterestingnessSensor::Instance()->sensingCounter);
 
                     curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
                 }

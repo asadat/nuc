@@ -11,6 +11,7 @@ InterestingnessSensor * InterestingnessSensor::instance;
 
 InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
 {
+    sensingCounter = 0;
     nh = nh_;
     interesting_label = NUCParam::interesting_label;
     //nh->param<std::string>("interesting_label", interesting_label, "human");
@@ -25,7 +26,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
         trainingSetDir = NUCParam::training_set_dir;
 
         image_transport::ImageTransport it(*nh);
-        img_sub = it.subscribe("/camera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("compressed", ros::TransportHints().tcpNoDelay(true)));
+        img_sub = it.subscribe("/ueyecamera/image_raw", 1, &InterestingnessSensor::imageCallback, this, image_transport::TransportHints("compressed", ros::TransportHints().tcpNoDelay(true)));
         TrainDTree();
     }
     else
@@ -75,6 +76,7 @@ InterestingnessSensor::~InterestingnessSensor()
 
 void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s)
 {
+    sensingCounter++;
    // ROS_INFO("int_grid: test");
     //return;
 
@@ -126,10 +128,18 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
             {
                 if(interesting_label == std::string(labels[i]))
                 {
+                    ROS_INFO("Looking for \"%s\" ...", labels[i]);
                     interestingLabelIdx = i;
                     break;
                 }
             }
+
+            vector<CvScalar> labelcolor;
+
+            CvScalar cl[3];
+            cl[0].val[0] = 100;cl[0].val[1] = 250;cl[0].val[2] = 100; // grass
+            cl[2].val[0] = 200;cl[2].val[1] = 100;cl[2].val[2] = 100; // sand
+            cl[1].val[0] = 0;  cl[1].val[1] = 50; cl[1].val[2] = 230; // carpet
 
             SuperPixelFeatures sptest(imagePtr->image);
             vector<cv::Mat> fs;
@@ -149,20 +159,37 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
                         int_grd[grdy][grdx] += 1;
                     }
                 }
-                //labelcolor.push_back(cl[(int)c]);
+                labelcolor.push_back(cl[(int)c]);
             }
 
-            //cv::Mat labelmap(testMat.rows, testMat.cols, CV_8UC3);
-            //sptest.SuperPixelLabelMap(labelmap, labelcolor);
-            //char outputf[128];
-            //sprintf(outputf, "%s%s","output-",filename);
-            //cv::imwrite(outputf, labelmap);
+
+
+
+            cv::Mat labelmap(imagePtr->image.rows, imagePtr->image.cols, CV_8UC3);
+            sptest.SuperPixelLabelMap(labelmap, labelcolor);
+            char outputf[128];
+            sprintf(outputf, "%s%f-%d","image",ros::Time::now().toSec(),sensingCounter);
+            std::string path(outputf);
+            std::string imgpath = NUCParam::log_folder+"/"+path+".jpg";
+            std::string predpath = NUCParam::log_folder+"/"+path+"-pred.jpg";
+
+            //cv::Mat trp_img(imagePtr->image.cols, imagePtr->image.rows, CV_8UC3);
+            //cv::Mat trp_pred(imagePtr->image.cols, imagePtr->image.rows, CV_8UC3);
+
+            //cv::transpose(imagePtr->image, trp_img);
+            //cv::transpose(labelmap, trp_pred);
+
+            cv::imwrite(predpath.c_str(), imagePtr->image);
+            cv::imwrite(imgpath.c_str(), labelmap);
+
+
         }
         else
         {
             ROS_WARN("No recent image is available!");
         }
     }
+
     ROS_INFO("int_grid: START");
     for(int grd_j=0; grd_j < grd_s; grd_j++)
     {

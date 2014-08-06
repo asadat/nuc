@@ -1,2 +1,3 @@
-grass 10
+grass 14
 sand 10
+carpet 12

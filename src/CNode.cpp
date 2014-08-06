@@ -62,6 +62,12 @@ void CNode::PopulateChildren()
             fp[3] = fp[1]+dl;
 
             CNode* ch = CreateChildNode(fp);
+
+            /*
+             *  (0,2)   (1,2)   (2,2)
+             *  (0,1)   (1,1)   (2,1)
+             *  (0,0)   (1,0)   (2,0)
+             */
             ch->grd_x = i;
             ch->grd_y = j;
 
