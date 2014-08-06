@@ -289,6 +289,22 @@ PlayLog::PlayLog(int argc, char **argv)
         fclose(f);
     }
 
+    if(argc > 2)
+    {
+        FILE * f = fopen(argv[2],"r");
+        float pp[3];
+        char tmp[2];
+        float d[3];
+
+        while(fscanf(f,"%c %f %f %f %c %f %f %f", &tmp[0], &pp[0], &pp[1], &pp[2], &tmp[1], &d[0], &d[1], &d[2]) != EOF)
+        {
+            Vector<3> pos = makeVector(pp[0], pp[1], pp[2]);
+            positions.push_back(pos);
+        }
+        fclose(f);
+        ROS_INFO("Poses #: %d", positions.size());
+    }
+
     glutInit(&argc, argv);
 }
 
@@ -460,6 +476,7 @@ void PlayLog::glDraw()
      glBegin(GL_POINTS);
      for(unsigned int i=0; i<positions.size(); i++)
      {
+         ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
          glColor3f(1, 0, 0);
          glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
      }
