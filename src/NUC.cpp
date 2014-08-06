@@ -337,15 +337,27 @@ bool NUC::VisitGoal()
                 TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
                 InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, grd_s);
 
-                for(unsigned int i=0; i<curGoal->children.size();i++)
+                if(!curGoal->children.empty())
                 {
-                    CNode * nd = curGoal->children[i];
-                    nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
-                    LOG("INTERSTINGNESS %d %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x], InterestingnessSensor::Instance()->sensingCounter);
+                    for(unsigned int i=0; i<curGoal->children.size();i++)
+                    {
+                        CNode * nd = curGoal->children[i];
+                        nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
+                        LOG("INTERSTINGNESS %d %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x], InterestingnessSensor::Instance()->sensingCounter);
 
-                    curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
+                        curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
+                    }
                 }
+                else
+                {
+                    for(int i=0; i< NUCParam::bf_sqrt; i++)
+                        for(int j=0; j< NUCParam::bf_sqrt; j++)
+                        {
+                            curNodeInterest = curNodeInterest || (grd_int[j][i]>0);
+                            LOG("INTERSTINGNESS %d %d %d %d %d\n", i, j, (grd_int[j][i]>0), grd_int[j][i], InterestingnessSensor::Instance()->sensingCounter);
+                        }
 
+                }
                 curGoal->SetIsInteresting(curNodeInterest);
 
                 if(curNodeInterest && curGoal->IsLeaf())

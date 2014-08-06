@@ -281,10 +281,14 @@ PlayLog::PlayLog(int argc, char **argv)
         float p[3];
         int d[3];
         float r[4];
-        while(fscanf(f,"%f %f %f %d %d %d %f %f %f %f", &p[0], &p[1], &p[2], &d[0], &d[1], &d[2], &r[0], &r[1], &r[2], &r[3]) != EOF)
+        while(true)
         {
+            bool flag = (fscanf(f,"%f %f %f %d %d %d %f %f %f %f", &p[0], &p[1], &p[2], &d[0], &d[1], &d[2], &r[0], &r[1], &r[2], &r[3]) == EOF);
             Vector<3> wp = makeVector(p[0], p[1], p[2]);
             waypoints.push_back(wp);
+            
+            if(flag)
+                break;
         }
         fclose(f);
     }
@@ -296,10 +300,13 @@ PlayLog::PlayLog(int argc, char **argv)
         char tmp[2];
         float d[3];
 
-        while(fscanf(f,"%c %f %f %f %c %f %f %f", &tmp[0], &pp[0], &pp[1], &pp[2], &tmp[1], &d[0], &d[1], &d[2]) != EOF)
+        while(true)
         {
+            bool flag = (fscanf(f,"%c %f %f %f %c %f %f %f", &tmp[0], &pp[0], &pp[1], &pp[2], &tmp[1], &d[0], &d[1], &d[2]) == EOF);
             Vector<3> pos = makeVector(pp[0], pp[1], pp[2]);
             positions.push_back(pos);
+            if(flag)
+                break;
         }
         fclose(f);
         ROS_INFO("Poses #: %d", positions.size());
@@ -476,6 +483,9 @@ void PlayLog::glDraw()
      glBegin(GL_POINTS);
      for(unsigned int i=0; i<positions.size(); i++)
      {
+        if(i%5 != 0)
+            continue;
+            
          ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
          glColor3f(1, 0, 0);
          glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
