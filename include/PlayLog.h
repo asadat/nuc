@@ -5,6 +5,7 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Imu.h"
+#include "GL/glut.h"
 
 class PlayLog
 {
@@ -60,5 +61,9 @@ private:
     TooN::Vector<3> vel;
 
     std::vector<TooN::Vector<3> > waypoints;
+    std::vector<TooN::Vector<4> > footprints;
+    std::vector<std::string> texFiles;
+    std::vector<GLuint> gluints;
+    bool drawImages;
 
 };

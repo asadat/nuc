@@ -1,9 +1,26 @@
-cat "$1.log" | grep WAY | sed "s/.*: //g" > wps.log
-cat "$1.log" | grep WAY | sed "s/.*: //g"
+LOGFILE=$(echo $1 | sed "s/\(\/[_[:alnum:]]*\)/\1\1.log/g")
+cat $LOGFILE | grep WAY | sed "s/.*: //g" > wps.log
+cat $LOGFILE | grep WAY | sed "s/.*: //g"
 
-cat "$1.log" | grep POSE | sed "s/.*: //g" > poses.log
+cat $LOGFILE | grep POSE | sed "s/.*: //g" > poses.log
 
-rosrun	nuc PlayLog wps.log poses.log
+#logfolder=$(find "$1/*.jpg" | sed -e 's/\/[_[:alnum:]]*.log$//g')
+PWDPATH=$(pwd)
+#FILES=$(find "$1/*.jpg" | grep "[[:digit:]]\.jpg$")
+
+
+#find $1/*.jpg
+
+rm textures.log
+touch textures.log
+
+for f in `find $1/*.jpg | grep "[[:digit:]]-pred\.jpg$"`
+do
+	
+	echo "$PWDPATH/$f" >> textures.log
+done
+
+rosrun	nuc PlayLog wps.log poses.log textures.log
 #imageview &
 #rosbag play -r 10 "$HOME/$1.bag" 
 #webcamview &

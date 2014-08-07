@@ -12,6 +12,7 @@
 #include <asctec_hl_comm/mav_ctrl.h>
 #include <asctec_hl_comm/mav_ctrl_motors.h>
 #include "tf/transform_datatypes.h"
+#include "opencv2/opencv.hpp"
 
 using namespace TooN;
 
@@ -261,6 +262,7 @@ void keyboard_up_event(unsigned char key, int x, int y)
 
 PlayLog::PlayLog(int argc, char **argv)
 {
+    drawImages = true;
 
     fixedYaw = 0;
     orig = makeVector(0,0,0,0);
@@ -286,6 +288,9 @@ PlayLog::PlayLog(int argc, char **argv)
             bool flag = (fscanf(f,"%f %f %f %d %d %d %f %f %f %f", &p[0], &p[1], &p[2], &d[0], &d[1], &d[2], &r[0], &r[1], &r[2], &r[3]) == EOF);
             Vector<3> wp = makeVector(p[0], p[1], p[2]);
             waypoints.push_back(wp);
+
+            Vector<4> fp = makeVector(r[0], r[1], r[2], r[3]);
+            footprints.push_back(fp);
             
             if(flag)
                 break;
@@ -310,6 +315,25 @@ PlayLog::PlayLog(int argc, char **argv)
         }
         fclose(f);
         ROS_INFO("Poses #: %d", positions.size());
+    }
+
+    if(argc > 3)
+    {
+        FILE * f = fopen(argv[3],"r");
+
+        while(true)
+        {
+            char filename[256];
+            bool flag = (fscanf(f,"%s", filename) == EOF);
+            std::string fn(filename);
+
+            texFiles.push_back(fn);
+
+            if(flag)
+                break;
+        }
+
+        fclose(f);
     }
 
     glutInit(&argc, argv);
@@ -444,7 +468,34 @@ void PlayLog::Clear()
 
 void PlayLog::glDraw()
 {
+
      float w=10;
+     if(!waypoints.empty())
+     {
+         w = 2*waypoints[0][2];
+
+         if(gluints.empty())
+         {
+             for(int i=0;i < texFiles.size(); i++)
+             {
+                 cv::Mat img = cv::imread(texFiles[i]);
+                 GLuint mnFrameTex;
+                 glEnable(GL_TEXTURE_2D);
+                 glGenTextures(1, &mnFrameTex);
+                 glBindTexture(GL_TEXTURE_2D, mnFrameTex);
+                 glTexImage2D(GL_TEXTURE_2D,
+                 0, GL_RGB,
+                                 img.cols, img.rows,
+                 0,GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 img.data);
+                 glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST);
+                 glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST);
+                 gluints.push_back(mnFrameTex);
+             }
+         }
+     }
+
      glLineWidth(2);
      glColor4f(0,0,0,0.5);
      glBegin(GL_LINES);
@@ -537,21 +588,45 @@ void PlayLog::glDraw()
      }
 
      glColor3f(0,0,1);
-     glPointSize(10);
+     glPointSize(5);
      glBegin(GL_POINTS);
      for(unsigned int i=0; i<waypoints.size();i++)
         glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
      glEnd();
+
+     if(drawImages)
+     {
+         glEnable(GL_TEXTURE_2D);
+         glColor4f(1,1,1,1);
+         glPointSize(10);
+         for(unsigned int i=0; i<waypoints.size();i++)
+         {
+            glBindTexture(GL_TEXTURE_2D, gluints[i]);
+            glBegin(GL_QUADS);
+            glVertex3f(footprints[i][0],footprints[i][1],waypoints[i][2]);
+            glTexCoord2f (0.0, 0.0);
+            glVertex3f(footprints[i][0],footprints[i][3],waypoints[i][2]);
+            glTexCoord2f (1.0, 0.0);
+            glVertex3f(footprints[i][2],footprints[i][3],waypoints[i][2]);
+            glTexCoord2f (1.0, 1.0);
+            glVertex3f(footprints[i][2],footprints[i][1],waypoints[i][2]);
+            glTexCoord2f (0.0, 1.0);
+            glEnd();
+         }
+     }
+
 
 
 }
 
 void PlayLog::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-    updateKey = true;
+    updateKey = false;
 
     if(Key['-'])
         Clear();
+    else if(Key['`'])
+        drawImages = !drawImages;
 
 //    if(key['`'])
 //    {
