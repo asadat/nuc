@@ -588,7 +588,8 @@ void PlayLog::glDraw()
      }
 
      glColor3f(0,0,1);
-     glPointSize(5);
+     
+     glPointSize(drawImages?5:10);
      glBegin(GL_POINTS);
      for(unsigned int i=0; i<waypoints.size();i++)
         glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
@@ -613,6 +614,7 @@ void PlayLog::glDraw()
             glTexCoord2f (0.0, 1.0);
             glEnd();
          }
+         glDisable(GL_TEXTURE_2D);
      }
 
 

@@ -147,7 +147,8 @@ void MAV::glDraw()
 
     glColor4f(0,0,0,0.5);
     circle(p1[0]+r()*0.01,p1[1]+r()*0.01,p1[2], 0.15, 50);
-    glColor4f(0,1,0,0.9);
+    //glColor4f(0,1,0,0.9);
+    glColor4f(0,0,0,0.5);
     circle(p2[0]+r()*0.01,p2[1]+r()*0.01,p2[2], 0.15, 50);
     glColor4f(0,0,0,0.5);
     circle(p3[0]+r()*0.01,p3[1]+r()*0.01,p3[2], 0.15, 50);
@@ -173,6 +174,7 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
 //    }
 //    else
     {
+
         pelican_ctrl::gotoPos srv;
         srv.request.x = goal[0];
         srv.request.y = goal[1];
@@ -225,7 +227,8 @@ void MAV::Update(double dt)
 
 MAV::AsctecFCU::AsctecFCU()
 {
-    this->pose = makeVector(0,0,2,3.14);
+    this->pose = makeVector(0,0,2,0);
+    vel = makeVector(0,0,0,0);
 }
 
 void MAV::AsctecFCU::Init(ros::NodeHandle *nh_)
@@ -263,6 +266,7 @@ void MAV::AsctecFCU::Update()
 
     if((t-last_mag).toSec() > 1/50) // = 50 hz
     {
+        double dt = (t-last_mag).toSec();
         last_mag = t;
 
         m_seq++;
@@ -275,11 +279,14 @@ void MAV::AsctecFCU::Update()
         m_msg.header.seq = m_seq;
 
         fcuMag_pub.publish(m_msg);
+
+        pose += dt * NUCParam::speed * vel;
     }
 }
 
 void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
 {
+
     static ros::Time last_t = ros::Time::now();
     ros::Time t = ros::Time::now();
 
@@ -301,11 +308,9 @@ void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
     Vector<3> sig = 0.01 * makeVector(r(),r(),r());
     //sigv += sig;
 
-    Vector<4> dp;
-    dp[0] = p[0] + sigv[0];
-    dp[1] = p[1] + sigv[1];
-    dp[2] = msg->z + sigv[2];
-    dp[3] = msg->yaw;
-
-    pose += dt * dp;
+    //Vector<4> dp;
+    vel[0] = p[0] + sigv[0];
+    vel[1] = p[1] + sigv[1];
+    vel[2] = msg->z + sigv[2];
+    vel[3] = 0;//msg->yaw;
 }

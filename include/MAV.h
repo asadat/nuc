@@ -22,13 +22,14 @@ public:
             void Init(ros::NodeHandle* nh_);
             void fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg);
             void Update();
-
+            TooN::Vector<4> vel;
         private:
             ros::Publisher fcuPose_pub;
             ros::Publisher fcuMag_pub;
             ros::Subscriber fcuCtrl_sub;
 
             TooN::Vector<4> pose;
+
     };
 
     void Init(ros::NodeHandle* nh_, bool simulation_);

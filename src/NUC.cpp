@@ -136,15 +136,15 @@ NUC::~NUC()
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    int n=3;
-    double l =1*NUCParam::min_footprint;
+    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
+    double l =2*NUCParam::min_footprint;
     for(int i=0; i<n; i++)
     {
         Rect r;
         r[0] = RAND(area[0], area[2]-l);
         r[1] = RAND(area[1], area[3]-l);
-        r[2] = r[0]+l;
-        r[3] = r[1]+l;
+        r[2] = r[0]+ RAND(l*0.5,l*1.5);
+        r[3] = r[1]+ RAND(l*0.5,l*1.5);
 
         targets.push_back(r);
     }
