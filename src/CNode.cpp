@@ -248,7 +248,7 @@ CNode* CNode::GetNearestNode(TooN::Vector<3> p) // can be optimized
         list.push_back(children[i]->GetNearestNode(p));
     }
 
-    for(int i=0; i<list.size(); i++)
+    for(unsigned int i=0; i<list.size(); i++)
     {
         double dist = (list[i]->pos-p)*(list[i]->pos-p);
         if(dist < minDist)

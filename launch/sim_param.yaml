@@ -4,7 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 3.0
 speed: 5
-strategy: hi
-area_length: 32.0
+strategy: lm
+area_length: 64.0
 area_rotation: 0.0
 logging: false

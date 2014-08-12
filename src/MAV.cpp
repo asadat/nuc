@@ -308,7 +308,7 @@ void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
     Vector<2> p = msg->x*bodyX + msg->y*bodyY;
 
     static Vector<3> sigv = makeVector(0,0,0);
-    Vector<3> sig = 0.01 * makeVector(r(),r(),r());
+    //Vector<3> sig = 0.01 * makeVector(r(),r(),r());
     //sigv += sig;
 
     //Vector<4> dp;

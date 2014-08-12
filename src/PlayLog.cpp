@@ -314,7 +314,7 @@ PlayLog::PlayLog(int argc, char **argv)
                 break;
         }
         fclose(f);
-        ROS_INFO("Poses #: %d", positions.size());
+        ROS_INFO("Poses #: %lu", positions.size());
     }
 
     if(argc > 3)
@@ -476,7 +476,7 @@ void PlayLog::glDraw()
 
          if(gluints.empty())
          {
-             for(int i=0;i < texFiles.size(); i++)
+             for(unsigned int i=0;i < texFiles.size(); i++)
              {
                  cv::Mat img = cv::imread(texFiles[i]);
                  GLuint mnFrameTex;
