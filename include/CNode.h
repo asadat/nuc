@@ -4,6 +4,7 @@
 #include "TooN/TooN.h"
 
 typedef TooN::Vector<4> Rect;
+class HilbertStrategy;
 class LawnmowerStrategy;
 class DepthFirstStrategy;
 class ShortCutStrategy;
@@ -30,6 +31,7 @@ public:
     void glDraw();
 
 
+    CNode* GetNearestNode(TooN::Vector<3> p);
     CNode* GetNearestLeaf(TooN::Vector<3> p);
     void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list);
 
@@ -67,6 +69,7 @@ private:
     TooN::Vector<3> pos;
     bool isInteresting;
 
+    friend class HilbertStrategy;
     friend class LawnmowerStrategy;
     friend class DepthFirstStrategy;
     friend class ShortCutStrategy;

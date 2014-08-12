@@ -7,6 +7,7 @@
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
 #include "InterestingnessSensor.h"
+#include "HilbertStrategy.h"
 #include "TestStrategy.h"
 #include "NUCParam.h"
 //#include "HuskyInterface.h"
@@ -27,6 +28,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    sim_running = true;
     ros::NodeHandle private_node_handle_("~");
     NUCParam::GetParams(private_node_handle_);
 
@@ -79,6 +81,11 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         ROS_INFO("test strategy");
 
         traversalStrategy = 3;
+    }else if(strategy_str == "hi")
+    {
+        ROS_INFO("hilber strategy");
+
+        traversalStrategy = 4;
     }
 
     mav.Init(&nh, NUCParam::simulation);
@@ -106,6 +113,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     else if(traversalStrategy == 3)
     {
         traversal = new TestStrategy(tree);
+    }
+    else if(traversalStrategy == 4)
+    {
+        traversal = new HilbertStrategy(tree);
     }
     else
     {
@@ -435,5 +446,9 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['-'])
     {
         MAV::ChangeSpeed(-0.1);
+    }
+    else if(key['0'])
+    {
+        NUCParam::sim_running = !NUCParam::sim_running;
     }
 }

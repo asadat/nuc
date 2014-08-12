@@ -61,9 +61,9 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
 //    if(simulation)
      yaw = r1;
 
-    ROS_INFO_THROTTLE(1, "Yaw: %f", yaw);
-    ROS_INFO_THROTTLE(0.5, "Height: %f\t Goal height: %f", realpos[2], goal[2]);
-    ROS_INFO_THROTTLE(3, "POS: %f %f %f rot: %f %f %f", realpos[0], realpos[1], realpos[2], r1, r2, r3);
+    //ROS_INFO_THROTTLE(1, "Yaw: %f", yaw);
+    //ROS_INFO_THROTTLE(0.5, "Height: %f\t Goal height: %f", realpos[2], goal[2]);
+    //ROS_INFO_THROTTLE(3, "POS: %f %f %f rot: %f %f %f", realpos[0], realpos[1], realpos[2], r1, r2, r3);
 
     LOG("POSE: T %f %f %f R %f %f %f\n", realpos[0], realpos[1], realpos[2], r1, r2, r3);
 
@@ -134,7 +134,7 @@ void MAV::glDraw()
                           -sin(-yaw), cos(-yaw), 0,
                            0        , 0        , 0);
 
-    ROS_INFO_THROTTLE(1,"%f %f %f %f", rot_m[0][0], rot_m[0][1], rot_m[1][0], rot_m[1][1]);
+    //ROS_INFO_THROTTLE(1,"%f %f %f %f", rot_m[0][0], rot_m[0][1], rot_m[1][0], rot_m[1][1]);
     p1=p+rot_m*makeVector(-l+r()*0.01,+r()*0.01,0);
     p2=p+rot_m*makeVector(+l+r()*0.01,+r()*0.01,0);
     p3=p+rot_m*makeVector(+r()*0.01,-l+r()*0.01,0);
@@ -269,18 +269,21 @@ void MAV::AsctecFCU::Update()
         double dt = (t-last_mag).toSec();
         last_mag = t;
 
-        m_seq++;
-        geometry_msgs::Vector3Stamped m_msg;
+        if(NUCParam::sim_running)
+        {
+            m_seq++;
+            geometry_msgs::Vector3Stamped m_msg;
 
-        m_msg.vector.x = cos(pose[3]+1.57/2);
-        m_msg.vector.y = sin(pose[3]+1.57/2);
+            m_msg.vector.x = cos(pose[3]+1.57/2);
+            m_msg.vector.y = sin(pose[3]+1.57/2);
 
-        m_msg.header.stamp = t;
-        m_msg.header.seq = m_seq;
+            m_msg.header.stamp = t;
+            m_msg.header.seq = m_seq;
 
-        fcuMag_pub.publish(m_msg);
+            fcuMag_pub.publish(m_msg);
 
-        pose += dt * NUCParam::speed * vel;
+            pose += dt * NUCParam::speed * vel;
+        }
     }
 }
 

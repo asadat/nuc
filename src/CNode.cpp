@@ -235,6 +235,35 @@ bool CNode::VisitedInterestingDescendentExists()
     return false;
 }
 
+CNode* CNode::GetNearestNode(TooN::Vector<3> p) // can be optimized
+{
+    if(children.empty())
+        return this;
+
+    int minidx=0;
+    double minDist = 99999999999;
+    std::vector<CNode *> list;
+    for(unsigned int i=0; i<children.size(); i++)
+    {
+        list.push_back(children[i]->GetNearestNode(p));
+    }
+
+    for(int i=0; i<list.size(); i++)
+    {
+        double dist = (list[i]->pos-p)*(list[i]->pos-p);
+        if(dist < minDist)
+        {
+            minidx = i;
+            minDist = dist;
+        }
+    }
+
+    if(minDist > (pos-p)*(pos-p))
+        return this;
+    else
+        return list[minidx];
+}
+
 CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
 {
     if(children.empty())

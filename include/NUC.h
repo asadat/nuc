@@ -66,6 +66,7 @@ private:
     ros::Time startTime;
     ros::Time endTime;
 
+    bool sim_running;
 
     static std::string logFileName;
 

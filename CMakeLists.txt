@@ -20,6 +20,8 @@ set(NUC_SOURCES
     src/NUCParam.cpp
     #src/HuskyInterface.cpp
     src/TestStrategy.cpp
+    src/HilbertStrategy.cpp
+    include/HilbertStrategy.h
     include/TestStrategy.h
     #include/HuskyInterface.h
     include/SuperPixelFeatures.h

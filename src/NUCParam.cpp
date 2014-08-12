@@ -18,6 +18,7 @@ bool NUCParam::visualization = true;
 int NUCParam::bf_sqrt = 2;
 double NUCParam::speed = 1.0;
 double NUCParam::area_length = 16;
+bool NUCParam::sim_running = true;
 
 
 void NUCParam::GetParams(ros::NodeHandle &nh)

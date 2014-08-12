@@ -30,6 +30,8 @@ public:
     static double speed;
     static double area_length;
 
+    static bool sim_running;
+
 };
 
 #endif
