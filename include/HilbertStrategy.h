@@ -14,15 +14,18 @@ public:
     CNode* GetNextNode();
 
 private:
-
+    bool UpdateIterator();
     void RotatePointOrderBy90(std::vector<TooN::Vector<3> >& list, bool cockwise);
-    //void RotateOrderBy90(std::vector<TooN::Vector<2, int> >& list, bool cockwise);
     CNode * findNode(int x, int y, std::vector<CNode*> & list);
     int HilbertCurveOther(CNode* parent);
-    //int HilbertCurve(CNode* parent);
+
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> hilbert[100];
     //std::vector<TooN::Vector<3> > points;
+
+    std::vector<CNode*>::iterator it;
+    int lastDepth;
+    int curDepth;
 };
 
 #endif

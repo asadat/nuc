@@ -32,6 +32,10 @@ public:
 
     static bool sim_running;
 
+    static double percent_interesting;
+    static int patches;
+    static bool auto_exit;
+
 };
 
 #endif

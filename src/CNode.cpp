@@ -235,6 +235,7 @@ bool CNode::VisitedInterestingDescendentExists()
     return false;
 }
 
+
 CNode* CNode::GetNearestNode(TooN::Vector<3> p) // can be optimized
 {
     if(children.empty())

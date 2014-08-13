@@ -28,6 +28,8 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    traverseLength = 0;
+    isOver = false;
     sim_running = true;
     ros::NodeHandle private_node_handle_("~");
     NUCParam::GetParams(private_node_handle_);
@@ -144,21 +146,64 @@ NUC::~NUC()
     }
 }
 
+
+bool NUC::RectIntersect(Rect r, Rect d)
+{
+    if(r[0] > d[2] || r[2] < d[0] || r[1] > d[3] || r[3] < d[1])
+        return false;
+    return true;
+}
+
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
-    double l =2*NUCParam::min_footprint;
-    for(int i=0; i<n; i++)
+    int n=0;
+    double l = sqrt((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
+    while(targets.size() < NUCParam::patches)
     {
         Rect r;
         r[0] = RAND(area[0], area[2]-l);
         r[1] = RAND(area[1], area[3]-l);
-        r[2] = r[0]+ RAND(l*0.5,l*1.5);
-        r[3] = r[1]+ RAND(l*0.5,l*1.5);
+        r[2] = r[0]+l;
+        r[3] = r[1]+l;
 
-        targets.push_back(r);
+        bool flag=true;
+        for(unsigned int i=0; i<targets.size(); i++)
+        {
+            if(RectIntersect(r,targets[i]))
+            {
+                flag = false;
+                break;
+            }
+        }
+
+        if(flag)
+        {
+            targets.push_back(r);
+            n=0;
+        }
+        else
+        {
+            n++;
+            if(n>10)
+                targets.clear();
+
+        }
+
     }
+//    srand(time(NULL));
+//    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
+//    double l =2*NUCParam::min_footprint;
+//    for(int i=0; i<n; i++)
+//    {
+//        Rect r;
+//        r[0] = RAND(area[0], area[2]-l);
+//        r[1] = RAND(area[1], area[3]-l);
+//        r[2] = r[0]+ RAND(l*0.5,l*1.5);
+//        r[3] = r[1]+ RAND(l*0.5,l*1.5);
+
+//        targets.push_back(r);
+//    }
 }
 
 void NUC::MarkNodesInterestingness()
@@ -263,10 +308,11 @@ void NUC::StartTraversing()
 }
 
 void NUC::SetNextGoal()
-{
+{    
     curGoal = traversal->GetNextNode();
     if(curGoal != NULL)
     {
+        traverseLength += sqrt((mav.GetPos()-curGoal->pos)*(mav.GetPos()-curGoal->pos));
         LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
@@ -296,11 +342,14 @@ void NUC::OnReachedGoal()
 void NUC::OnTraverseEnd()
 {
     endTime = ros::Time::now();
-    ROS_INFO("Coverage duration: %f\n", (endTime-startTime).toSec());
-    LOG("DURATION %f\n", (endTime-startTime).toSec());
+    ROS_INFO("Coverage duration: %f Length %f\n", (endTime-startTime).toSec(), traverseLength);
+    LOG("DURATION %f Length %f\n", (endTime-startTime).toSec(), traverseLength);
     SAVE_LOG();
 
-    exit(0);
+    if(NUCParam::auto_exit)
+        exit(0);
+
+    isOver = true;
 }
 
 bool NUC::VisitGoal()
@@ -395,6 +444,9 @@ bool NUC::VisitGoal()
 
 void NUC::Update()
 {
+    if(isOver)
+        return;
+
     static double rosFreq=15;
     static double ros_p = 1/rosFreq;
     static ros::Time lastTime = ros::Time::now();

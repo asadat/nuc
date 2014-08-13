@@ -44,6 +44,7 @@ public:
 
     void test();
     static void ChangeSpeed(double ds){NUCParam::speed +=ds;}
+    TooN::Vector<3> GetPos(){return realpos;}
     //static double speed;
 private:
 

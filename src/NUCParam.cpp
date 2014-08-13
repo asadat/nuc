@@ -19,6 +19,9 @@ int NUCParam::bf_sqrt = 2;
 double NUCParam::speed = 1.0;
 double NUCParam::area_length = 16;
 bool NUCParam::sim_running = true;
+double NUCParam::percent_interesting = 20;
+int NUCParam::patches = 5;
+bool NUCParam::auto_exit = true;
 
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
@@ -40,5 +43,9 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<int>("branching_sqrt",bf_sqrt,2);
     nh.param<double>("speed",speed,1.0);
     nh.param<double>("area_length",area_length,16);
+    nh.param<int>("patches",patches,5);
+    nh.param<double>("percent_interesting",percent_interesting,30.0);
+    nh.param<bool>("auto_exit", auto_exit, true);
+
 
 }

@@ -47,6 +47,7 @@ private:
     bool VisitGoal();
     void PopulateTargets();
     void MarkNodesInterestingness();
+    bool RectIntersect(Rect r, Rect d);
 
     static NUC* instance;
 
@@ -65,8 +66,10 @@ private:
 
     ros::Time startTime;
     ros::Time endTime;
+    double traverseLength;
 
     bool sim_running;
+    bool isOver;
 
     static std::string logFileName;
 
