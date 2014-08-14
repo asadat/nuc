@@ -13,6 +13,7 @@
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    isInterestingnessSet = false;
     visited = false;
     grd_x = 0;
     grd_y = 0;
@@ -304,4 +305,40 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
 
     list.push_back(children[minidx]);
     return children[minidx]->GetNearestLeafAndParents(p, list);
+}
+
+bool CNode::ChildrenNeedVisitation()
+{
+    for(unsigned int i=0; i<children.size(); i++)
+        if(children[i]->NeedsVisitation())
+            return true;
+
+    return false;
+}
+
+bool CNode::NeedsVisitation()
+{
+    CNode * par = parent;
+    while(par!=NULL)
+    {
+        if(par->isInterestingnessSet && !par->isInteresting)
+            return false;
+        par = par->parent;
+    }
+
+    if(IsLeaf())
+        return !(visited || (isInterestingnessSet && !isInteresting));
+    else
+    {
+        if(visited || (isInterestingnessSet && !isInteresting))
+            return false;
+        else
+        {
+            for(unsigned int i=0; i<children.size(); i++)
+                if(children[i]->NeedsVisitation())
+                    return true;
+
+            return false;
+        }
+    }
 }

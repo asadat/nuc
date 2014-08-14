@@ -25,7 +25,8 @@ public:
     CNode* CreateChildNode(Rect fp);
 
     bool IsNodeInteresting(){return isInteresting;}// || trueIsInteresting;}
-    void SetIsInteresting(bool interesting){isInteresting=interesting;}
+    void SetIsInteresting(bool interesting){isInterestingnessSet=true;isInteresting=interesting;}
+    bool IsInterestingnessSet(){return isInterestingnessSet;}
     TooN::Vector<3> GetPos(){return pos;}
     TooN::Vector<3> GetMAVWaypoint();
     void glDraw();
@@ -39,6 +40,10 @@ public:
 
     bool IsLeaf(){return children.empty();}
 
+    // if there is any descendant that is not visited or we
+    // don't know if it is interesting or not
+    bool NeedsVisitation();
+    bool ChildrenNeedVisitation();
    // static float fov;
     //static int bf_sqrt;
     //static float minFootprintWidth;
@@ -62,6 +67,7 @@ private:
 
     bool visited;
     bool waiting;
+    bool isInterestingnessSet;
 
     int grd_x, grd_y;
     int depth;

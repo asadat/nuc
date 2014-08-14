@@ -184,7 +184,7 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
 
         if(gotoPosService.call(srv))
         {
-            ROS_INFO("Waypoint is sent to Pelican Controller");
+            //ROS_INFO("Waypoint is sent to Pelican Controller");
         }
         else
         {

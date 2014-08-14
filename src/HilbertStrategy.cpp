@@ -98,13 +98,13 @@ void HilbertStrategy::RotatePointOrderBy90(std::vector<TooN::Vector<3> > & list,
 {
     static bool first = true;
 
-    if(first && clockwise)
-    {
-        for(unsigned int i=0; i<list.size(); i++)
-        {
-            ROS_INFO("O(%f,%f)", list[i][0],list[i][1]);
-        }
-    }
+//    if(first && clockwise)
+//    {
+//        for(unsigned int i=0; i<list.size(); i++)
+//        {
+//            ROS_INFO("O(%f,%f)", list[i][0],list[i][1]);
+//        }
+//    }
     if(clockwise)
     {
         //int s = sqrt(list.size());
@@ -115,16 +115,16 @@ void HilbertStrategy::RotatePointOrderBy90(std::vector<TooN::Vector<3> > & list,
             list[i][1] = -t[0];
         }
 
-        if(first)
-        {
-            for(unsigned int i=0; i<list.size(); i++)
-            {
-                ROS_INFO("M(%f,%f)", list[i][0],list[i][1]);
-            }
+//        if(first)
+//        {
+//            for(unsigned int i=0; i<list.size(); i++)
+//            {
+//                ROS_INFO("M(%f,%f)", list[i][0],list[i][1]);
+//            }
 
-            first = false;
+//            first = false;
 
-        }
+//        }
     }
 
     if(!clockwise)
@@ -162,9 +162,9 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
-        it = hilbert[lastDepth].begin();
+        it = hilbert[0].begin();
         firstCall = false;
-        curDepth = lastDepth;
+        curDepth = 0;
         return true;
     }
     //**
@@ -172,11 +172,12 @@ bool HilbertStrategy::UpdateIterator()
 
     if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
     {
+        //ROS_INFO("UP");
         CNode* parent = (*it)->parent;
-        if(!parent->children[0]->visited &&
-           !parent->children[0]->visited &&
-           !parent->children[0]->visited &&
-           !parent->children[0]->visited)
+//        if(!parent->children[0]->visited &&
+//           !parent->children[0]->visited &&
+//           !parent->children[0]->visited &&
+//           !parent->children[0]->visited)
         {
             for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
             {
@@ -189,8 +190,9 @@ bool HilbertStrategy::UpdateIterator()
             }
         }
     }
-    else if(curDepth < lastDepth && (*it)->IsNodeInteresting())
+    else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
     {
+        //ROS_INFO("DOWN");
         CNode* parent = (*it);
         for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
         {
@@ -204,7 +206,7 @@ bool HilbertStrategy::UpdateIterator()
     }
 
 
-    while((*it)->visited)
+    while(!(*it)->NeedsVisitation()/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
     {
         it++;
         if(it == hilbert[curDepth].end())
@@ -228,21 +230,21 @@ CNode* HilbertStrategy::GetNextNode()
 
 void HilbertStrategy::glDraw()
 {
-    if(nodeStack.size() > 2)
-    {
-        glColor3f(1,0,0);
-        glLineWidth(4);
-        glBegin(GL_LINES);
-        for(unsigned int i=0; i<nodeStack.size()-1;i++)
-        {
-            TooN::Vector<3> p1 =nodeStack[i+1]->GetMAVWaypoint();
-            TooN::Vector<3> p2 =nodeStack[i]->GetMAVWaypoint();
+//    if(nodeStack.size() > 2)
+//    {
+//        glColor3f(1,0,0);
+//        glLineWidth(4);
+//        glBegin(GL_LINES);
+//        for(unsigned int i=0; i<nodeStack.size()-1;i++)
+//        {
+//            TooN::Vector<3> p1 =nodeStack[i+1]->GetMAVWaypoint();
+//            TooN::Vector<3> p2 =nodeStack[i]->GetMAVWaypoint();
 
-            glVertex3f(p1[0],p1[1],p1[2]);
-            glVertex3f(p2[0],p2[1],p2[2]);
-        }
-        glEnd();
-    }
+//            glVertex3f(p1[0],p1[1],p1[2]);
+//            glVertex3f(p2[0],p2[1],p2[2]);
+//        }
+//        glEnd();
+//    }
 
     for(int k=1; k< 10; k++)
     {

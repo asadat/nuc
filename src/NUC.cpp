@@ -251,6 +251,22 @@ void NUC::glDraw()
      glEnd();
 
 
+     if(pathHistory.size() > 2)
+     {
+         glColor3f(1,0,0);
+         glLineWidth(4);
+         glBegin(GL_LINES);
+         for(unsigned int i=0; i<pathHistory.size()-1;i++)
+         {
+             TooN::Vector<3> p1 =pathHistory[i+1];
+             TooN::Vector<3> p2 =pathHistory[i];
+
+             glVertex3f(p1[0],p1[1],p1[2]);
+             glVertex3f(p2[0],p2[1],p2[2]);
+         }
+         glEnd();
+     }
+
      tree->glDraw();
      mav.glDraw();
      traversal->glDraw();
@@ -312,11 +328,12 @@ void NUC::SetNextGoal()
     curGoal = traversal->GetNextNode();
     if(curGoal != NULL)
     {
-        traverseLength += sqrt((mav.GetPos()-curGoal->pos)*(mav.GetPos()-curGoal->pos));
-        LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
+        pathHistory.push_back(curGoal->GetMAVWaypoint());
+        traverseLength += sqrt((mav.GetPos()-curGoal->GetMAVWaypoint())*(mav.GetPos()-curGoal->GetMAVWaypoint()));
+        LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
-        ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+        //ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
     }
 }
 
@@ -333,7 +350,7 @@ void NUC::OnReachedGoal()
         }
         else
         {
-            ROS_INFO("New goal ... depth %d", curGoal->depth);
+            //ROS_INFO("New goal ... depth %d", curGoal->depth);
             mav.SetGoal(curGoal->GetMAVWaypoint());
         }
     }
@@ -359,7 +376,7 @@ bool NUC::VisitGoal()
     if(!curGoal->visited)
     {
 
-        ROS_INFO("start sensing ....");
+       // ROS_INFO("start sensing ....");
         LOG("SENSING_START %f \n", sensingStart.toSec());
         sensingStart = ros::Time::now();
         curGoal->visited = true;

@@ -58,6 +58,7 @@ private:
     TraversalStrategy * traversal;
     CNode* curGoal;
 
+    std::vector<TooN::Vector<3> > pathHistory;
     MAV mav;
 
     //bool bVisEnabled;

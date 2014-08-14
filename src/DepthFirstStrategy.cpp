@@ -4,7 +4,10 @@
 DepthFirstStrategy::DepthFirstStrategy(CNode *root)
 {
     last = NULL;
+
     nodeStack.push_back(root);
+    //std::copy(root->children.begin(),root->children.end(), std::back_inserter(nodeStack));
+
 }
 
 DepthFirstStrategy::~DepthFirstStrategy()
