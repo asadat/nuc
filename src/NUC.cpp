@@ -28,6 +28,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+
     traverseLength = 0;
     isOver = false;
     sim_running = true;
@@ -216,24 +217,24 @@ void NUC::MarkNodesInterestingness()
 
 void NUC::glDraw()
 {
-     float w=64;
-     glLineWidth(1);
-     glColor3f(0.3,0.3,0.3);
-     glBegin(GL_LINES);
+//     float w=64;
+//     glLineWidth(1);
+//     glColor3f(0.3,0.3,0.3);
+//     glBegin(GL_LINES);
 
-     for(int i=0; i<=w; i++)
-     {
-         glVertex3f(-w/2, -w/2+i, 0);
-         glVertex3f( w/2, -w/2+i, 0);
-     }
+//     for(int i=0; i<=w; i++)
+//     {
+//         glVertex3f(-w/2, -w/2+i, 0);
+//         glVertex3f( w/2, -w/2+i, 0);
+//     }
 
-     for(int i=0; i<=w; i++)
-     {
-         glVertex3f(-w/2+i, -w/2, 0);
-         glVertex3f(-w/2+i, w/2, 0);
-     }
+//     for(int i=0; i<=w; i++)
+//     {
+//         glVertex3f(-w/2+i, -w/2, 0);
+//         glVertex3f(-w/2+i, w/2, 0);
+//     }
 
-     glEnd();
+//     glEnd();
 
      glLineWidth(5);
      glBegin(GL_LINES);
@@ -299,7 +300,7 @@ void NUC::glDraw()
 
 
              glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-             glColor3f(0.2,1,0.2);
+             glColor4f(0.2,1,0.2,0.4);
              glBegin(GL_POLYGON);
              glVertex3f(r1[0],r1[1], 0.11);
              glVertex3f(r2[0],r2[1], 0.11);
@@ -519,5 +520,9 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['0'])
     {
         NUCParam::sim_running = !NUCParam::sim_running;
+    }
+    else if(key['1'])
+    {
+        CNode::drawEdges = !CNode::drawEdges;
     }
 }

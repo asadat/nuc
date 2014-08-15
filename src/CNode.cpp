@@ -5,6 +5,7 @@
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
+bool CNode::drawEdges = true;
 
 //float CNode::fov = 90 *3.14/(180);
 //int CNode::bf_sqrt = 2;
@@ -116,7 +117,7 @@ void CNode::glDraw()
     TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
     //v2 = c+rot*(v2-c);
 
-    if(parent != NULL)
+    if(parent != NULL && drawEdges)
     {
         glLineWidth(1);
         glColor3f(.2,.2,.2);
@@ -139,14 +140,17 @@ void CNode::glDraw()
         glColor3f(0,0,0);
     }
 
-    glBegin(GL_POINTS);
-    glVertex3f(v2[0],v2[1],v2[2]);
-    glEnd();
+    if(drawEdges)
+    {
+        glBegin(GL_POINTS);
+        glVertex3f(v2[0],v2[1],v2[2]);
+        glEnd();
+    }
 
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     if(children.empty())
     {
         TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
@@ -168,7 +172,7 @@ void CNode::glDraw()
 //        TooN::Vector<2,double> r3 = c + rot*(v3-c);
 //        TooN::Vector<2,double> r4 = c + rot*(v4-c);
 
-        glColor3f(0.95,1,0.95);
+        glColor3f(0.4,0.4,0.4);
         glBegin(GL_POLYGON);
         glVertex3f(v1[0],v1[1], 0.1);
         glVertex3f(v2[0],v2[1], 0.1);

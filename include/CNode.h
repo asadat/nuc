@@ -52,6 +52,8 @@ public:
 
     static TooN::Vector<2> Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2> c);
 
+    static bool drawEdges;
+
 private:
 
     std::vector<CNode*> children;
