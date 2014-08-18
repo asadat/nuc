@@ -157,14 +157,22 @@ bool NUC::RectIntersect(Rect r, Rect d)
 
 void NUC::PopulateTargets()
 {
+    CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
+    Rect lr;
+    if(leaf)
+        lr = leaf->GetFootPrint();
+
     srand(time(NULL));
     int n=0;
     double l = sqrt((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
+    l = floor(l/(lr[3]-lr[1]))* (lr[3]-lr[1]);
     while(targets.size() < NUCParam::patches)
     {
         Rect r;
         r[0] = RAND(area[0], area[2]-l);
+        r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
         r[1] = RAND(area[1], area[3]-l);
+        r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
         r[2] = r[0]+l;
         r[3] = r[1]+l;
 
