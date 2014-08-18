@@ -23,12 +23,14 @@ public:
             void fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg);
             void Update();
             TooN::Vector<4> vel;
+            double delay;
         private:
             ros::Publisher fcuPose_pub;
             ros::Publisher fcuMag_pub;
             ros::Subscriber fcuCtrl_sub;
 
             TooN::Vector<4> pose;
+            std::vector<std::pair<double,TooN::Vector<4> > > poseQ;
 
     };
 
