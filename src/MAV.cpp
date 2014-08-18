@@ -227,6 +227,7 @@ void MAV::Update(double dt)
 
 MAV::AsctecFCU::AsctecFCU()
 {
+    delay = 0.01;
     this->pose = makeVector(0,0,2,0);
     vel = makeVector(0,0,0,0);
 }
@@ -246,6 +247,8 @@ void MAV::AsctecFCU::Update()
     static unsigned int p_seq = 0;
     static unsigned int m_seq = 0;
 
+    static Vector<4> p = makeVector(0,0,0,0);
+
     ros::Time t = ros::Time::now();
 
     if((t-last_pose).toSec() > 0.02) // = 5 hz
@@ -253,15 +256,27 @@ void MAV::AsctecFCU::Update()
 
         last_pose = t;
 
-        p_seq++;
-        geometry_msgs::PoseWithCovarianceStamped p_msg;
-        p_msg.pose.pose.position.x = pose[0];
-        p_msg.pose.pose.position.y = pose[1];
-        p_msg.pose.pose.position.z = pose[2];
-        p_msg.header.stamp = t;
-        p_msg.header.seq = p_seq;
 
-        fcuPose_pub.publish(p_msg);
+        while(poseQ.size()>1  && fabs(t.toSec() - poseQ[poseQ.size()-2].first) < fabs(t.toSec() - poseQ[poseQ.size()-1].first) )
+            poseQ.pop_back();
+
+        if(poseQ.size() > 2)
+        {
+            p_seq++;
+            geometry_msgs::PoseWithCovarianceStamped p_msg;
+            p = poseQ.back().second;
+            p_msg.pose.pose.position.x = p[0];
+            p_msg.pose.pose.position.y = p[1];
+            p_msg.pose.pose.position.z = p[2];
+            p_msg.header.stamp = t;
+            p_msg.header.seq = p_seq;
+
+            fcuPose_pub.publish(p_msg);
+        }
+        else
+        {
+            poseQ.clear();
+        }
     }
 
     if((t-last_mag).toSec() > 1/50) // = 50 hz
@@ -274,8 +289,8 @@ void MAV::AsctecFCU::Update()
             m_seq++;
             geometry_msgs::Vector3Stamped m_msg;
 
-            m_msg.vector.x = cos(pose[3]+1.57/2);
-            m_msg.vector.y = sin(pose[3]+1.57/2);
+            m_msg.vector.x = cos(p[3]+1.57/2);
+            m_msg.vector.y = sin(p[3]+1.57/2);
 
             m_msg.header.stamp = t;
             m_msg.header.seq = m_seq;
@@ -283,6 +298,9 @@ void MAV::AsctecFCU::Update()
             fcuMag_pub.publish(m_msg);
 
             pose += dt * NUCParam::speed * vel;
+            poseQ.insert(poseQ.begin(), std::pair<double,Vector<4> >(t.toSec()+delay,pose));
+
+
         }
     }
 }
@@ -316,4 +334,5 @@ void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
     vel[1] = p[1] + sigv[1];
     vel[2] = msg->z + sigv[2];
     vel[3] = 0;//msg->yaw;
+
 }
