@@ -15,105 +15,105 @@ my_tree: !!opencv-ml-tree
       truncate_pruned_tree: 1
       priors: !!opencv-matrix
          rows: 1
-         cols: 3
+         cols: 4
          dt: d
-         data: [ 1., 1., 1. ]
+         data: [ 1., 1., 1., 1. ]
    var_type: [ 0, 0, 0, 0 ]
    cat_count: !!opencv-matrix
       rows: 1
       cols: 1
       dt: i
-      data: [ 3 ]
+      data: [ 4 ]
    cat_map: !!opencv-matrix
       rows: 1
-      cols: 3
+      cols: 4
       dt: i
-      data: [ 0, 1, 2 ]
-   best_tree_idx: 19
+      data: [ 0, 1, 2, 3 ]
+   best_tree_idx: 6
    nodes:
       -
          depth: 0
-         sample_count: 6751
+         sample_count: 3393
          value: 2.
          norm_class_idx: 2
-         Tn: 22
-         complexity: 2
-         alpha: 2055.
-         node_risk: 4213.
-         tree_risk: 1741.
-         tree_error: 199.
+         Tn: 8
+         complexity: 3
+         alpha: 7.4150000000000000e+02
+         node_risk: 2158.
+         tree_risk: 460.
+         tree_error: 46.
          splits:
-            - { var:1, quality:4.3948627929687500e+03,
-                le:1.2800749206542969e+02 }
+            - { var:2, quality:1.8951907958984375e+03,
+                le:1.5206134033203125e+02 }
       -
          depth: 1
-         sample_count: 4304
+         sample_count: 2246
          value: 0.
          norm_class_idx: 0
-         Tn: 21
-         complexity: 1
-         alpha: 1214.
-         node_risk: 1880.
-         tree_risk: 1689.
-         tree_error: 191.
+         Tn: 2147483647
+         complexity: 2
+         alpha: 779.
+         node_risk: 1367.
+         tree_risk: 456.
+         tree_error: 46.
          splits:
-            - { var:1, quality:3.4300800781250000e+03,
-                le:1.1447730255126953e+02 }
+            - { var:2, quality:1.5514627685546875e+03,
+                le:1.1680513763427734e+02 }
       -
          depth: 2
-         sample_count: 2052
-         value: 0.
-         norm_class_idx: 0
-         Tn: 11
+         sample_count: 867
+         value: 1.
+         norm_class_idx: 1
+         Tn: 2
          complexity: 1
-         alpha: 6.
-         node_risk: 7.
-         tree_risk: 7.
+         alpha: 1.
+         node_risk: 1.
+         tree_risk: 1.
          tree_error: 0.
       -
          depth: 2
-         sample_count: 2252
-         value: 1.
-         norm_class_idx: 1
-         Tn: 20
-         complexity: 1
-         alpha: 202.
-         node_risk: 529.
-         tree_risk: 468.
-         tree_error: 61.
-         splits:
-            - { var:2, quality:1.8024790039062500e+03,
-                le:1.2559473419189453e+02 }
-      -
-         depth: 3
-         sample_count: 1837
-         value: 1.
-         norm_class_idx: 1
-         Tn: 16
-         complexity: 1
-         alpha: 9.1999999999999993e+00
-         node_risk: 129.
-         tree_risk: 114.
-         tree_error: 15.
-      -
-         depth: 3
-         sample_count: 415
+         sample_count: 1379
          value: 0.
          norm_class_idx: 0
-         Tn: 19
+         Tn: 7
          complexity: 1
-         alpha: 107.
-         node_risk: 165.
-         tree_risk: 152.
-         tree_error: 13.
+         alpha: 363.
+         node_risk: 501.
+         tree_risk: 455.
+         tree_error: 46.
+         splits:
+            - { var:1, quality:1.2040926513671875e+03,
+                le:1.2208979797363281e+02 }
+      -
+         depth: 3
+         sample_count: 877
+         value: 0.
+         norm_class_idx: 0
+         Tn: 5
+         complexity: 1
+         alpha: 5.
+         node_risk: 10.
+         tree_risk: 10.
+         tree_error: 0.
+      -
+         depth: 3
+         sample_count: 502
+         value: 3.
+         norm_class_idx: 3
+         Tn: 6
+         complexity: 1
+         alpha: 69.
+         node_risk: 93.
+         tree_risk: 82.
+         tree_error: 11.
       -
          depth: 1
-         sample_count: 2447
+         sample_count: 1147
          value: 2.
          norm_class_idx: 2
-         Tn: 18
+         Tn: 3
          complexity: 1
-         alpha: 46.
-         node_risk: 60.
-         tree_risk: 52.
-         tree_error: 8.
+         alpha: 2.
+         node_risk: 4.
+         tree_risk: 4.
+         tree_error: 0.

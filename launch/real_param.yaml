@@ -10,7 +10,7 @@ area_rotation: 0.0
 sensing_time: 5
 interesting_simulation: false
 #interesting_label: human
-interesting_label: carpet
+interesting_label: cover
 training_set_dir: /home/autolab/hydro_workspace/src/nuc/bin
 logging: true
 log_folder: /home/autolab/hydro_workspace/src/nuc/log

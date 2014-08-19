@@ -1,3 +1,4 @@
-grass 14
-sand 10
-carpet 12
+grass 5
+sand 5
+carpet 5
+cover 2
