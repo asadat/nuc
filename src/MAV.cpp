@@ -227,7 +227,7 @@ void MAV::Update(double dt)
 
 MAV::AsctecFCU::AsctecFCU()
 {
-    delay = 0.01;
+    delay = 0;
     this->pose = makeVector(0,0,2,0);
     vel = makeVector(0,0,0,0);
 }
@@ -257,10 +257,10 @@ void MAV::AsctecFCU::Update()
         last_pose = t;
 
 
-        while(poseQ.size()>1  && fabs(t.toSec() - poseQ[poseQ.size()-2].first) < fabs(t.toSec() - poseQ[poseQ.size()-1].first) )
-            poseQ.pop_back();
+//        while(poseQ.size()>1  && fabs(t.toSec() - poseQ[poseQ.size()-2].first) < fabs(t.toSec() - poseQ[poseQ.size()-1].first) )
+//            poseQ.pop_back();
 
-        if(poseQ.size() > 2)
+//        if(poseQ.size() > 2)
         {
             p_seq++;
             geometry_msgs::PoseWithCovarianceStamped p_msg;
@@ -273,7 +273,7 @@ void MAV::AsctecFCU::Update()
 
             fcuPose_pub.publish(p_msg);
         }
-        else
+//        else
         {
             poseQ.clear();
         }

@@ -6,6 +6,7 @@
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
 bool CNode::drawEdges = true;
+bool CNode::drawCoverage = false;
 
 //float CNode::fov = 90 *3.14/(180);
 //int CNode::bf_sqrt = 2;
@@ -14,6 +15,7 @@ bool CNode::drawEdges = true;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    coverage = 0;
     isInterestingnessSet = false;
     visited = false;
     grd_x = 0;
@@ -150,7 +152,12 @@ void CNode::glDraw()
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    if(drawCoverage)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     if(children.empty())
     {
         TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
@@ -172,7 +179,11 @@ void CNode::glDraw()
 //        TooN::Vector<2,double> r3 = c + rot*(v3-c);
 //        TooN::Vector<2,double> r4 = c + rot*(v4-c);
 
-        glColor3f(0.4,0.4,0.4);
+        if(drawCoverage)
+            glColor4f(1-coverage,1-coverage,1-coverage,1);
+        else
+            glColor3f(0,0,0);
+
         glBegin(GL_POLYGON);
         glVertex3f(v1[0],v1[1], 0.1);
         glVertex3f(v2[0],v2[1], 0.1);
@@ -309,6 +320,13 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
 
     list.push_back(children[minidx]);
     return children[minidx]->GetNearestLeafAndParents(p, list);
+}
+
+void CNode::propagateCoverage()
+{
+    coverage += 0.1;
+    for(unsigned int i=0; i<children.size();i++)
+        children[i]->propagateCoverage();
 }
 
 bool CNode::ChildrenNeedVisitation()

@@ -278,7 +278,9 @@ void NUC::glDraw()
 
      tree->glDraw();
      mav.glDraw();
-     traversal->glDraw();
+
+     if(!isOver)
+         traversal->glDraw();
 
      TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
      TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
@@ -307,7 +309,11 @@ void NUC::glDraw()
              Vector<2,double> r4 = c + rot*(v4-c);
 
 
-             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+             if(!CNode::drawCoverage)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+             else
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
              glColor4f(0.2,1,0.2,0.4);
              glBegin(GL_POLYGON);
              glVertex3f(r1[0],r1[1], 0.11);
@@ -399,6 +405,7 @@ bool NUC::VisitGoal()
         for(unsigned int i=0; i<curGoal->children.size();i++)
             curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
 
+        curGoal->propagateCoverage();
         return true;
     }
     else
@@ -532,5 +539,9 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['1'])
     {
         CNode::drawEdges = !CNode::drawEdges;
+    }
+    else if(key['2'])
+    {
+        CNode::drawCoverage = !CNode::drawCoverage;
     }
 }

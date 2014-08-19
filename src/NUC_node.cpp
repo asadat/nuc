@@ -163,6 +163,7 @@ void render_event()
             Cam_Plane[0], Cam_Plane[1], Cam_Plane[2],
             Cam_Normal[0], Cam_Normal[1], Cam_Normal[2]);
 
+     // glOrtho(-64.0, 64.0, -64.0, 64.0, 1.0, 30.0);
 
 
    NUC::Instance()->glDraw();

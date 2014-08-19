@@ -40,6 +40,8 @@ public:
 
     bool IsLeaf(){return children.empty();}
 
+    void propagateCoverage();
+
     // if there is any descendant that is not visited or we
     // don't know if it is interesting or not
     bool NeedsVisitation();
@@ -53,6 +55,7 @@ public:
     static TooN::Vector<2> Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2> c);
 
     static bool drawEdges;
+    static bool drawCoverage;
 
 private:
 
@@ -76,6 +79,8 @@ private:
     Rect footPrint;
     TooN::Vector<3> pos;
     bool isInteresting;
+
+    double coverage;
 
     friend class HilbertStrategy;
     friend class LawnmowerStrategy;
