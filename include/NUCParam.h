@@ -22,6 +22,7 @@ public:
     static std::string training_set_dir;
     static int image_w;
     static int image_h;
+    static std::string strategy;
 
     static bool simulation;
     static bool interesting_simulation;

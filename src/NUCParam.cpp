@@ -22,6 +22,7 @@ bool NUCParam::sim_running = true;
 double NUCParam::percent_interesting = 20;
 int NUCParam::patches = 5;
 bool NUCParam::auto_exit = true;
+std::string NUCParam::strategy = "lm";
 
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
@@ -36,6 +37,7 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param("training_set_dir", training_set_dir, std::string(""));
     nh.param<int>("image_w",image_w,640);
     nh.param<int>("image_h",image_h,480);
+    nh.param("strategy", strategy, std::string("lm"));
 
     nh.param<bool>("simulation", simulation, true);
     nh.param<bool>("interesting_simulation", interesting_simulation, true);

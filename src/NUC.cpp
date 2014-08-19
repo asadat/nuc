@@ -64,27 +64,27 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 //    private_node_handle_.param<double>("area_length",area_length,16);
 
     int traversalStrategy=-1;
-    std::string strategy_str;
-    private_node_handle_.param("strategy", strategy_str, std::string("lm"));
+    //std::string strategy_str;
+    //private_node_handle_.param("strategy", strategy_str, std::string("lm"));
 
-    if(strategy_str == "lm")
+    if(NUCParam::strategy == "lm")
     {
         traversalStrategy = 2;
     }
-    else if(strategy_str == "df")
+    else if(NUCParam::strategy == "df")
     {
         traversalStrategy = 0;
     }
-    else if(strategy_str == "sc")
+    else if(NUCParam::strategy == "sc")
     {
         traversalStrategy = 1;
     }
-    else if(strategy_str == "ts")
+    else if(NUCParam::strategy == "ts")
     {
         ROS_INFO("test strategy");
 
         traversalStrategy = 3;
-    }else if(strategy_str == "hi")
+    }else if(NUCParam::strategy == "hi")
     {
         ROS_INFO("hilber strategy");
 
@@ -374,8 +374,8 @@ void NUC::OnReachedGoal()
 void NUC::OnTraverseEnd()
 {
     endTime = ros::Time::now();
-    ROS_INFO("Coverage duration: %f Length %f\n", (endTime-startTime).toSec(), traverseLength);
-    LOG("DURATION %f Length %f\n", (endTime-startTime).toSec(), traverseLength);
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f\n", NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
+    LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f\n",NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
     SAVE_LOG();
 
     if(NUCParam::auto_exit)

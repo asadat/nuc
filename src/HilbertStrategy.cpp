@@ -192,6 +192,10 @@ bool HilbertStrategy::UpdateIterator()
     }
     else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
     {
+         /* ChildrenNeedVisitation() avoids this situation: when it goes up and finds out that the remaining children are uninteresting and
+          * only some of the visited children are interesting.
+          */
+
         //ROS_INFO("DOWN");
         CNode* parent = (*it);
         for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
