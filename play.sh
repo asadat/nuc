@@ -1,6 +1,6 @@
 LOGFILE=$(echo $1 | sed "s/\(\/[_[:alnum:]]*\)/\1\1.log/g")
-cat $LOGFILE | grep WAY | sed "s/.*: //g" > wps.log
-cat $LOGFILE | grep WAY | sed "s/.*: //g"
+cat $LOGFILE | grep NEXT_WAY_POINT | sed "s/.*: //g" > wps.log
+cat $LOGFILE | grep NEXT_WAY_POINT | sed "s/.*: //g"
 
 cat $LOGFILE | grep POSE | sed "s/.*: //g" > poses.log
 
