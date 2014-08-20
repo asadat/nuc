@@ -11,4 +11,4 @@ auto_exit: true
 
 patches: 1
 percent_interesting: 40
-strategy: hi
+strategy: lm
