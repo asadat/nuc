@@ -5,11 +5,11 @@ roslaunch pelican_ctrl sim.launch &
 sleep 5.0
 
 echo > results
-for PATCHES in 2 3 4  
+for PATCHES in 1  
 do
-	for STRATEGY in 1 2 3 
+	for STRATEGY in 1 2 3  
 	do
-		for PERCENT in 10 20 30 40  
+		for PERCENT in 10 20 30 40 50 60 70 80 90 100 
 		do
 			#if [ $PATCHES -gt 1 ] && [ $PERCENT -gt 40 ]; then 
 			#	continue

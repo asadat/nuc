@@ -333,9 +333,11 @@ void NUC::StartTraversing()
    ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
    LOG("starttime: %f \n", startTime.toSec());
+   pathHistory.push_back(mav.GetPos());
    SetNextGoal();
    SAVE_LOG();
    mav.SetGoal(curGoal->GetMAVWaypoint(), true);
+
 }
 
 void NUC::SetNextGoal()
@@ -344,11 +346,11 @@ void NUC::SetNextGoal()
     if(curGoal != NULL)
     {
         pathHistory.push_back(curGoal->GetMAVWaypoint());
-        traverseLength += sqrt((mav.GetPos()-curGoal->GetMAVWaypoint())*(mav.GetPos()-curGoal->GetMAVWaypoint()));
+        //traverseLength += sqrt((mav.GetPos()-curGoal->GetMAVWaypoint())*(mav.GetPos()-curGoal->GetMAVWaypoint()));
         LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
-        //ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+        ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
     }
 }
 
@@ -366,13 +368,20 @@ void NUC::OnReachedGoal()
         else
         {
             //ROS_INFO("New goal ... depth %d", curGoal->depth);
-            mav.SetGoal(curGoal->GetMAVWaypoint());
+            if(!NUCParam::bypass_controller)
+                mav.SetGoal(curGoal->GetMAVWaypoint());
         }
     }
 }
 
 void NUC::OnTraverseEnd()
 {
+    if(pathHistory.size()>1)
+    {
+        for(unsigned int i=0; i<pathHistory.size()-1; i++)
+            traverseLength += sqrt((pathHistory[i]-pathHistory[i+1])*(pathHistory[i]-pathHistory[i+1]));
+    }
+
     endTime = ros::Time::now();
     ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f\n", NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
     LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f\n",NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
@@ -480,7 +489,7 @@ void NUC::Update()
     if(isOver)
         return;
 
-    static double rosFreq=15;
+    static double rosFreq=15.0;
     static double ros_p = 1/rosFreq;
     static ros::Time lastTime = ros::Time::now();
     static ros::Time lastTimeMav = ros::Time::now();
@@ -509,11 +518,13 @@ void NUC::Update()
     }
 
     double dtmav = (ros::Time::now()-lastTimeMav).toSec();
-    if(dtmav > 0.001)
+    if(NUCParam::bypass_controller || dtmav > 0.001)
     {
         lastTimeMav = ros::Time::now();
-        mav.Update(dtmav);
-        if(mav.AtGoal())
+        if(!NUCParam::bypass_controller)
+            mav.Update(dtmav);
+
+        if(NUCParam::bypass_controller || mav.AtGoal())
         {
             OnReachedGoal();
         }

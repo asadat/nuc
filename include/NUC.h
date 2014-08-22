@@ -40,6 +40,7 @@ public:
 
     //static bool simulation;
     static FILE* logFile;
+    bool isOver;
 
 private:
 
@@ -70,7 +71,6 @@ private:
     double traverseLength;
 
     bool sim_running;
-    bool isOver;
 
     static std::string logFileName;
 

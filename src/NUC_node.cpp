@@ -309,6 +309,15 @@ int main(int argc, char ** argv)
     ros::init(argc, argv, "NUC");
     NUC::Instance(argc, argv);
     nucObj = NUC::Instance();
+
+    if(NUCParam::bypass_controller)
+    {
+        while(!nucObj->isOver)
+        {
+            nucObj->Update();
+        }
+    }
+
     mainLoop();
     return 0;
 }

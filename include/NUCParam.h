@@ -36,6 +36,7 @@ public:
     static double percent_interesting;
     static int patches;
     static bool auto_exit;
+    static bool bypass_controller;
 
 };
 
