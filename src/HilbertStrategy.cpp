@@ -9,7 +9,7 @@ HilbertStrategy::HilbertStrategy(CNode *root)
 {
     assert(NUCParam::bf_sqrt == 2);
 
-
+    isover = false;
     lastDepth = HilbertCurveOther(root);
 //    for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
 //        nodeStack.push_back(hilbert[lastDepth][i]);
@@ -223,7 +223,8 @@ bool HilbertStrategy::UpdateIterator()
 
 CNode* HilbertStrategy::GetNextNode()
 {
-    if(UpdateIterator())
+    isover = !UpdateIterator();
+    if(!isover)
     {
         nodeStack.push_back(*it);
         return *it;
@@ -231,31 +232,48 @@ CNode* HilbertStrategy::GetNextNode()
 
     return NULL;
 }
+void HilbertStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
+{
+    updateKey = false;
+
+    if(key[']'])
+    {
+        curCurve = (++curCurve)%10;
+    }
+    else if(key['['])
+    {
+        curCurve = (--curCurve)%10;
+    }
+
+}
 
 void HilbertStrategy::glDraw()
 {
-//    if(nodeStack.size() > 2)
-//    {
-//        glColor3f(1,0,0);
-//        glLineWidth(4);
-//        glBegin(GL_LINES);
-//        for(unsigned int i=0; i<nodeStack.size()-1;i++)
-//        {
-//            TooN::Vector<3> p1 =nodeStack[i+1]->GetMAVWaypoint();
-//            TooN::Vector<3> p2 =nodeStack[i]->GetMAVWaypoint();
-
-//            glVertex3f(p1[0],p1[1],p1[2]);
-//            glVertex3f(p2[0],p2[1],p2[2]);
-//        }
-//        glEnd();
-//    }
 
     for(int k=1; k< 10; k++)
     {
-        if(k==curDepth && !hilbert[k].empty())
+        if(!isover)
         {
-            glColor3f(0.5,0.6,0.6);
-            glLineWidth(4);
+            if(k==curDepth && !hilbert[k].empty())
+            {
+                glColor3f(0.5,0.6,0.6);
+                glLineWidth(4);
+                glBegin(GL_LINES);
+                for(unsigned int i=0; i<hilbert[k].size()-1;i++)
+                {
+                    TooN::Vector<3> p1 =hilbert[k][i+1]->GetMAVWaypoint();
+                    TooN::Vector<3> p2 =hilbert[k][i]->GetMAVWaypoint();
+                    glVertex3f(p1[0],p1[1],p1[2]);
+                    glVertex3f(p2[0],p2[1],p2[2]);
+                }
+                glEnd();
+            }
+        }
+
+        if(k==curCurve && !hilbert[k].empty())
+        {
+            glColor3f(0.0,0.0,0.0);
+            glLineWidth(6);
             glBegin(GL_LINES);
             for(unsigned int i=0; i<hilbert[k].size()-1;i++)
             {
@@ -267,5 +285,8 @@ void HilbertStrategy::glDraw()
             glEnd();
         }
     }
+
+
+
 
 }

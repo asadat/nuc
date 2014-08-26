@@ -40,7 +40,7 @@ public:
 
     bool IsLeaf(){return children.empty();}
 
-    void propagateCoverage();
+    void propagateCoverage(double height);
 
     // if there is any descendant that is not visited or we
     // don't know if it is interesting or not
@@ -79,6 +79,7 @@ private:
     Rect footPrint;
     TooN::Vector<3> pos;
     bool isInteresting;
+    static double rootHeight;
 
     double coverage;
 

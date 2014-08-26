@@ -225,24 +225,19 @@ void NUC::MarkNodesInterestingness()
 
 void NUC::glDraw()
 {
-//     float w=64;
-//     glLineWidth(1);
-//     glColor3f(0.3,0.3,0.3);
-//     glBegin(GL_LINES);
+     double w = fabs(area[2]-area[0]);
+     glLineWidth(4);
+     glColor3f(0,0,0);
+     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+     glBegin(GL_POLYGON);
 
-//     for(int i=0; i<=w; i++)
-//     {
-//         glVertex3f(-w/2, -w/2+i, 0);
-//         glVertex3f( w/2, -w/2+i, 0);
-//     }
+     glVertex3f(-w/2, -w/2, 0.1);
+     glVertex3f( w/2, -w/2, 0.1);
+     glVertex3f( w/2, w/2, 0.1);
+     glVertex3f(-w/2, w/2, 0.1);
+     glVertex3f(-w/2, -w/2, 0.1);
 
-//     for(int i=0; i<=w; i++)
-//     {
-//         glVertex3f(-w/2+i, -w/2, 0);
-//         glVertex3f(-w/2+i, w/2, 0);
-//     }
-
-//     glEnd();
+     glEnd();
 
      glLineWidth(5);
      glBegin(GL_LINES);
@@ -260,7 +255,7 @@ void NUC::glDraw()
      glEnd();
 
 
-     if(pathHistory.size() > 2)
+     if(pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(1,0,0);
          glLineWidth(4);
@@ -274,12 +269,24 @@ void NUC::glDraw()
              glVertex3f(p2[0],p2[1],p2[2]);
          }
          glEnd();
+
+         glColor3f(1,0,0);
+         glLineWidth(5);
+         glBegin(GL_POINTS);
+         for(unsigned int i=0; i<pathHistory.size();i++)
+         {
+             TooN::Vector<3> p =pathHistory[i];
+
+             glVertex3f(p[0],p[1],p[2]);
+
+         }
+         glEnd();
      }
 
      tree->glDraw();
      mav.glDraw();
 
-     if(!isOver)
+     //if(isOver)
          traversal->glDraw();
 
      TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
@@ -414,7 +421,7 @@ bool NUC::VisitGoal()
         for(unsigned int i=0; i<curGoal->children.size();i++)
             curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
 
-        curGoal->propagateCoverage();
+        curGoal->propagateCoverage(curGoal->pos[2]);
         return true;
     }
     else
@@ -533,7 +540,7 @@ void NUC::Update()
 
 void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-    updateKey = true;
+    updateKey = false;
 
     if(key['='])
     {
@@ -554,5 +561,8 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['2'])
     {
         CNode::drawCoverage = !CNode::drawCoverage;
+
     }
+
+    traversal->hanldeKeyPressed(key, updateKey);
 }

@@ -1,15 +1,18 @@
 #!/bin/bash
 
+#export ROS_MASTER_URI=http://localhost:22322
+#roscore -p 22322 &
+#sleep 5.0
 localros
 roslaunch pelican_ctrl sim.launch &
 sleep 5.0
 
 echo > results
-for PATCHES in 1  
+for PATCHES in 1 
 do
 	for STRATEGY in 1 2 3  
 	do
-		for PERCENT in 10 20 30 40 50 60 70 80 90 100 
+		for PERCENT in 10 20 30 40 50 60 70 80 90   
 		do
 			#if [ $PATCHES -gt 1 ] && [ $PERCENT -gt 40 ]; then 
 			#	continue
@@ -43,3 +46,6 @@ do
 done
 
 killall roslaunch
+killall roscore
+killall rosmaster
+

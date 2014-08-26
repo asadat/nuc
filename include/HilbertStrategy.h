@@ -12,6 +12,7 @@ public:
 
     void glDraw();
     CNode* GetNextNode();
+    void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 
 private:
     bool UpdateIterator();
@@ -26,6 +27,8 @@ private:
     std::vector<CNode*>::iterator it;
     int lastDepth;
     int curDepth;
+    int curCurve;
+    bool isover;
 };
 
 #endif

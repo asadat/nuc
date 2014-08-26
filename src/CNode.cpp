@@ -7,6 +7,7 @@
 
 bool CNode::drawEdges = true;
 bool CNode::drawCoverage = false;
+double CNode::rootHeight = 0;
 
 //float CNode::fov = 90 *3.14/(180);
 //int CNode::bf_sqrt = 2;
@@ -27,6 +28,9 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
     pos[0] = (0.5)*(footPrint[0]+footPrint[2]);
     pos[1] = (0.5)*(footPrint[1]+footPrint[3]);
     pos[2] = (0.5)*fabs((footPrint[0]-footPrint[2])/tan(NUCParam::FOV/2.0));
+
+    if(rootHeight < pos[2])
+        rootHeight = pos[2];
 
     PopulateChildren();
 }
@@ -322,11 +326,12 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
     return children[minidx]->GetNearestLeafAndParents(p, list);
 }
 
-void CNode::propagateCoverage()
+void CNode::propagateCoverage(double height)
 {
-    coverage += 0.1;
+    double newcoverage = 1 - (height/rootHeight);
+    coverage = (newcoverage > coverage) ? newcoverage :coverage;
     for(unsigned int i=0; i<children.size();i++)
-        children[i]->propagateCoverage();
+        children[i]->propagateCoverage(height);
 }
 
 bool CNode::ChildrenNeedVisitation()
