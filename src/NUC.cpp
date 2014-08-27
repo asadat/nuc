@@ -200,24 +200,46 @@ void NUC::PopulateTargets()
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
     Rect lr;
+    double cellW;
     if(leaf)
     {
         lr = leaf->GetFootPrint();
+        cellW = fabs(lr[2]-lr[0]);
     }
 
     int n=0;
-    double lx = xy_ratio*sqrt((NUCParam::percent_interesting/(xy_ratio*100.0))* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
-    lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
+    double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
+    //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
 
     while(targets.size() < NUCParam::patches)
     {
+//        Rect r;
+//        r[0] = RAND(area[0], area[2]-lx);
+//        r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
+//        r[1] = RAND(area[1], area[3]-lx/xy_ratio);
+//        r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
+//        r[2] = r[0]+lx;
+//        r[3] = r[1]+lx/xy_ratio;
+
         Rect r;
-        r[0] = RAND(area[0], area[2]-lx);
-        r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
-        r[1] = RAND(area[1], area[3]-lx/xy_ratio);
-        r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
-        r[2] = r[0]+lx;
-        r[3] = r[1]+lx/xy_ratio;
+        r[0] = RAND(area[0], area[2]-cellW);
+        r[0] = floor(r[0]/cellW)*cellW;
+
+        r[2] = RAND(r[0], area[2]);
+        r[2] = ceil(r[2]/cellW)*cellW;
+
+        double ly = patch / (r[2]-r[0]);
+        ly = ceil(ly/cellW)*cellW;
+
+        if(ly > area[3]-area[1])
+            continue;
+
+        r[1] = RAND(area[1], area[3]-ly);
+        r[1] = floor(r[1]/cellW)*cellW;
+
+        r[3] = r[1]+ly;
+
+
 
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
