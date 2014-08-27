@@ -3,6 +3,7 @@
 
 #include "TraversalStrategy.h"
 #include "CNode.h"
+#define MAX_HILBERT_ORDER 20
 
 class HilbertStrategy: public TraversalStrategy
 {
@@ -21,7 +22,8 @@ private:
     int HilbertCurveOther(CNode* parent);
 
     std::vector<CNode*> nodeStack;
-    std::vector<CNode*> hilbert[100];
+    std::vector<CNode*> hilbert[MAX_HILBERT_ORDER];
+    int waypointCount[MAX_HILBERT_ORDER];
     //std::vector<TooN::Vector<3> > points;
 
     std::vector<CNode*>::iterator it;

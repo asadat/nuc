@@ -10,15 +10,15 @@ sleep 5.0
 echo > results
 for PATCHES in 1 
 do
-	for STRATEGY in 1 2 3  
+	for STRATEGY in 3  
 	do
-		for PERCENT in 10 20 30 40 50 60 70 80 90   
+		for PERCENT in 50
 		do
 			#if [ $PATCHES -gt 1 ] && [ $PERCENT -gt 40 ]; then 
 			#	continue
 			#fi
 
-			for i in 1 2 3 4 5 6 7 8 9 10
+			for i in `seq 1 1 50`
 			do 
 			    cat param.yaml > ../launch/batchrun_param.yaml
 			    echo "patches: $PATCHES" >> ../launch/batchrun_param.yaml
@@ -39,7 +39,8 @@ do
                     echo "strategy: hi" >> ../launch/batchrun_param.yaml
                  fi
                  echo "run:$i strategy:$STRATEGY patches:$PATCHES percent:$PERCENT" 
-			    roslaunch nuc batchrun.launch  | grep "STRATEGY" >> results
+			    #roslaunch nuc batchrun.launch  | grep "STRATEGY" >> results
+ 			     roslaunch nuc batchrun.launch  | grep -e "#waypoint"
 			done
 		done
 	done

@@ -1,4 +1,5 @@
 
+#include "opencv2/stitching/stitcher.hpp"
 #include "NUC.h"
 #include "GL/glut.h"
 #include "CNode.h"
@@ -28,6 +29,43 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+//    std::vector<cv::Mat > imgs;
+//    for(int i=1; i<= 2; i++)
+//    {
+//        std::ostringstream stream;
+//        stream << "/home/autolab/hydro_workspace/src/nuc/imgs/" << i << ".jpg";
+//        std::string fn = stream.str();
+
+//        ROS_INFO("%s", fn.c_str());
+//        cv::Mat im = cv::imread(fn);
+//        imgs.push_back(im);
+//    }
+
+//    cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
+
+//    stitcher.setWarper(new cv::PlaneWarper());
+//    stitcher.setFeaturesFinder(new cv::detail::SurfFeaturesFinder(1000,3,4,3,4));
+//    stitcher.setRegistrationResol(0.1);
+//    stitcher.setSeamEstimationResol(0.1);
+//    stitcher.setCompositingResol(1);
+//    stitcher.setPanoConfidenceThresh(1);
+//    stitcher.setWaveCorrection(true);
+//    stitcher.setWaveCorrectKind(cv::detail::WAVE_CORRECT_HORIZ);
+//    stitcher.setFeaturesMatcher(new cv::detail::BestOf2NearestMatcher(false,0.3));
+//    stitcher.setBundleAdjuster(new cv::detail::BundleAdjusterRay());
+//    //Stitcher::Status status = Stitcher::ERR_NEED_MORE_IMGS;
+//    cv::Mat pano;
+//    cv::Stitcher::Status status = stitcher.stitch(imgs, pano);
+
+//    if(status == cv::Stitcher::OK)
+//    {
+//        cv::imwrite("/home/autolab/hydro_workspace/src/nuc/imgs/pano.jpg", pano);
+//    }
+//    else
+//    {
+//        ROS_INFO("Can't stitch images, error code = %d", int(status));
+//    }
+
 
     traverseLength = 0;
     isOver = false;
@@ -157,24 +195,29 @@ bool NUC::RectIntersect(Rect r, Rect d)
 
 void NUC::PopulateTargets()
 {
+    srand(time(NULL));
+    double xy_ratio = 1/5.0;
+
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
     Rect lr;
     if(leaf)
+    {
         lr = leaf->GetFootPrint();
+    }
 
-    srand(time(NULL));
     int n=0;
-    double l = sqrt((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
-    l = floor(l/(lr[3]-lr[1]))* (lr[3]-lr[1]);
+    double lx = xy_ratio*sqrt((NUCParam::percent_interesting/(xy_ratio*100.0))* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
+    lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
+
     while(targets.size() < NUCParam::patches)
     {
         Rect r;
-        r[0] = RAND(area[0], area[2]-l);
+        r[0] = RAND(area[0], area[2]-lx);
         r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
-        r[1] = RAND(area[1], area[3]-l);
+        r[1] = RAND(area[1], area[3]-lx/xy_ratio);
         r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
-        r[2] = r[0]+l;
-        r[3] = r[1]+l;
+        r[2] = r[0]+lx;
+        r[3] = r[1]+lx/xy_ratio;
 
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
@@ -225,6 +268,7 @@ void NUC::MarkNodesInterestingness()
 
 void NUC::glDraw()
 {
+    //ROS_INFO("rendering ....");
      double w = fabs(area[2]-area[0]);
      glLineWidth(4);
      glColor3f(0,0,0);
@@ -540,27 +584,32 @@ void NUC::Update()
 
 void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-    updateKey = false;
+    //updateKey = true;
 
     if(key['='])
     {
         MAV::ChangeSpeed(0.1);
+        //updateKey = false;
     }
     else if(key['-'])
     {
         MAV::ChangeSpeed(-0.1);
+        //updateKey = false;
     }
     else if(key['0'])
     {
         NUCParam::sim_running = !NUCParam::sim_running;
+        //updateKey = false;
     }
     else if(key['1'])
     {
         CNode::drawEdges = !CNode::drawEdges;
+        //updateKey = false;
     }
     else if(key['2'])
     {
         CNode::drawCoverage = !CNode::drawCoverage;
+        //updateKey = false;
 
     }
 

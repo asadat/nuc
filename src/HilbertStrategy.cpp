@@ -7,6 +7,9 @@ using namespace TooN;
 
 HilbertStrategy::HilbertStrategy(CNode *root)
 {
+    for(unsigned int i=0; i< MAX_HILBERT_ORDER; i++)
+        waypointCount[i] = 0;
+
     assert(NUCParam::bf_sqrt == 2);
 
     isover = false;
@@ -223,9 +226,20 @@ bool HilbertStrategy::UpdateIterator()
 
 CNode* HilbertStrategy::GetNextNode()
 {
-    isover = !UpdateIterator();
+    bool over = !UpdateIterator();
+    if(over != isover)
+    {
+        for(unsigned int i=0; i< MAX_HILBERT_ORDER; i++)
+        {
+            if(waypointCount[i] > 0)
+                ROS_INFO("#waypoints in Hilbert order %d:\t%d", i, waypointCount[i]);
+        }
+    }
+
+    isover = over;
     if(!isover)
     {
+        waypointCount[curDepth]++;
         nodeStack.push_back(*it);
         return *it;
     }
@@ -234,15 +248,15 @@ CNode* HilbertStrategy::GetNextNode()
 }
 void HilbertStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-    updateKey = false;
-
     if(key[']'])
     {
         curCurve = (++curCurve)%10;
+       // updateKey = false;
     }
     else if(key['['])
     {
         curCurve = (--curCurve)%10;
+        //updateKey = false;
     }
 
 }
@@ -250,7 +264,7 @@ void HilbertStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool 
 void HilbertStrategy::glDraw()
 {
 
-    for(int k=1; k< 10; k++)
+    for(int k=1; k< MAX_HILBERT_ORDER; k++)
     {
         if(!isover)
         {

@@ -65,7 +65,7 @@ void update_event(int ms)
     }
 
 
-    doUpdate = false; // any change and we go again. If we don't change anything, we stop updating
+    doUpdate = true; // any change and we go again. If we don't change anything, we stop updating
 
     NUC::Instance()->hanldeKeyPressed(Key, doUpdate);
 
