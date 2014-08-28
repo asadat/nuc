@@ -49,6 +49,8 @@ private:
     void PopulateTargets();
     void MarkNodesInterestingness();
     bool RectIntersect(Rect r, Rect d);
+    TooN::Vector<3> GetColor(double h);
+    void runPhotoStitcher();
 
     static NUC* instance;
 

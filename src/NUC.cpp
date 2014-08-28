@@ -29,44 +29,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
-//    std::vector<cv::Mat > imgs;
-//    for(int i=1; i<= 2; i++)
-//    {
-//        std::ostringstream stream;
-//        stream << "/home/autolab/hydro_workspace/src/nuc/imgs/" << i << ".jpg";
-//        std::string fn = stream.str();
-
-//        ROS_INFO("%s", fn.c_str());
-//        cv::Mat im = cv::imread(fn);
-//        imgs.push_back(im);
-//    }
-
-//    cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
-
-//    stitcher.setWarper(new cv::PlaneWarper());
-//    stitcher.setFeaturesFinder(new cv::detail::SurfFeaturesFinder(1000,3,4,3,4));
-//    stitcher.setRegistrationResol(0.1);
-//    stitcher.setSeamEstimationResol(0.1);
-//    stitcher.setCompositingResol(1);
-//    stitcher.setPanoConfidenceThresh(1);
-//    stitcher.setWaveCorrection(true);
-//    stitcher.setWaveCorrectKind(cv::detail::WAVE_CORRECT_HORIZ);
-//    stitcher.setFeaturesMatcher(new cv::detail::BestOf2NearestMatcher(false,0.3));
-//    stitcher.setBundleAdjuster(new cv::detail::BundleAdjusterRay());
-//    //Stitcher::Status status = Stitcher::ERR_NEED_MORE_IMGS;
-//    cv::Mat pano;
-//    cv::Stitcher::Status status = stitcher.stitch(imgs, pano);
-
-//    if(status == cv::Stitcher::OK)
-//    {
-//        cv::imwrite("/home/autolab/hydro_workspace/src/nuc/imgs/pano.jpg", pano);
-//    }
-//    else
-//    {
-//        ROS_INFO("Can't stitch images, error code = %d", int(status));
-//    }
-
-
+    //runPhotoStitcher();
     traverseLength = 0;
     isOver = false;
     sim_running = true;
@@ -185,6 +148,104 @@ NUC::~NUC()
     }
 }
 
+void NUC::runPhotoStitcher()
+{
+    ros::Time t = ros::Time::now();
+    std::vector<cv::Mat > imgs;
+    for(int i=1; i<= 72; i++)
+    {
+        std::ostringstream stream;
+        stream << "/home/autolab/hydro_workspace/src/nuc/imgs/" << i << ".jpg";
+        std::string fn = stream.str();
+
+        ROS_INFO("%s", fn.c_str());
+        cv::Mat im = cv::imread(fn);
+        imgs.push_back(im);
+    }
+
+    cv::Stitcher stitcher = cv::Stitcher::createDefault(true);
+
+    stitcher.setWarper(new cv::PlaneWarper());
+    stitcher.setFeaturesFinder(new cv::detail::SurfFeaturesFinder(1000,3,4,3,4));
+    stitcher.setRegistrationResol(0.1);
+    stitcher.setSeamEstimationResol(0.1);
+    stitcher.setCompositingResol(1);
+    stitcher.setPanoConfidenceThresh(1);
+    stitcher.setWaveCorrection(false);
+    stitcher.setWaveCorrectKind(cv::detail::WAVE_CORRECT_HORIZ);
+    stitcher.setFeaturesMatcher(new cv::detail::BestOf2NearestMatcher(false,0.3));
+    stitcher.setBundleAdjuster(new cv::detail::BundleAdjusterRay());
+    //Stitcher::Status status = Stitcher::ERR_NEED_MORE_IMGS;
+    cv::Mat pano;
+    cv::Stitcher::Status status = stitcher.stitch(imgs, pano);
+
+    if(status == cv::Stitcher::OK)
+    {
+        cv::imwrite("/home/autolab/hydro_workspace/src/nuc/imgs/pano.jpg", pano);
+    }
+    else
+    {
+        ROS_INFO("Can't stitch images, error code = %d", int(status));
+    }
+
+    ROS_INFO("dtime: %.2f", (ros::Time::now()-t).toSec());
+    exit(0);
+
+}
+
+TooN::Vector<3> NUC::GetColor(double h)
+{
+    Vector<3> c;
+    double small_dh=0.01;
+    static std::vector<Vector<3> > colors;
+    static std::vector<Vector<2> > h2c;
+
+    if(colors.empty())
+    {
+        colors.push_back(makeVector(0,0,0));
+        colors.push_back(makeVector(1,0,0));
+        colors.push_back(makeVector(0,1,0));
+        colors.push_back(makeVector(0,0,1));
+        colors.push_back(makeVector(0,1,1));
+        colors.push_back(makeVector(1,0,1));
+        colors.push_back(makeVector(1,1,0));
+        colors.push_back(makeVector(0.5,0.5,0.5));
+        std::reverse(colors.begin(), colors.end());
+    }
+
+    if(h2c.empty())
+    {
+        Vector<2> i;
+        i[0] = h;
+        i[1] = 0;
+        c = colors[0];
+        h2c.push_back(i);
+    }
+    else
+    {
+        bool flag = false;
+        for(int i=0; i<h2c.size(); i++)
+        {
+            if(fabs(h2c[i][0]-h) < small_dh)
+            {
+                c = colors[(int)h2c[i][1]];
+                flag = true;
+                break;
+            }
+        }
+
+        if(!flag)
+        {
+            Vector<2> hc;
+            hc[0] = h;
+            hc[1] = h2c.size();
+            h2c.push_back(hc);
+            c = colors[h2c.size()];
+        }
+    }
+
+    return c;
+}
 
 bool NUC::RectIntersect(Rect r, Rect d)
 {
@@ -297,8 +358,8 @@ void NUC::glDraw()
      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
      glBegin(GL_POLYGON);
 
-     glVertex3f(-w/2, -w/2, 0.1);
-     glVertex3f( w/2, -w/2, 0.1);
+     glVertex3f(-w/2, -w/2, 0.1);     
+     glVertex3f( w/2, -w/2, 0.1);     
      glVertex3f( w/2, w/2, 0.1);
      glVertex3f(-w/2, w/2, 0.1);
      glVertex3f(-w/2, -w/2, 0.1);
@@ -323,26 +384,29 @@ void NUC::glDraw()
 
      if(pathHistory.size() > 2 && !CNode::drawCoverage)
      {
-         glColor3f(1,0,0);
+         glColor3f(0,0,0);
          glLineWidth(4);
          glBegin(GL_LINES);
          for(unsigned int i=0; i<pathHistory.size()-1;i++)
          {
              TooN::Vector<3> p1 =pathHistory[i+1];
              TooN::Vector<3> p2 =pathHistory[i];
+             TooN::Vector<3> c1 = GetColor(p1[2]);
+             TooN::Vector<3> c2 = GetColor(p2[2]);
 
+             glColor3f(c1[0], c1[1], c1[2]);
              glVertex3f(p1[0],p1[1],p1[2]);
+             glColor3f(c2[0], c2[1], c2[2]);
              glVertex3f(p2[0],p2[1],p2[2]);
          }
          glEnd();
 
          glColor3f(1,0,0);
-         glLineWidth(5);
+         glLineWidth(3);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {
-             TooN::Vector<3> p =pathHistory[i];
-
+             TooN::Vector<3> p =pathHistory[i];          
              glVertex3f(p[0],p[1],p[2]);
 
          }
@@ -449,6 +513,7 @@ void NUC::OnReachedGoal()
 
 void NUC::OnTraverseEnd()
 {
+
     if(pathHistory.size()>1)
     {
         for(unsigned int i=0; i<pathHistory.size()-1; i++)

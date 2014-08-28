@@ -83,6 +83,9 @@ target_link_libraries(ImagePublisher ${catkin_LIBRARIES})
 add_executable(PlayLog src/PlayLog.cpp include/PlayLog.h)
 target_link_libraries(PlayLog ${NUC_LIBRARIES} ${catkin_LIBRARIES})
 
+#add_executable(stitcher src/stitching_detailed.cpp)
+#target_link_libraries(stitcher ${catkin_LIBRARIES})
+
 #install(TARGETS ${UEYECAM_LIB_NAME} ${UEYECAM_NODELET_NAME}
 #  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
