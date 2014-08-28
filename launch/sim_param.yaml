@@ -9,6 +9,6 @@ area_length: 128.0
 area_rotation: 0.0
 logging: false
 patches: 4
-percent_interesting: 70.0
+percent_interesting: 20.0
 auto_exit: false
 bypass_controller: true
