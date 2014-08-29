@@ -300,7 +300,12 @@ void NUC::PopulateTargets()
 
         r[3] = r[1]+ly;
 
+        ROS_INFO("STRATEGY: RECT %f %f %f %f", r[0], r[1], r[2], r[3]);
 
+//        r[0] = -16;
+//        r[1] = -1;
+//        r[2] = 16;
+//        r[3] = 9;
 
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
