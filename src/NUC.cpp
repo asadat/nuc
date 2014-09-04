@@ -162,7 +162,7 @@ void NUC::runPhotoStitcher()
 {
     ros::Time t = ros::Time::now();
     std::vector<cv::Mat > imgs;
-    for(int i=1; i<= 72; i++)
+    for(int i=1; i<= 20; i++)
     {
         std::ostringstream stream;
         stream << "/home/autolab/hydro_workspace/src/nuc/imgs/" << i << ".jpg";
@@ -234,7 +234,7 @@ TooN::Vector<3> NUC::GetColor(double h)
     else
     {
         bool flag = false;
-        for(int i=0; i<h2c.size(); i++)
+        for(unsigned int i=0; i<h2c.size(); i++)
         {
             if(fabs(h2c[i][0]-h) < small_dh)
             {
@@ -268,7 +268,7 @@ bool NUC::RectIntersect(Rect r, Rect d)
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    double xy_ratio = 1/5.0;
+    //double xy_ratio = 1/5.0;
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
     Rect lr;
@@ -283,7 +283,7 @@ void NUC::PopulateTargets()
     double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
     //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
 
-    while(targets.size() < NUCParam::patches)
+    while(targets.size() < (unsigned int)NUCParam::patches)
     {
 //        Rect r;
 //        r[0] = RAND(area[0], area[2]-lx);
@@ -491,7 +491,7 @@ void NUC::StartTraversing()
 {
    ROS_INFO("Traverse starting...");
    startTime = ros::Time::now();
-   LOG("starttime: %f \n", startTime.toSec());
+   NUC_LOG("starttime: %f \n", startTime.toSec());
    pathHistory.push_back(mav.GetPos());
    SetNextGoal();
    SAVE_LOG();
@@ -506,7 +506,7 @@ void NUC::SetNextGoal()
     {
         pathHistory.push_back(curGoal->GetMAVWaypoint());
         //traverseLength += sqrt((mav.GetPos()-curGoal->GetMAVWaypoint())*(mav.GetPos()-curGoal->GetMAVWaypoint()));
-        LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
+        NUC_LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
         ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
@@ -556,7 +556,7 @@ void NUC::OnTraverseEnd()
     ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
              asclength, desclength, asclength+desclength, xylength);
-    LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
         asclength, desclength, asclength+desclength, xylength);
     SAVE_LOG();
@@ -578,7 +578,7 @@ bool NUC::VisitGoal()
     {
 
        // ROS_INFO("start sensing ....");
-        LOG("SENSING_START %f \n", sensingStart.toSec());
+        NUC_LOG("SENSING_START %f \n", sensingStart.toSec());
         sensingStart = ros::Time::now();
         curGoal->visited = true;
     }
@@ -622,7 +622,7 @@ bool NUC::VisitGoal()
                     {
                         CNode * nd = curGoal->children[i];
                         nd->SetIsInteresting((grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0));
-                        LOG("INTERSTINGNESS %d %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x], InterestingnessSensor::Instance()->sensingCounter);
+                        NUC_LOG("INTERSTINGNESS %d %d %d %d %d\n", nd->grd_x, nd->grd_y, nd->IsNodeInteresting(), grd_int[grd_s-nd->grd_y-1][nd->grd_x], InterestingnessSensor::Instance()->sensingCounter);
 
                         curNodeInterest = curNodeInterest || (grd_int[grd_s-nd->grd_y-1][nd->grd_x]>0);
                     }
@@ -633,7 +633,7 @@ bool NUC::VisitGoal()
                         for(int j=0; j< NUCParam::bf_sqrt; j++)
                         {
                             curNodeInterest = curNodeInterest || (grd_int[j][i]>0);
-                            LOG("INTERSTINGNESS %d %d %d %d %d\n", i, j, (grd_int[j][i]>0), grd_int[j][i], InterestingnessSensor::Instance()->sensingCounter);
+                            NUC_LOG("INTERSTINGNESS %d %d %d %d %d\n", i, j, (grd_int[j][i]>0), grd_int[j][i], InterestingnessSensor::Instance()->sensingCounter);
                         }
 
                 }
@@ -643,7 +643,7 @@ bool NUC::VisitGoal()
                 {
                     sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
                     //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
-                    LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
+                    NUC_LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
                 }
             }
 
