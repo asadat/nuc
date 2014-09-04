@@ -152,7 +152,7 @@ void NUC::runPhotoStitcher()
 {
     ros::Time t = ros::Time::now();
     std::vector<cv::Mat > imgs;
-    for(int i=1; i<= 72; i++)
+    for(int i=1; i<= 20; i++)
     {
         std::ostringstream stream;
         stream << "/home/autolab/hydro_workspace/src/nuc/imgs/" << i << ".jpg";
