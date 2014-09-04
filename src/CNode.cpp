@@ -97,9 +97,6 @@ TooN::Vector<2> CNode::Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2>
 {
     TooN::Matrix<2,2,double> rot = TooN::Data(cos(deg*D2R), sin(deg*D2R),
                                      -sin(deg*D2R), cos(deg*D2R));
-
-
-
     return (c+ rot*(v-c));
 }
 
@@ -116,12 +113,7 @@ TooN::Vector<3> CNode::Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2>
 
 void CNode::glDraw()
 {
-//    TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
-//    TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
-//                                     -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
-
     TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
-    //v2 = c+rot*(v2-c);
 
     if(parent != NULL && drawEdges)
     {
@@ -137,12 +129,12 @@ void CNode::glDraw()
 
     if(IsNodeInteresting())
     {
-        glPointSize(10);
+        glPointSize(5);
         glColor3f(0,1,0);
     }
     else
     {
-        glPointSize(3);
+        glPointSize(1);
         glColor3f(0,0,0);
     }
 
@@ -157,13 +149,19 @@ void CNode::glDraw()
         children[i]->glDraw();
 
 
-    if(drawCoverage)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     if(children.empty())
     {
+
+        double dc = 0.01;
+        glLineWidth(2);
+        if(drawCoverage)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            dc = 0;
+        }
+        else
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
         TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
         p1[0] = footPrint[0];
         p1[1] = footPrint[1];
@@ -173,31 +171,41 @@ void CNode::glDraw()
         p3 = TooN::makeVector(p1[0], p2[1]);
         p4 = TooN::makeVector(p2[0], p1[1]);
 
-        v1 = Rotation2D(p1, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v2 = Rotation2D(p3, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v3 = Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v4 = Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v1 = TooN::makeVector(dc,dc)+Rotation2D(p1, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v2 = TooN::makeVector(dc,-dc)+Rotation2D(p3, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v3 = TooN::makeVector(-dc,-dc)+Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+        v4 = TooN::makeVector(-dc,dc)+Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
 
-//        TooN::Vector<2,double> r1 = c + rot*(v1-c);
-//        TooN::Vector<2,double> r2 = c + rot*(v2-c);
-//        TooN::Vector<2,double> r3 = c + rot*(v3-c);
-//        TooN::Vector<2,double> r4 = c + rot*(v4-c);
+        double c = 1-coverage;
+        c = sqrt(c);
+        c = sqrt(c);
 
         if(drawCoverage)
-            glColor4f(1-coverage,1-coverage,1-coverage,1);
+            glColor4f(c,c,c,1);
         else
-            glColor3f(0,0,0);
+            glColor4f(0,0,0,1);
 
         glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], 0.1);
-        glVertex3f(v2[0],v2[1], 0.1);
-        glVertex3f(v3[0],v3[1], 0.1);
-        glVertex3f(v4[0],v4[1], 0.1);
-        glVertex3f(v1[0],v1[1], 0.1);
-        //glVertex3f(footPrint[0],footPrint[3], 0.1);
-        //glVertex3f(footPrint[2],footPrint[3], 0.1);
-        //glVertex3f(footPrint[2],footPrint[1], 0.1);
+        glVertex3f(v1[0],v1[1], 0.2);
+        glVertex3f(v2[0],v2[1], 0.2);
+        glVertex3f(v3[0],v3[1], 0.2);
+        glVertex3f(v4[0],v4[1], 0.2);
+        glVertex3f(v1[0],v1[1], 0.2);
         glEnd();
+
+        if(drawCoverage)
+        {
+            glLineWidth(1);
+            glColor4f(0,0,0,1);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glBegin(GL_POLYGON);
+            glVertex3f(v1[0],v1[1], 0.25);
+            glVertex3f(v2[0],v2[1], 0.25);
+            glVertex3f(v3[0],v3[1], 0.25);
+            glVertex3f(v4[0],v4[1], 0.25);
+            glVertex3f(v1[0],v1[1], 0.25);
+            glEnd();
+        }
     }
 
 }

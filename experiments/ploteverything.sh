@@ -5,6 +5,7 @@ echo "set output 'graph.pdf'" >> gp
 echo "set key left">>gp 
 echo "set yrange [0:9000]">>gp
 echo "set xrange [0:100]">>gp
+echo "set title \"$P intresting patches\"" >>gp
 echo "set xtics font \"Time-Roman, 7\"">>gp
 echo "set ytics font \"Time-Roman, 7\"">>gp
 echo "set xlabel '% of interesting regions'" >>gp
