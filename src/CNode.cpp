@@ -37,7 +37,13 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
 
 CNode::~CNode()
 {
+    while(!children.empty())
+    {
+        CNode* n = children.back();
+        children.pop_back();
 
+        delete n;
+    }
 }
 
 CNode * CNode::CreateChildNode(Rect fp)

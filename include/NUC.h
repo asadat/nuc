@@ -51,6 +51,7 @@ private:
     bool RectIntersect(Rect r, Rect d);
     TooN::Vector<3> GetColor(double h);
     void runPhotoStitcher();
+    void Cleanup();
 
     static NUC* instance;
 

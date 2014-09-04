@@ -146,6 +146,16 @@ NUC::~NUC()
     {
         fclose(logFile);
     }
+
+    Cleanup();
+}
+
+void NUC::Cleanup()
+{
+    if(tree)
+        delete tree;
+
+    tree = NULL;
 }
 
 void NUC::runPhotoStitcher()
@@ -249,7 +259,8 @@ TooN::Vector<3> NUC::GetColor(double h)
 
 bool NUC::RectIntersect(Rect r, Rect d)
 {
-    if(r[0] > d[2] || r[2] < d[0] || r[1] > d[3] || r[3] < d[1])
+    double ep = 0.1;
+    if(r[0]+ep > d[2] || r[2]-ep < d[0] || r[1]+ep > d[3] || r[3]-ep < d[1])
         return false;
     return true;
 }
@@ -290,7 +301,13 @@ void NUC::PopulateTargets()
         r[2] = ceil(r[2]/cellW)*cellW;
 
         double ly = patch / (r[2]-r[0]);
-        ly = ceil(ly/cellW)*cellW;
+        double ly1 = ceil(ly/cellW)*cellW;
+        double ly2 = floor(ly/cellW)*cellW;
+        if(fabs(ly - ly1) < fabs(ly-ly2))
+            ly = ly1;
+        else
+            ly = ly2;
+
 
         if(ly > area[3]-area[1])
             continue;
@@ -300,11 +317,10 @@ void NUC::PopulateTargets()
 
         r[3] = r[1]+ly;
 
-        ROS_INFO("STRATEGY: RECT %f %f %f %f", r[0], r[1], r[2], r[3]);
 
-//        r[0] = -16;
-//        r[1] = -1;
-//        r[2] = 16;
+//        r[0] = -13;
+//        r[1] = -14;
+//        r[2] = 10;
 //        r[3] = 9;
 
         bool flag=true;
@@ -321,6 +337,7 @@ void NUC::PopulateTargets()
         {
             targets.push_back(r);
             n=0;
+            ROS_INFO("STRATEGY: RECT %f %f %f %f", r[0], r[1], r[2], r[3]);
         }
         else
         {
@@ -407,7 +424,7 @@ void NUC::glDraw()
          glEnd();
 
          glColor3f(1,0,0);
-         glLineWidth(3);
+         glPointSize(5);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {
@@ -518,20 +535,37 @@ void NUC::OnReachedGoal()
 
 void NUC::OnTraverseEnd()
 {
+    double eps = 0.1;
+    double asclength = 0;
+    double desclength = 0;
+    double xylength = 0;
 
     if(pathHistory.size()>1)
     {
         for(unsigned int i=0; i<pathHistory.size()-1; i++)
+        {
             traverseLength += sqrt((pathHistory[i]-pathHistory[i+1])*(pathHistory[i]-pathHistory[i+1]));
+            asclength +=  (pathHistory[i+1][2]-pathHistory[i][2] > eps)?pathHistory[i+1][2]-pathHistory[i][2]:0;
+            desclength +=  (pathHistory[i+1][2]-pathHistory[i][2] < -eps)?-(pathHistory[i+1][2]-pathHistory[i][2]):0;
+            xylength += sqrt((pathHistory[i+1][0]-pathHistory[i][0])*(pathHistory[i+1][0]-pathHistory[i][0])+
+                             (pathHistory[i+1][1]-pathHistory[i][1])*(pathHistory[i+1][1]-pathHistory[i][1]));
+        }
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f\n", NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
-    LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f\n",NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength);
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+             NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
+             asclength, desclength, asclength+desclength, xylength);
+    LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+        NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
+        asclength, desclength, asclength+desclength, xylength);
     SAVE_LOG();
 
     if(NUCParam::auto_exit)
+    {
+        Cleanup();
         exit(0);
+    }
 
     isOver = true;
 }
