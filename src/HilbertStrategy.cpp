@@ -99,7 +99,7 @@ int HilbertStrategy::HilbertCurveOther(CNode *parent)
 
 void HilbertStrategy::RotatePointOrderBy90(std::vector<TooN::Vector<3> > & list, bool clockwise)
 {
-    static bool first = true;
+    //static bool first = true;
 
 //    if(first && clockwise)
 //    {
@@ -217,7 +217,7 @@ bool HilbertStrategy::UpdateIterator()
         }
 
         CNode * cur_parent = (*it)->parent;
-        CNode * cur_node = (*it);
+        //CNode * cur_node = (*it);
         int nseek = 0;
         while(!(*it)->NeedsVisitation()/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
         {
@@ -277,12 +277,12 @@ void HilbertStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool 
 {
     if(key[']'])
     {
-        curCurve = (++curCurve)%10;
+        curCurve = (curCurve+1)%10;
        // updateKey = false;
     }
     else if(key['['])
     {
-        curCurve = (--curCurve)%10;
+        curCurve = (curCurve-1)%10;
         //updateKey = false;
     }
 

@@ -50,6 +50,7 @@ private:
     ros::NodeHandle * nh;
     cv_bridge::CvImagePtr imagePtr;
 
+    cv::Mat imgThresholded;
 
     std::vector< std::pair<double,std::vector<sensor_msgs::RegionOfInterest> > > ROIs;
     cv::DecisionTree dtree;

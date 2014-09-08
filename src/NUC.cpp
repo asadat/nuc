@@ -319,11 +319,11 @@ void NUC::PopulateTargets()
         r[3] = r[1]+ly;
 
 
-        r[0] = -13;
+      /*  r[0] = -13;
         r[1] = -14;
         r[2] = 10;
         r[3] = 9;
-
+*/
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
         {

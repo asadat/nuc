@@ -38,7 +38,7 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
   cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
   cvCreateTrackbar("HighV", "Control", &iHighV, 255);
 
-
+  iLowV = 208;
 
     sensingCounter = 0;
     nh = nh_;
@@ -105,9 +105,9 @@ InterestingnessSensor::~InterestingnessSensor()
 bool InterestingnessSensor::InterestingColor(double b, double g, double r)
 {
     ROS_INFO("COLOR: %f %f %f", b, g, r);
-    if( r > 190 && r < 250 &&
-        b > 100 && b < 180 &&
-        g > 100 && g < 200)
+    if( r > 250 && r < 255 &&
+        b > 250 && b < 255 &&
+        g > 250 && g < 255)
     {
         return true;
     }
@@ -165,17 +165,42 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
 
         if(imagePtr != NULL && (ros::Time::now()-imagePtr->header.stamp).toSec() < NUCParam::sensingTime)
         {
-            int interestingLabelIdx = -1;
-            for(unsigned int i=0; i<labels.size();i++)
-            {
-                if(interesting_label == std::string(labels[i]))
-                {
-                    ROS_INFO("Looking for \"%s\" ...", labels[i]);
-                    interestingLabelIdx = i;
-                    break;
-                }
-            }
+//            int interestingLabelIdx = -1;
+//            for(unsigned int i=0; i<labels.size();i++)
+//            {
+//                if(interesting_label == std::string(labels[i]))
+//                {
+//                    ROS_INFO("Looking for \"%s\" ...", labels[i]);
+//                    interestingLabelIdx = i;
+//                    break;
+//                }
+//            }
 
+            //{ count the white pixels
+            for(int i=0; i<imgThresholded.cols; i++)
+                for(int j=0; j<imgThresholded.rows; j++)
+                {
+                    if(imgThresholded.at<uchar>(j,i) > 250)
+                    {
+                        int grdx = floor(i/grd_xstep);
+                        int grdy = floor(j/grd_ystep);
+                        int_grd[grdy][grdx] += 1;
+                    }
+                }
+
+            char outputf[128];
+            sprintf(outputf, "%s%f-%d","image",ros::Time::now().toSec(),sensingCounter);
+            std::string path(outputf);
+            std::string imgpath = NUCParam::log_folder+"/"+path+".jpg";
+            std::string predpath = NUCParam::log_folder+"/"+path+"-pred.jpg";
+
+            cv::imwrite(predpath.c_str(), imgThresholded);
+            cv::imwrite(imgpath.c_str(), imagePtr->image);
+
+            //}
+
+            //{ decision tree based
+            /*
             vector<CvScalar> labelcolor;
 
             CvScalar cl[3];
@@ -249,7 +274,7 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
 
             cv::imwrite(predpath.c_str(), imagePtr->image);
             cv::imwrite(imgpath.c_str(), labelmap);
-
+            //decision tree bsed }*/
 
         }
         else
@@ -307,7 +332,7 @@ void InterestingnessSensor::runCircleDetection(Mat src)
       HoughCircles(src_gray, circles, CV_HOUGH_GRADIENT, 1, src_gray.rows/16, 40, 40, 5, 100 );
 
       /// Draw the circles detected
-      ROS_INFO("circles: %d", circles.size());
+      ROS_INFO("circles: %d", (int)circles.size());
       for( size_t i = 0; i < circles.size(); i++ )
       {
           Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
@@ -331,11 +356,9 @@ void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     imagePtr->header.stamp = ros::Time::now();
 
     Mat imgHSV;
+    //Mat imgThresholded;
 
     cvtColor(imagePtr->image, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-
-    Mat imgThresholded;
-
     inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
 
     //morphological opening (remove small objects from the foreground)
@@ -348,6 +371,8 @@ void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
     imshow("Thresholded Image", imgThresholded); //show the thresholded image
     waitKey(30);
+
+
     //  imshow("Original", imgOriginal); //show the original image
 
 
