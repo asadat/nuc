@@ -155,11 +155,12 @@ void CNode::glDraw()
         children[i]->glDraw();
 
 
-    if(children.empty())
+    //if(children.empty())
     {
 
         double dc = 0.01;
-        glLineWidth(2);
+        glLineWidth(1+10 - 2*depth);
+        //glLineWidth(2);
         if(drawCoverage)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -189,14 +190,14 @@ void CNode::glDraw()
         if(drawCoverage)
             glColor4f(c,c,c,1);
         else
-            glColor4f(0,0,0,1);
+            glColor4f(0,0,0,0.1+1-depth/5.0);
 
         glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], 0.2);
-        glVertex3f(v2[0],v2[1], 0.2);
-        glVertex3f(v3[0],v3[1], 0.2);
-        glVertex3f(v4[0],v4[1], 0.2);
-        glVertex3f(v1[0],v1[1], 0.2);
+        glVertex3f(v1[0],v1[1], 0.2-depth/50.0);
+        glVertex3f(v2[0],v2[1], 0.2-depth/50.0);
+        glVertex3f(v3[0],v3[1], 0.2-depth/50.0);
+        glVertex3f(v4[0],v4[1], 0.2-depth/50.0);
+        glVertex3f(v1[0],v1[1], 0.2-depth/50.0);
         glEnd();
 
         if(drawCoverage)
