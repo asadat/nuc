@@ -8,9 +8,38 @@
 //#include "opencv2/opencv.hpp"
 
 InterestingnessSensor * InterestingnessSensor::instance;
+int iLowH = 0;
+int iHighH = 179;
+
+int iLowS = 0;
+int iHighS = 255;
+
+int iLowV = 0;
+int iHighV = 255;
+
 
 InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
 {
+    //namedWindow( "Circle", CV_WINDOW_AUTOSIZE );
+    //namedWindow( "output1", CV_WINDOW_AUTOSIZE );
+    //namedWindow( "output2", CV_WINDOW_AUTOSIZE );
+    namedWindow( "output3", CV_WINDOW_AUTOSIZE );
+
+    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+
+
+  //Create trackbars in "Control" window
+  cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+  cvCreateTrackbar("HighH", "Control", &iHighH, 179);
+
+  cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+  cvCreateTrackbar("HighS", "Control", &iHighS, 255);
+
+  cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
+  cvCreateTrackbar("HighV", "Control", &iHighV, 255);
+
+
+
     sensingCounter = 0;
     nh = nh_;
     interesting_label = NUCParam::interesting_label;
@@ -73,6 +102,18 @@ InterestingnessSensor::~InterestingnessSensor()
         delete [] s;
     }
 }
+bool InterestingnessSensor::InterestingColor(double b, double g, double r)
+{
+    ROS_INFO("COLOR: %f %f %f", b, g, r);
+    if( r > 190 && r < 250 &&
+        b > 100 && b < 180 &&
+        g > 100 && g < 200)
+    {
+        return true;
+    }
+
+    return false;
+}
 
 void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int_grd, int grd_s)
 {
@@ -121,6 +162,7 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     }
     else // a specific label is interesting
     {
+
         if(imagePtr != NULL && (ros::Time::now()-imagePtr->header.stamp).toSec() < NUCParam::sensingTime)
         {
             int interestingLabelIdx = -1;
@@ -142,31 +184,57 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
             cl[1].val[0] = 0;  cl[1].val[1] = 50; cl[1].val[2] = 230; // carpet
 
             SuperPixelFeatures sptest(imagePtr->image);
+            ROS_INFO("img format: %s", imagePtr->encoding.c_str());
             vector<cv::Mat> fs;
             sptest.GetSuperPixelFeatures(fs);
-            //vector<CvScalar> labelcolor;
-            for(unsigned int i=0; i<fs.size(); i++)
-            {
 
-                double c = dtree.predict(fs[i].row(0))->value;
-                if(((int)c) == interestingLabelIdx)
-                {
-                    int x=0,y=0;
-                    if(sptest.GetSuperPixelCenter(i,x,y))
-                    {
-                        int grdx = floor(x/grd_xstep);
-                        int grdy = floor(y/grd_ystep);
-                        int_grd[grdy][grdx] += 1;
-                    }
-                }
-                labelcolor.push_back(cl[(int)c]);
-            }
+//            for(unsigned int i=0; i<fs.size(); i++)
+//            {
 
+//                double c = dtree.predict(fs[i].row(0))->value;
+//                if(((int)c) == interestingLabelIdx)
+//                {
+//                    int x=0,y=0;
+//                    if(sptest.GetSuperPixelCenter(i,x,y))
+//                    {
+//                        int grdx = floor(x/grd_xstep);
+//                        int grdy = floor(y/grd_ystep);
+//                        int_grd[grdy][grdx] += 1;
+//                    }
+//                }
+//                labelcolor.push_back(cl[(int)c]);
+//            }
 
 
 
             cv::Mat labelmap(imagePtr->image.rows, imagePtr->image.cols, CV_8UC3);
+            //sptest.SuperPixelLabelMap(labelmap, labelcolor);
+            sptest.GetSuperpixelAverageColor(labelmap);
+            imshow("output3",labelmap);
+            waitKey(30);
+
+            for(unsigned int i=0; i<fs.size(); i++)
+            {
+
+                    int x=0,y=0, cc=0;
+                    if(sptest.GetSuperPixelCenter(i,x,y))
+                    {
+                        CvScalar c = sptest.Get2D(labelmap,y,x);
+                        //ROS_INFO("XY: %d %d", x, y);
+                        if(InterestingColor(c.val[0],c.val[1],c.val[2]))
+                        {
+                            cc=1;
+                            int grdx = floor(x/grd_xstep);
+                            int grdy = floor(y/grd_ystep);
+                            int_grd[grdy][grdx] += 1;
+                        }
+                    }
+
+                     labelcolor.push_back(cl[(int)cc]);
+            }
+
             sptest.SuperPixelLabelMap(labelmap, labelcolor);
+
             char outputf[128];
             sprintf(outputf, "%s%f-%d","image",ros::Time::now().toSec(),sensingCounter);
             std::string path(outputf);
@@ -215,10 +283,77 @@ void InterestingnessSensor::GetInterestingnessGrid(TooN::Matrix<10,10,int> & int
     //ROS_INFO("int_grid: here2");
 }*/
 
+void InterestingnessSensor::runCircleDetection(Mat src)
+{
+    using namespace cv;
+
+     Mat src_gray;
+
+      /// Read the image
+     //src = imread("/home/autolab/test.jpg", 1 );
+
+      if( !src.data )
+        { return;}
+
+      /// Convert it to gray
+      cvtColor( src, src_gray, CV_BGR2GRAY );
+
+      /// Reduce the noise so we avoid false circle detection
+      GaussianBlur( src_gray, src_gray, Size(9, 9), 2, 2 );
+
+      vector<Vec3f> circles;
+
+      /// Apply the Hough Transform to find the circles
+      HoughCircles(src_gray, circles, CV_HOUGH_GRADIENT, 1, src_gray.rows/16, 40, 40, 5, 100 );
+
+      /// Draw the circles detected
+      ROS_INFO("circles: %d", circles.size());
+      for( size_t i = 0; i < circles.size(); i++ )
+      {
+          Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+          int radius = cvRound(circles[i][2]);
+          // circle center
+          circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
+          // circle outline
+          circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
+       }
+
+      /// Show your results
+      //imshow("Hough Circle Transform Demo", src );
+
+      waitKey(30);
+
+}
+
 void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-    imagePtr = cv_bridge::toCvCopy(msg);
+    imagePtr = cv_bridge::toCvCopy(msg, "bgr8");
     imagePtr->header.stamp = ros::Time::now();
+
+    Mat imgHSV;
+
+    cvtColor(imagePtr->image, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+
+    Mat imgThresholded;
+
+    inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+    //morphological opening (remove small objects from the foreground)
+    erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+    dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+    //morphological closing (fill small holes in the foreground)
+    dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+    erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+    imshow("Thresholded Image", imgThresholded); //show the thresholded image
+    waitKey(30);
+    //  imshow("Original", imgOriginal); //show the original image
+
+
+
+    //imshow("output1",imagePtr->image);
+   // runCircleDetection(imagePtr->image);
 }
 
 void InterestingnessSensor::TrainDTree()
@@ -266,6 +401,7 @@ void InterestingnessSensor::TrainDTree()
 
                 ROS_INFO("reading: %s %d\n", num, j);
                 cv::Mat img = cv::imread(num);
+
                 SuperPixelFeatures sp(img);
                 vector<cv::Mat> ftv;
                 sp.GetSuperPixelFeatures(ftv);

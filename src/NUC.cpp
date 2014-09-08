@@ -29,6 +29,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    //runCircleDetection();
     //runPhotoStitcher();
     traverseLength = 0;
     isOver = false;

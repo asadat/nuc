@@ -59,7 +59,6 @@ class Slic {
         /* Remove and initialize the 2d vectors. */
         void clear_data();
         void init_data(Mat &image);
-        CvScalar Get2D( Mat &img, int idx0, int idx1 );
 
     public:
         /* Class constructors and deconstructors. */
@@ -71,6 +70,8 @@ class Slic {
         /* Enforce connectivity for an image. */
         void create_connectivity(Mat &image);
         
+        CvScalar Get2D( Mat &img, int idx0, int idx1 );
+
         /* Draw functions. Resp. displayal of the centers and the contours. */
         void display_center_grid(Mat &image, CvScalar colour);
         void display_contours(Mat &image, CvScalar colour);

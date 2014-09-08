@@ -4,7 +4,9 @@
 SuperPixelFeatures::SuperPixelFeatures(cv::Mat &img_):Slic()
 {
     img.copySize(img_);
-    cv::cvtColor(img_,img,CV_RGB2Lab);
+    cv::cvtColor(img_,img,CV_BGR2Lab);
+    //img_.copyTo(img);
+
 }
 
 SuperPixelFeatures::~SuperPixelFeatures()
@@ -18,7 +20,7 @@ void SuperPixelFeatures::GetSuperPixelFeatures(vector<cv::Mat> &features)
     //cv::cvtColor(img, lab_image, CV_BGR2Lab);
 
     int w = img.cols, h = img.rows;
-    int nr_superpixels = 200;
+    int nr_superpixels = 2000;
     int nc = 100;
     double step = sqrt((w * h) / (double) nr_superpixels);
     generate_superpixels(img,step,nc);
@@ -44,6 +46,19 @@ void SuperPixelFeatures::PopulateFeatures(vector<cv::Mat> &features)
         }
     }
 
+//    img.copyTo(meanImg);
+
+//    for (int i = 0; i < img.cols; i++) {
+//        for (int j = 0; j < img.rows; j++) {
+//            int index = clusters[i][j];
+
+//            colours[index].val[0] / center_counts[index];
+//            colours[index].val[1] / center_counts[index];
+//            colours[index].val[2] / center_counts[index];
+
+//        }
+//    }
+
     for (int i = 0; i < (int)colours.size(); i++) {
         colours[i].val[0] /= center_counts[i];
         colours[i].val[1] /= center_counts[i];
@@ -59,6 +74,14 @@ void SuperPixelFeatures::PopulateFeatures(vector<cv::Mat> &features)
 
         //printf("FS: %f %f %f %f %d \n",colours[i].val[0],colours[i].val[1],colours[i].val[2], meanIntensity[i], i);
     }
+}
+
+void SuperPixelFeatures::GetSuperpixelAverageColor(Mat &spmat)
+{
+    Mat tmp;
+    img.copyTo(tmp);
+    this->colour_with_cluster_means(tmp);
+    cvtColor(tmp,spmat,CV_Lab2BGR);
 }
 
 void SuperPixelFeatures::SuperPixelLabelMap(cv::Mat &labelMap, std::vector<CvScalar> &labelColor)

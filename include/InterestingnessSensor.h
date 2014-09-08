@@ -40,6 +40,8 @@ private:
     inline bool exists_test(const std::string& name) {
         return ( access( name.c_str(), F_OK ) != -1 );
     }
+    void runCircleDetection(cv::Mat src);
+    bool InterestingColor(double b, double g, double r);
 
     int image_w,image_h;
 
