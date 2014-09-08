@@ -65,7 +65,7 @@ void MAV::gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &m
     //ROS_INFO_THROTTLE(0.5, "Height: %f\t Goal height: %f", realpos[2], goal[2]);
     //ROS_INFO_THROTTLE(3, "POS: %f %f %f rot: %f %f %f", realpos[0], realpos[1], realpos[2], r1, r2, r3);
 
-    LOG("POSE: T %f %f %f R %f %f %f\n", realpos[0], realpos[1], realpos[2], r1, r2, r3);
+    NUC_LOG("POSE: T %f %f %f R %f %f %f\n", realpos[0], realpos[1], realpos[2], r1, r2, r3);
 
     //realpos[3] = 0;
 }

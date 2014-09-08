@@ -161,6 +161,7 @@ HilbertStrategy::~HilbertStrategy()
 
 bool HilbertStrategy::UpdateIterator()
 {
+    bool flag = false;
     //** Initialization
     static bool firstCall = true;
     if(firstCall)
@@ -172,54 +173,80 @@ bool HilbertStrategy::UpdateIterator()
     }
     //**
 
-
-    if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
+    while(!flag)
     {
-        //ROS_INFO("UP");
-        CNode* parent = (*it)->parent;
-//        if(!parent->children[0]->visited &&
-//           !parent->children[0]->visited &&
-//           !parent->children[0]->visited &&
-//           !parent->children[0]->visited)
+        if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
+        {
+            //ROS_INFO("UP");
+            CNode* parent = (*it)->parent;
+    //        if(!parent->children[0]->visited &&
+    //           !parent->children[0]->visited &&
+    //           !parent->children[0]->visited &&
+    //           !parent->children[0]->visited)
+            {
+                for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
+                {
+                    if(hilbert[curDepth-1][i]==parent)
+                    {
+                        it = hilbert[curDepth-1].begin()+i;
+                        curDepth--;
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+        }
+        else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
+        {
+             /* ChildrenNeedVisitation() avoids this situation: when it goes up and finds out that the remaining children are uninteresting and
+              * only some of the visited children are interesting.
+              */
+
+            //ROS_INFO("DOWN");
+            CNode* parent = (*it);
+            for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+            {
+                if(hilbert[curDepth][i]==parent)
+                {
+                    it = hilbert[curDepth+1].begin()+i*4;
+                    curDepth++;
+                    flag = true;
+                    break;
+                }
+            }
+        }
+
+        CNode * cur_parent = (*it)->parent;
+        CNode * cur_node = (*it);
+        int nseek = 0;
+        while(!(*it)->NeedsVisitation()/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
+        {
+            nseek++;
+            it++;
+            if(it == hilbert[curDepth].end())
+            {
+                return false;
+            }
+        }
+
+        if(nseek > 1 && cur_parent != (*it)->parent)
         {
             for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
             {
-                if(hilbert[curDepth-1][i]==parent)
+                if(hilbert[curDepth-1][i]==cur_parent)
                 {
                     it = hilbert[curDepth-1].begin()+i;
                     curDepth--;
                     break;
                 }
             }
+            flag = false;
         }
-    }
-    else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
-    {
-         /* ChildrenNeedVisitation() avoids this situation: when it goes up and finds out that the remaining children are uninteresting and
-          * only some of the visited children are interesting.
-          */
-
-        //ROS_INFO("DOWN");
-        CNode* parent = (*it);
-        for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+        else
         {
-            if(hilbert[curDepth][i]==parent)
-            {
-                it = hilbert[curDepth+1].begin()+i*4;
-                curDepth++;
-                break;
-            }
+            flag = true;
         }
     }
-
-
-    while(!(*it)->NeedsVisitation()/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
-    {
-        it++;
-        if(it == hilbert[curDepth].end())
-            return false;
-    }
-
 
     return true;
 }
@@ -286,7 +313,7 @@ void HilbertStrategy::glDraw()
 
         if(k==curCurve && !hilbert[k].empty())
         {
-            glColor3f(0.0,0.0,0.0);
+            glColor3f(1,0.5,0.0);
             glLineWidth(6);
             glBegin(GL_LINES);
             for(unsigned int i=0; i<hilbert[k].size()-1;i++)

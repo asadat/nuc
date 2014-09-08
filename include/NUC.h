@@ -7,7 +7,7 @@
 #include "DepthFirstStrategy.h"
 #include "MAV.h"
 
-#define LOG( ... ) if(NUCParam::logging){/*printf( __VA_ARGS__ );*/fprintf(NUC::logFile,"%f ", ros::Time::now().toSec());fprintf(NUC::logFile, __VA_ARGS__ );fflush(NUC::logFile);}
+#define NUC_LOG( ... ) if(NUCParam::logging){/*printf( __VA_ARGS__ );*/fprintf(NUC::logFile,"%f ", ros::Time::now().toSec());fprintf(NUC::logFile, __VA_ARGS__ );fflush(NUC::logFile);}
 #define SAVE_LOG() if(NUCParam::logging){fclose(NUC::logFile);NUC::logFile = fopen(NUC::logFileName.c_str(), "a+");}
 
 
@@ -51,6 +51,7 @@ private:
     bool RectIntersect(Rect r, Rect d);
     TooN::Vector<3> GetColor(double h);
     void runPhotoStitcher();
+    void Cleanup();
 
     static NUC* instance;
 
