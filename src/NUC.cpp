@@ -280,10 +280,29 @@ void NUC::PopulateTargets()
         cellW = fabs(lr[2]-lr[0]);
     }
 
+    //cellW *= 2;
+    //cellW *= 2;
     int n=0;
     double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
     //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
+    double eps = 0.1;
+//    for(int i=0; i<(area[2]-area[0])/cellW; i++)
+//    {
+//        for(int j=0; j<(area[3]-area[1])/cellW; j++)
+//        {
+//            if(j%2 == i%2)
+//                continue;
 
+//            Rect r;
+//            r[0] = area[0] + i * cellW + eps;
+//            r[2] = area[0] + (i+1) * cellW - eps;
+//            r[1] = area[1] + j * cellW + eps;
+//            r[3] = area[1] + (j+1) * cellW - eps;
+//            targets.push_back(r);
+//        }
+//    }
+
+//    return;
     while(targets.size() < (unsigned int)NUCParam::patches)
     {
 //        Rect r;
@@ -319,11 +338,11 @@ void NUC::PopulateTargets()
         r[3] = r[1]+ly;
 
 
-      /*  r[0] = -13;
-        r[1] = -14;
-        r[2] = 10;
-        r[3] = 9;
-*/
+//        r[0] = -13;
+//        r[1] = -14;
+//        r[2] = 10;
+//        r[3] = 9;
+
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
         {
