@@ -338,7 +338,7 @@ void NUC::PopulateTargets()
         {
             targets.push_back(r);
             n=0;
-            ROS_INFO("STRATEGY: RECT %f %f %f %f", r[0], r[1], r[2], r[3]);
+            //ROS_INFO("STRATEGY: RECT %f %f %f %f", r[0], r[1], r[2], r[3]);
         }
         else
         {

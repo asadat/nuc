@@ -166,9 +166,9 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
-        it = hilbert[0].begin();
+        it = hilbert[lastDepth].begin();
         firstCall = false;
-        curDepth = 0;
+        curDepth = lastDepth;
         return true;
     }
     //**
