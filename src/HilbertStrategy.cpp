@@ -176,14 +176,26 @@ bool HilbertStrategy::UpdateIterator()
     while(!flag)
     {
         if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
-        {
-            //ROS_INFO("UP");
-            CNode* parent = (*it)->parent;
-    //        if(!parent->children[0]->visited &&
-    //           !parent->children[0]->visited &&
-    //           !parent->children[0]->visited &&
-    //           !parent->children[0]->visited)
+        {            
+            bool stayAtBottom = false;
+            if(false && curDepth == lastDepth)
             {
+                for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+                {
+                    if(it == hilbert[curDepth].begin()+i)
+                    {
+                        if(i%4 !=0)
+                        {
+                            stayAtBottom = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(!stayAtBottom)
+            {
+                CNode* parent = (*it)->parent;
                 for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
                 {
                     if(hilbert[curDepth-1][i]==parent)
@@ -195,6 +207,7 @@ bool HilbertStrategy::UpdateIterator()
                     }
                 }
             }
+
         }
         else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
         {
