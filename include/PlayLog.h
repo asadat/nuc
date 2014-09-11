@@ -62,8 +62,16 @@ private:
 
     std::vector<TooN::Vector<3> > waypoints;
     std::vector<TooN::Vector<4> > footprints;
-    std::vector<std::string> texFiles;
-    std::vector<GLuint> gluints;
+    std::vector<std::string> rawTexFiles;
+    std::vector<GLuint> gluintsRaw;
+    std::vector<std::string> sensedTexFiles;
+
     bool drawImages;
+    std::vector<GLuint> gluintsSensed;
+
+    bool drawSensedImages;
+    bool drawTrajectory;
+    bool drawWaypoints;
+
 
 };

@@ -2,10 +2,10 @@ simulation: false
 visualization: true
 FOV: 1.57
 branching_sqrt: 2
-min_footprint: 6.0
+min_footprint: 7.0
 speed: 10
-strategy: df
-area_length: 24.0
+strategy: lm
+area_length: 30.0
 area_rotation: 0.0
 sensing_time: 3
 interesting_simulation: false

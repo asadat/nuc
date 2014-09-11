@@ -263,6 +263,9 @@ void keyboard_up_event(unsigned char key, int x, int y)
 PlayLog::PlayLog(int argc, char **argv)
 {
     drawImages = true;
+    drawSensedImages = false;
+    drawTrajectory = true;
+    drawWaypoints = true;
 
     fixedYaw = 0;
     orig = makeVector(0,0,0,0);
@@ -304,14 +307,33 @@ PlayLog::PlayLog(int argc, char **argv)
         float pp[3];
         char tmp[2];
         float d[3];
+        bool first = true;
+        Vector<3> prevPos;
+        double trajectoryLength = 0;
 
         while(true)
         {
+
             bool flag = (fscanf(f,"%c %f %f %f %c %f %f %f", &tmp[0], &pp[0], &pp[1], &pp[2], &tmp[1], &d[0], &d[1], &d[2]) == EOF);
             Vector<3> pos = makeVector(pp[0], pp[1], pp[2]);
             positions.push_back(pos);
+
+            if(positions.size()%10 ==0)
+            {
+                if(!first)
+                {
+                    trajectoryLength += sqrt((prevPos-pos)*(prevPos-pos));
+                }
+
+                first = false;
+                prevPos = pos;
+            }
+
             if(flag)
+            {
+                ROS_INFO("*** TRAJECTORY LENGTH: %f", trajectoryLength);
                 break;
+            }
         }
         fclose(f);
         ROS_INFO("Poses #: %lu", positions.size());
@@ -327,7 +349,26 @@ PlayLog::PlayLog(int argc, char **argv)
             bool flag = (fscanf(f,"%s", filename) == EOF);
             std::string fn(filename);
 
-            texFiles.push_back(fn);
+            rawTexFiles.push_back(fn);
+
+            if(flag)
+                break;
+        }
+
+        fclose(f);
+    }
+
+    if(argc > 4)
+    {
+        FILE * f = fopen(argv[4],"r");
+
+        while(true)
+        {
+            char filename[256];
+            bool flag = (fscanf(f,"%s", filename) == EOF);
+            std::string fn(filename);
+
+            sensedTexFiles.push_back(fn);
 
             if(flag)
                 break;
@@ -469,16 +510,16 @@ void PlayLog::Clear()
 void PlayLog::glDraw()
 {
 
-     float w=10;
+     float w=30;
      if(!waypoints.empty())
      {
-         w = 2*waypoints[0][2];
+         //w = 2*waypoints[0][2];
 
-         if(gluints.empty())
+         if(gluintsRaw.empty())
          {
-             for(unsigned int i=0;i < texFiles.size(); i++)
+             for(unsigned int i=0;i < rawTexFiles.size(); i++)
              {
-                 cv::Mat img = cv::imread(texFiles[i]);
+                 cv::Mat img = cv::imread(rawTexFiles[i]);
                  GLuint mnFrameTex;
                  glEnable(GL_TEXTURE_2D);
                  glGenTextures(1, &mnFrameTex);
@@ -491,7 +532,28 @@ void PlayLog::glDraw()
                  img.data);
                  glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST);
                  glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST);
-                 gluints.push_back(mnFrameTex);
+                 gluintsRaw.push_back(mnFrameTex);
+             }
+         }
+
+         if(gluintsSensed.empty())
+         {
+             for(unsigned int i=0;i < sensedTexFiles.size(); i++)
+             {
+                 cv::Mat img = cv::imread(sensedTexFiles[i]);
+                 GLuint mnFrameTex;
+                 glEnable(GL_TEXTURE_2D);
+                 glGenTextures(1, &mnFrameTex);
+                 glBindTexture(GL_TEXTURE_2D, mnFrameTex);
+                 glTexImage2D(GL_TEXTURE_2D,
+                 0, GL_RGB,
+                                 img.cols, img.rows,
+                 0,GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 img.data);
+                 glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST);
+                 glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST);
+                 gluintsSensed.push_back(mnFrameTex);
              }
          }
      }
@@ -530,20 +592,23 @@ void PlayLog::glDraw()
      }
      glEnd();
 
-     glPointSize(2);
-     glBegin(GL_POINTS);
-     for(unsigned int i=0; i<positions.size(); i++)
+     if(drawTrajectory)
      {
-        if(i%5 != 0)
-            continue;
-            
-         ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
-         glColor3f(1, 0, 0);
-         glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
-     }
-     glEnd();
+         glPointSize(2);
+         glBegin(GL_POINTS);
+         for(unsigned int i=0; i<positions.size(); i++)
+         {
+            if(i%5 != 0)
+                continue;
 
-     if(!positions.empty())
+             ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
+             glColor3f(1, 0, 0);
+             glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
+         }
+         glEnd();
+     }
+
+     if( !positions.empty())
      {
 
          glLineWidth(3);
@@ -569,12 +634,12 @@ void PlayLog::glDraw()
          glVertex3f(p[0], p[1], p[2]);
          glVertex3f(ep[0], ep[1], ep[2]);
 
-	 glColor3f(0,1,0);
+        glColor3f(0,1,0);
          ep = rot*makeVector(0,1,0)+p;
          glVertex3f(p[0], p[1], p[2]);
          glVertex3f(ep[0], ep[1], ep[2]);
 
-	 glColor3f(0,0,1);
+        glColor3f(0,0,1);
          ep = rot*makeVector(0,0,1)+p;
          glVertex3f(p[0], p[1], p[2]);
          glVertex3f(ep[0], ep[1], ep[2]);
@@ -590,27 +655,63 @@ void PlayLog::glDraw()
      glColor3f(0,0,1);
      
      glPointSize(drawImages?5:10);
-     glBegin(GL_POINTS);
-     for(unsigned int i=0; i<waypoints.size();i++)
-        glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
-     glEnd();
+     if(drawWaypoints)
+     {
+         glBegin(GL_POINTS);
+         for(unsigned int i=0; i<waypoints.size();i++)
+            glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
+         glEnd();
+
+         glLineWidth(2);
+         glBegin(GL_LINES);
+         for(unsigned int i=0; i<waypoints.size()-1;i++)
+         {
+            glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
+            glVertex3f(waypoints[i+1][0],waypoints[i+1][1],waypoints[i+1][2]);
+         }
+         glEnd();
+     }
 
      if(drawImages)
      {
          glEnable(GL_TEXTURE_2D);
          glColor4f(1,1,1,1);
          glPointSize(10);
+         double ep=0.1;
          for(unsigned int i=0; i<waypoints.size();i++)
          {
-            glBindTexture(GL_TEXTURE_2D, gluints[i]);
+            glBindTexture(GL_TEXTURE_2D, gluintsRaw[i]);
             glBegin(GL_QUADS);
-            glVertex3f(footprints[i][0],footprints[i][1],waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
             glTexCoord2f (0.0, 0.0);
-            glVertex3f(footprints[i][0],footprints[i][3],waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
             glTexCoord2f (1.0, 0.0);
-            glVertex3f(footprints[i][2],footprints[i][3],waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
             glTexCoord2f (1.0, 1.0);
-            glVertex3f(footprints[i][2],footprints[i][1],waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
+            glTexCoord2f (0.0, 1.0);
+            glEnd();
+         }
+         glDisable(GL_TEXTURE_2D);         
+     }
+
+     if(drawSensedImages)
+     {
+         glEnable(GL_TEXTURE_2D);
+         glColor4f(1,1,1,1);
+         glPointSize(10);
+         double ep=0.1;
+         for(unsigned int i=0; i<waypoints.size();i++)
+         {
+            glBindTexture(GL_TEXTURE_2D, gluintsSensed[i]);
+            glBegin(GL_QUADS);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
+            glTexCoord2f (0.0, 0.0);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
+            glTexCoord2f (1.0, 0.0);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
+            glTexCoord2f (1.0, 1.0);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
             glTexCoord2f (0.0, 1.0);
             glEnd();
          }
@@ -627,8 +728,14 @@ void PlayLog::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateK
 
     if(Key['-'])
         Clear();
-    else if(Key['`'])
+    else if(Key['1'])
         drawImages = !drawImages;
+    else if(Key['2'])
+        drawSensedImages = !drawSensedImages;
+    else if(Key['3'])
+        drawTrajectory = !drawTrajectory;
+    else if(Key['4'])
+        drawWaypoints = !drawWaypoints;
 
 //    if(key['`'])
 //    {

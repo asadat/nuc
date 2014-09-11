@@ -13,14 +13,19 @@ PWDPATH=$(pwd)
 
 rm textures.log
 touch textures.log
-
 for f in `find $1/*.jpg | grep "[[:digit:]]-pred\.jpg$"`
 do
-	
-	echo "$PWDPATH/$f" >> textures.log
+	echo "$PWDPATH/$f" | sed -e "s/-pred//g" >> textures.log	
 done
 
-rosrun	nuc PlayLog wps.log poses.log textures.log
+rm sensed.log
+touch sensed.log
+for f in `find $1/*.jpg | grep "[[:digit:]]-pred\.jpg$"`
+do
+	echo "$PWDPATH/$f" >> sensed.log
+done
+
+rosrun	nuc PlayLog wps.log poses.log textures.log sensed.log
 #imageview &
 #rosbag play -r 10 "$HOME/$1.bag" 
 #webcamview &
