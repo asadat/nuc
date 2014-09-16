@@ -8,14 +8,17 @@
 //#include "opencv2/opencv.hpp"
 
 InterestingnessSensor * InterestingnessSensor::instance;
-int iLowH = 0;
+int iLowH = 60;
 int iHighH = 179;
+
+int iHighH2 = 29;
 
 int iLowS = 0;
 int iHighS = 255;
 
 int iLowV = 0;
 int iHighV = 255;
+
 
 
 InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
@@ -31,6 +34,8 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
   //Create trackbars in "Control" window
   cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
   cvCreateTrackbar("HighH", "Control", &iHighH, 179);
+  cvCreateTrackbar("HighH2", "Control", &iHighH2, 179);
+
 
   cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
   cvCreateTrackbar("HighS", "Control", &iHighS, 255);
@@ -38,7 +43,9 @@ InterestingnessSensor::InterestingnessSensor(ros::NodeHandle * nh_)
   cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
   cvCreateTrackbar("HighV", "Control", &iHighV, 255);
 
-  iLowV = 208;
+  //iHighH2 = 32;
+  //iLowH = 60;
+  //iLowV = 139;
 
     sensingCounter = 0;
     nh = nh_;
@@ -356,18 +363,28 @@ void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     imagePtr->header.stamp = ros::Time::now();
 
     Mat imgHSV;
+    Mat imgThreshTmp;
     //Mat imgThresholded;
 
     cvtColor(imagePtr->image, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
     inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+    inRange(imgHSV, Scalar(0, iLowS, iLowV), Scalar(iHighH2, iHighS, iHighV), imgThreshTmp); //Threshold the image
 
     //morphological opening (remove small objects from the foreground)
     erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
     dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 
+    erode(imgThreshTmp, imgThreshTmp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+    dilate( imgThreshTmp, imgThreshTmp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
     //morphological closing (fill small holes in the foreground)
     dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
     erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+    dilate( imgThreshTmp, imgThreshTmp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+    erode(imgThreshTmp, imgThreshTmp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+    cv::add(imgThreshTmp, imgThresholded, imgThresholded);
 
     imshow("Thresholded Image", imgThresholded); //show the thresholded image
     waitKey(30);

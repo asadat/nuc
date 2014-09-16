@@ -1,6 +1,6 @@
 <launch>
-    <node name="ImagePublisher" pkg="NUC" type="ImagePublisher" 
-	clear_params="true" output="screen" args="/home/autolab/Desktop/highres_color/frame0 700 5">
+    <node name="ImagePublisher" pkg="nuc" type="ImagePublisher" 
+	clear_params="true" output="screen" args="/home/autolab/hydro_workspace/src/nuc/imgs/img 9 1">
           
     </node>
 </launch>
