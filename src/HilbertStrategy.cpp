@@ -175,7 +175,7 @@ bool HilbertStrategy::UpdateIterator()
 
     while(!flag)
     {
-        if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
+        if(curDepth > 0 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
         {            
             bool stayAtBottom = false;
             if(false && curDepth == lastDepth)
