@@ -11,7 +11,7 @@ InterestingnessSensor * InterestingnessSensor::instance;
 int iLowH = 60;
 int iHighH = 179;
 
-int iHighH2 = 29;
+int iHighH2 = 23;
 
 int iLowS = 0;
 int iHighS = 255;

@@ -310,16 +310,21 @@ PlayLog::PlayLog(int argc, char **argv)
         bool first = true;
         Vector<3> prevPos;
         double trajectoryLength = 0;
+        int nn=0;
 
         while(true)
         {
 
+
             bool flag = (fscanf(f,"%c %f %f %f %c %f %f %f", &tmp[0], &pp[0], &pp[1], &pp[2], &tmp[1], &d[0], &d[1], &d[2]) == EOF);
             Vector<3> pos = makeVector(pp[0], pp[1], pp[2]);
-            positions.push_back(pos);
+            if(nn==0)
+                positions.push_back(pos);
 
-            //if(positions.size() ==0)
+            nn++;
+            if(nn%10 ==0)
             {
+                positions.push_back(pos);
                 if(!first)
                 {
                     trajectoryLength += sqrt((prevPos-pos)*(prevPos-pos));
@@ -594,14 +599,14 @@ void PlayLog::glDraw()
 
      if(drawTrajectory)
      {
-         glPointSize(2);
+         glPointSize(5);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<positions.size(); i++)
          {
-            if(i%5 != 0)
-                continue;
+           // if(i%5 != 0)
+           //     continue;
 
-             ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
+            // ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
              glColor3f(1, 0, 0);
              glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
          }

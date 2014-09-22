@@ -1,4 +1,6 @@
-LOGFILE=$(echo $1 | sed "s/\(\/[_[:alnum:]]*\)/\1\1.log/g")
+#LOGFILE=$(echo $1 | sed "s/\(\/[_[:alnum:]]*\)/\1\1.log/g")
+LOGFILE=$(ls $1 | grep ".log")
+LOGFILE="$1/$LOGFILE"
 cat $LOGFILE | grep NEXT_WAY_POINT | sed "s/.*: //g" > wps.log
 cat $LOGFILE | grep NEXT_WAY_POINT | sed "s/.*: //g"
 
