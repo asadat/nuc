@@ -123,8 +123,8 @@ void CNode::glDraw()
 
     if(parent != NULL && drawEdges)
     {
-        glLineWidth(2);
-        glColor3f(.8,.8,.8);
+        glLineWidth(8);
+        glColor3f(.1,.1,.8);
         glBegin(GL_LINES);
         TooN::Vector<3> v1 = Rotation2D(parent->pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
 
@@ -146,6 +146,7 @@ void CNode::glDraw()
 
     if(drawEdges)
     {
+        glPointSize(10);
         glBegin(GL_POINTS);
         glVertex3f(v2[0],v2[1],v2[2]);
         glEnd();

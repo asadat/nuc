@@ -599,7 +599,7 @@ void PlayLog::glDraw()
 
      if(drawTrajectory)
      {
-         glPointSize(5);
+         glPointSize(3);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<positions.size(); i++)
          {
@@ -607,57 +607,57 @@ void PlayLog::glDraw()
            //     continue;
 
             // ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
-             glColor3f(1, 0, 0);
+             glColor3f(0.4, 0.5, 0.4);
              glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
          }
          glEnd();
      }
 
-     if( !positions.empty())
-     {
+//     if( !positions.empty())
+//     {
 
-         glLineWidth(3);
-         glBegin(GL_LINES);
-         glColor3f(1,0,0);
+//         glLineWidth(3);
+//         glBegin(GL_LINES);
+//         glColor3f(1,0,0);
 
-         Vector<3> ep = makeVector(1,0,0);
-         Vector<3> p = positions.back();
-         p[0] -= p_orig[0];
-         p[1] -= p_orig[1];
-         p[2] -= p_orig[2];
+//         Vector<3> ep = makeVector(1,0,0);
+//         Vector<3> p = positions.back();
+//         p[0] -= p_orig[0];
+//         p[1] -= p_orig[1];
+//         p[2] -= p_orig[2];
 
-         Vector<4> q = curAtt;//p_att.back();
-         tf::Quaternion qu(q[0], q[1], q[2], q[3]);
-         tf::Matrix3x3 m(qu);
-         Matrix<3> rot;
-         rot[0][0] = m[0][0]; rot[1][0] = m[1][0]; rot[2][0] = m[2][0];
-         rot[0][1] = m[0][1]; rot[1][1] = m[1][1]; rot[2][1] = m[2][1];
-         rot[0][2] = m[0][2]; rot[1][2] = m[1][2]; rot[2][2] = m[2][2];
+//         Vector<4> q = curAtt;//p_att.back();
+//         tf::Quaternion qu(q[0], q[1], q[2], q[3]);
+//         tf::Matrix3x3 m(qu);
+//         Matrix<3> rot;
+//         rot[0][0] = m[0][0]; rot[1][0] = m[1][0]; rot[2][0] = m[2][0];
+//         rot[0][1] = m[0][1]; rot[1][1] = m[1][1]; rot[2][1] = m[2][1];
+//         rot[0][2] = m[0][2]; rot[1][2] = m[1][2]; rot[2][2] = m[2][2];
 
-         glColor3f(1,0,0);
-         ep = rot*ep+p;
-         glVertex3f(p[0], p[1], p[2]);
-         glVertex3f(ep[0], ep[1], ep[2]);
+//         glColor3f(1,0,0);
+//         ep = rot*ep+p;
+//         glVertex3f(p[0], p[1], p[2]);
+//         glVertex3f(ep[0], ep[1], ep[2]);
 
-        glColor3f(0,1,0);
-         ep = rot*makeVector(0,1,0)+p;
-         glVertex3f(p[0], p[1], p[2]);
-         glVertex3f(ep[0], ep[1], ep[2]);
+//        glColor3f(0,1,0);
+//         ep = rot*makeVector(0,1,0)+p;
+//         glVertex3f(p[0], p[1], p[2]);
+//         glVertex3f(ep[0], ep[1], ep[2]);
 
-        glColor3f(0,0,1);
-         ep = rot*makeVector(0,0,1)+p;
-         glVertex3f(p[0], p[1], p[2]);
-         glVertex3f(ep[0], ep[1], ep[2]);
+//        glColor3f(0,0,1);
+//         ep = rot*makeVector(0,0,1)+p;
+//         glVertex3f(p[0], p[1], p[2]);
+//         glVertex3f(ep[0], ep[1], ep[2]);
 
-         glColor3f(0,1,0);
-         Vector<3> velDir = p + 5*vel;
-         glVertex3f(p[0], p[1], p[2]);
-         glVertex3f(velDir[0], velDir[1], velDir[2]);
+//         glColor3f(0,1,0);
+//         Vector<3> velDir = p + 5*vel;
+//         glVertex3f(p[0], p[1], p[2]);
+//         glVertex3f(velDir[0], velDir[1], velDir[2]);
 
-         glEnd();
-     }
+//         glEnd();
+//     }
 
-     glColor3f(0,0,1);
+     glColor3f(0.4,0,1);
      
      glPointSize(drawImages?5:10);
      if(drawWaypoints)
@@ -683,18 +683,29 @@ void PlayLog::glDraw()
          glColor4f(1,1,1,1);
          glPointSize(10);
          double ep=0.1;
+         double fl = 1.8;
          for(unsigned int i=0; i<waypoints.size();i++)
          {
             glBindTexture(GL_TEXTURE_2D, gluintsRaw[i]);
             glBegin(GL_QUADS);
-            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
+//            glTexCoord2f (0.0, 0.0);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
+//            glTexCoord2f (1.0, 0.0);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
+//            glTexCoord2f (1.0, 1.0);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
+//            glTexCoord2f (0.0, 1.0);
+
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,waypoints[i][2]);
             glTexCoord2f (0.0, 0.0);
-            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,waypoints[i][2]);
             glTexCoord2f (1.0, 0.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,waypoints[i][2]);
             glTexCoord2f (1.0, 1.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,waypoints[i][2]);
             glTexCoord2f (0.0, 1.0);
+
             glEnd();
          }
          glDisable(GL_TEXTURE_2D);         

@@ -155,11 +155,11 @@ void MAV::glDraw()
     glColor4f(0,0,0,0.5);
     circle(p4[0]+r()*0.01,p4[1]+r()*0.01,p4[2], 0.15, 50);
 
-    glPointSize(10);
-    glColor3f(0,0,1);
-    glBegin(GL_POINTS);
-    glVertex3f(goal[0], goal[1], goal[2]);
-    glEnd();
+//    glPointSize(10);
+//    glColor3f(0,0,1);
+//    glBegin(GL_POINTS);
+//    glVertex3f(goal[0], goal[1], goal[2]);
+//    glEnd();
 }
 
 void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)

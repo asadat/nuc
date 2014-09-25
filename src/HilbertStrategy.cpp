@@ -175,7 +175,7 @@ bool HilbertStrategy::UpdateIterator()
 
     while(!flag)
     {
-        if(curDepth > 1 && !(*it)->IsNodeInteresting() && !(*it)->parent->visited)
+        if(curDepth > 1 && !(*it)->IsNodeInteresting() /*&& !(*it)->parent->visited*/)
         {            
             bool stayAtBottom = false;
             if(false && curDepth == lastDepth)
@@ -306,34 +306,44 @@ void HilbertStrategy::glDraw()
 
     for(int k=1; k< MAX_HILBERT_ORDER; k++)
     {
-        if(!isover)
-        {
-            if(k==curDepth && !hilbert[k].empty())
-            {
-                glColor3f(0.5,0.6,0.6);
-                glLineWidth(4);
-                glBegin(GL_LINES);
-                for(unsigned int i=0; i<hilbert[k].size()-1;i++)
-                {
-                    TooN::Vector<3> p1 =hilbert[k][i+1]->GetMAVWaypoint();
-                    TooN::Vector<3> p2 =hilbert[k][i]->GetMAVWaypoint();
-                    glVertex3f(p1[0],p1[1],p1[2]);
-                    glVertex3f(p2[0],p2[1],p2[2]);
-                }
-                glEnd();
-            }
-        }
+//        if(!isover)
+//        {
+//            if(k==curDepth && !hilbert[k].empty())
+//            {
+//                glColor3f(0.5,0.6,0.6);
+//                glLineWidth(4);
+//                glBegin(GL_LINES);
+//                for(unsigned int i=0; i<hilbert[k].size()-1;i++)
+//                {
+//                    TooN::Vector<3> p1 =hilbert[k][i+1]->GetMAVWaypoint();
+//                    TooN::Vector<3> p2 =hilbert[k][i]->GetMAVWaypoint();
+//                    glVertex3f(p1[0],p1[1],p1[2]);
+//                    glVertex3f(p2[0],p2[1],p2[2]);
+//                }
+//                glEnd();
+//            }
+//        }
 
         if(k==curCurve && !hilbert[k].empty())
         {
             glColor3f(1,0.5,0.0);
-            glLineWidth(6);
+            glLineWidth(10);
             glBegin(GL_LINES);
             for(unsigned int i=0; i<hilbert[k].size()-1;i++)
             {
                 TooN::Vector<3> p1 =hilbert[k][i+1]->GetMAVWaypoint();
                 TooN::Vector<3> p2 =hilbert[k][i]->GetMAVWaypoint();
                 glVertex3f(p1[0],p1[1],p1[2]);
+                glVertex3f(p2[0],p2[1],p2[2]);
+            }
+            glEnd();
+
+            glColor3f(0,0.0,0.0);
+            glPointSize(15);
+            glBegin(GL_POINTS);
+            for(unsigned int i=0; i<hilbert[k].size();i++)
+            {
+                TooN::Vector<3> p2 =hilbert[k][i]->GetMAVWaypoint();
                 glVertex3f(p2[0],p2[1],p2[2]);
             }
             glEnd();
