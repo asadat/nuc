@@ -123,7 +123,7 @@ void CNode::glDraw()
 
     if(parent != NULL && drawEdges)
     {
-        glLineWidth(1);
+        glLineWidth(2);
         glColor3f(.8,.8,.8);
         glBegin(GL_LINES);
         TooN::Vector<3> v1 = Rotation2D(parent->pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
@@ -140,7 +140,7 @@ void CNode::glDraw()
     }
     else
     {
-        glPointSize(1);
+        glPointSize(3);
         glColor3f(0,0,0);
     }
 
@@ -183,7 +183,7 @@ void CNode::glDraw()
         v3 = TooN::makeVector(-dc,-dc)+Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
         v4 = TooN::makeVector(-dc,dc)+Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
 
-        double c = 1-coverage;
+        double c = 1-coverage/5;
         c = sqrt(c);
         c = sqrt(c);
 
@@ -193,11 +193,11 @@ void CNode::glDraw()
             glColor4f(0,0,0,0.1+1-depth/5.0);
 
         glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], 0.2-depth/50.0);
-        glVertex3f(v2[0],v2[1], 0.2-depth/50.0);
-        glVertex3f(v3[0],v3[1], 0.2-depth/50.0);
-        glVertex3f(v4[0],v4[1], 0.2-depth/50.0);
-        glVertex3f(v1[0],v1[1], 0.2-depth/50.0);
+        glVertex3f(v1[0],v1[1], -(0.6-depth/20.0));
+        glVertex3f(v2[0],v2[1], -(0.6-depth/20.0));
+        glVertex3f(v3[0],v3[1], -(0.6-depth/20.0));
+        glVertex3f(v4[0],v4[1], -(0.6-depth/20.0));
+        glVertex3f(v1[0],v1[1], -(0.6-depth/20.0));
         glEnd();
 
         if(drawCoverage)
@@ -343,8 +343,9 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
 
 void CNode::propagateCoverage(double height)
 {
-    double newcoverage = 1 - (height/rootHeight);
-    coverage = (newcoverage > coverage) ? newcoverage :coverage;
+    //double newcoverage = 1 - (height/rootHeight);
+    //coverage = (newcoverage > coverage) ? newcoverage :coverage;
+    coverage +=1.0;
     for(unsigned int i=0; i<children.size();i++)
         children[i]->propagateCoverage(height);
 }

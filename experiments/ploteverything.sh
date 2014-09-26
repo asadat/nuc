@@ -5,12 +5,20 @@ echo "set multiplot layout 2,2" >>gp
 for P in `seq 1 1 4`
 do
 echo "set title font \"Time-Roman, 5\"">>gp
-echo "set key left">>gp 
-echo "set yrange [0:9000]">>gp
-echo "set xrange [0:100]">>gp
-echo "set title \"$P intresting patches\"" >>gp
 echo "set key font \"Time-Roman, 4\"">>gp
 echo "set key at -10, 9000">>gp
+
+if [ $P -gt 1 ]
+then
+	echo "unset key">>gp
+        echo "set title \"$P intresting patches\"" >>gp
+else
+	echo "set key left">>gp
+        echo "set title \"$P intresting patch\"" >>gp
+fi
+
+echo "set yrange [0:9000]">>gp
+echo "set xrange [0:100]">>gp
 echo "set xtics font \"Time-Roman, 4\"">>gp
 echo "set ytics font \"Time-Roman, 4\"">>gp
 echo "set xlabel font \"Time-Roman, 4\"">>gp

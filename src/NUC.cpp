@@ -214,13 +214,14 @@ TooN::Vector<3> NUC::GetColor(double h)
     if(colors.empty())
     {
         colors.push_back(makeVector(0,0,0));
-        colors.push_back(makeVector(1,0,0));
-        colors.push_back(makeVector(0,1,0));
-        colors.push_back(makeVector(0,0,1));
+        colors.push_back(makeVector(0.5,0.5,0.5));
         colors.push_back(makeVector(0,1,1));
         colors.push_back(makeVector(1,0,1));
         colors.push_back(makeVector(1,1,0));
-        colors.push_back(makeVector(0.5,0.5,0.5));
+        colors.push_back(makeVector(1,0,0));
+        colors.push_back(makeVector(0,1,0));
+        colors.push_back(makeVector(0,0,1));
+
         std::reverse(colors.begin(), colors.end());
     }
 
@@ -400,11 +401,11 @@ void NUC::glDraw()
      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
      glBegin(GL_POLYGON);
 
-     glVertex3f(-w/2, -w/2, 0.1);     
-     glVertex3f( w/2, -w/2, 0.1);     
-     glVertex3f( w/2, w/2, 0.1);
-     glVertex3f(-w/2, w/2, 0.1);
-     glVertex3f(-w/2, -w/2, 0.1);
+     glVertex3f(-w/2, -w/2, 0.0);
+     glVertex3f( w/2, -w/2, 0.0);
+     glVertex3f( w/2, w/2, 0.0);
+     glVertex3f(-w/2, w/2, 0.0);
+     glVertex3f(-w/2, -w/2, 0.0);
 
      glEnd();
 

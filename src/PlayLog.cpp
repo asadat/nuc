@@ -318,7 +318,7 @@ PlayLog::PlayLog(int argc, char **argv)
             Vector<3> pos = makeVector(pp[0], pp[1], pp[2]);
             positions.push_back(pos);
 
-            if(positions.size()%10 ==0)
+            //if(positions.size() ==0)
             {
                 if(!first)
                 {
