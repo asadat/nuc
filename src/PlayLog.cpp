@@ -129,6 +129,9 @@ void idle_event()
 {
  PlayLog::Instance()->idle();
 
+ if(PlayLog::Instance()->ortho)
+    ROS_INFO_THROTTLE(1,"ortho...");
+
     //if(!ros::ok())
     // exit(0);
 }
@@ -160,9 +163,18 @@ void render_event()
 
     Cam_Plane += Cam_Target;
 
+    if(PlayLog::Instance()->ortho)
+    {
+        glOrtho(-50, 50, -50, 50, -1, 1000);
+    }
+
     gluLookAt(Cam_Target[0], Cam_Target[1], Cam_Target[2],
             Cam_Plane[0], Cam_Plane[1], Cam_Plane[2],
             Cam_Normal[0], Cam_Normal[1], Cam_Normal[2]);
+
+//    gluLookAt(Cam_Target[0], Cam_Target[1], Cam_Target[2],
+//            0, 0, 0,
+//            0, 0, 1);
 
 
 
@@ -262,6 +274,7 @@ void keyboard_up_event(unsigned char key, int x, int y)
 
 PlayLog::PlayLog(int argc, char **argv)
 {
+    ortho = false;
     drawImages = true;
     drawSensedImages = false;
     drawTrajectory = true;
@@ -515,6 +528,7 @@ void PlayLog::Clear()
 void PlayLog::glDraw()
 {
 
+    double zorder = (ortho)?-1.0:1.0; // dont know why there is a sign difference when changin to otho mode
      float w=30;
      if(!waypoints.empty())
      {
@@ -608,107 +622,100 @@ void PlayLog::glDraw()
 
             // ROS_INFO_THROTTLE(1,"*** %d pose: %f %f %f orig: %f %f %f", i, positions[i][0],positions[i][1],positions[i][2],p_orig[0],p_orig[1],p_orig[2]);
              glColor3f(0.4, 0.5, 0.4);
-             glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], positions[i][2]-p_orig[2]);
+             glVertex3f(positions[i][0]-p_orig[0], positions[i][1]-p_orig[1], zorder*(positions[i][2]-p_orig[2]));
          }
          glEnd();
      }
 
-//     if( !positions.empty())
-//     {
-
-//         glLineWidth(3);
-//         glBegin(GL_LINES);
-//         glColor3f(1,0,0);
-
-//         Vector<3> ep = makeVector(1,0,0);
-//         Vector<3> p = positions.back();
-//         p[0] -= p_orig[0];
-//         p[1] -= p_orig[1];
-//         p[2] -= p_orig[2];
-
-//         Vector<4> q = curAtt;//p_att.back();
-//         tf::Quaternion qu(q[0], q[1], q[2], q[3]);
-//         tf::Matrix3x3 m(qu);
-//         Matrix<3> rot;
-//         rot[0][0] = m[0][0]; rot[1][0] = m[1][0]; rot[2][0] = m[2][0];
-//         rot[0][1] = m[0][1]; rot[1][1] = m[1][1]; rot[2][1] = m[2][1];
-//         rot[0][2] = m[0][2]; rot[1][2] = m[1][2]; rot[2][2] = m[2][2];
-
-//         glColor3f(1,0,0);
-//         ep = rot*ep+p;
-//         glVertex3f(p[0], p[1], p[2]);
-//         glVertex3f(ep[0], ep[1], ep[2]);
-
-//        glColor3f(0,1,0);
-//         ep = rot*makeVector(0,1,0)+p;
-//         glVertex3f(p[0], p[1], p[2]);
-//         glVertex3f(ep[0], ep[1], ep[2]);
-
-//        glColor3f(0,0,1);
-//         ep = rot*makeVector(0,0,1)+p;
-//         glVertex3f(p[0], p[1], p[2]);
-//         glVertex3f(ep[0], ep[1], ep[2]);
-
-//         glColor3f(0,1,0);
-//         Vector<3> velDir = p + 5*vel;
-//         glVertex3f(p[0], p[1], p[2]);
-//         glVertex3f(velDir[0], velDir[1], velDir[2]);
-
-//         glEnd();
-//     }
-
      glColor3f(0.4,0,1);
      
-     glPointSize(drawImages?5:10);
+     glPointSize(drawImages?15:10);
      if(drawWaypoints)
      {
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<waypoints.size();i++)
-            glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
+            glVertex3f(waypoints[i][0],waypoints[i][1],zorder*waypoints[i][2]);
          glEnd();
 
-         glLineWidth(2);
+         glLineWidth(10);
          glBegin(GL_LINES);
          for(unsigned int i=0; i<waypoints.size()-1;i++)
          {
-            glVertex3f(waypoints[i][0],waypoints[i][1],waypoints[i][2]);
-            glVertex3f(waypoints[i+1][0],waypoints[i+1][1],waypoints[i+1][2]);
+            TooN::Vector<3> c1 = GetColor(waypoints[i][2]);
+            TooN::Vector<3> c2 = GetColor(waypoints[i+1][2]);
+
+            glColor3f(c1[0],c1[1],c1[2]);
+            glVertex3f(waypoints[i][0],waypoints[i][1],zorder*waypoints[i][2]);
+            glColor3f(c2[0],c2[1],c2[2]);
+            glVertex3f(waypoints[i+1][0],waypoints[i+1][1],zorder*waypoints[i+1][2]);
          }
          glEnd();
      }
 
      if(drawImages)
      {
-         glEnable(GL_TEXTURE_2D);
+
          glColor4f(1,1,1,1);
          glPointSize(10);
          double ep=0.1;
          double fl = 1.8;
          for(unsigned int i=0; i<waypoints.size();i++)
          {
+            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, gluintsRaw[i]);
             glBegin(GL_QUADS);
-//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
-//            glTexCoord2f (0.0, 0.0);
-//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
-//            glTexCoord2f (1.0, 0.0);
-//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
-//            glTexCoord2f (1.0, 1.0);
-//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
-//            glTexCoord2f (0.0, 1.0);
-
-            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
             glTexCoord2f (0.0, 0.0);
-            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
             glTexCoord2f (1.0, 0.0);
-            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
             glTexCoord2f (1.0, 1.0);
-            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
             glTexCoord2f (0.0, 1.0);
 
+//            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,waypoints[i][2]);
+//            glTexCoord2f (0.0, 0.0);
+//            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,waypoints[i][2]);
+//            glTexCoord2f (1.0, 0.0);
+//            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,waypoints[i][2]);
+//            glTexCoord2f (1.0, 1.0);
+//            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,waypoints[i][2]);
+//            glTexCoord2f (0.0, 1.0);
+
+            glEnd();
+            glDisable(GL_TEXTURE_2D);
+
+            //glBindTexture(GL_TEXTURE_2D, gluintsRaw[i]);
+//            glColor3f(1,1,1);
+//            glLineWidth(5);
+//            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//            glBegin(GL_POLYGON);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,1/waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,1/waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,1/waypoints[i][2]);
+//            glEnd();
+         }
+
+
+         for(unsigned int i=0; i<waypoints.size();i++)
+         {
+            glColor3f(0,0,0);
+            glLineWidth(3);
+            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glBegin(GL_LINES);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
             glEnd();
          }
-         glDisable(GL_TEXTURE_2D);         
+
      }
 
      if(drawSensedImages)
@@ -721,13 +728,13 @@ void PlayLog::glDraw()
          {
             glBindTexture(GL_TEXTURE_2D, gluintsSensed[i]);
             glBegin(GL_QUADS);
-            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*waypoints[i][2]);
             glTexCoord2f (0.0, 0.0);
-            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,waypoints[i][2]);
+            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*waypoints[i][2]);
             glTexCoord2f (1.0, 0.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*waypoints[i][2]);
             glTexCoord2f (1.0, 1.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,waypoints[i][2]);
+            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*waypoints[i][2]);
             glTexCoord2f (0.0, 1.0);
             glEnd();
          }
@@ -736,6 +743,61 @@ void PlayLog::glDraw()
 
 
 
+}
+
+TooN::Vector<3> PlayLog::GetColor(double h)
+{
+    Vector<3> c;
+    double small_dh=0.01;
+    static std::vector<Vector<3> > colors;
+    static std::vector<Vector<2> > h2c;
+
+    if(colors.empty())
+    {
+        colors.push_back(makeVector(0,0,0));
+        colors.push_back(makeVector(0.5,0.5,0.5));
+        colors.push_back(makeVector(0,1,1));
+        colors.push_back(makeVector(1,0,1));
+        colors.push_back(makeVector(1,1,0));
+        colors.push_back(makeVector(1,0,0));
+        colors.push_back(makeVector(0,1,0));
+        colors.push_back(makeVector(0,0,1));
+
+        std::reverse(colors.begin(), colors.end());
+    }
+
+    if(h2c.empty())
+    {
+        Vector<2> i;
+        i[0] = h;
+        i[1] = 0;
+        c = colors[0];
+        h2c.push_back(i);
+    }
+    else
+    {
+        bool flag = false;
+        for(unsigned int i=0; i<h2c.size(); i++)
+        {
+            if(fabs(h2c[i][0]-h) < small_dh)
+            {
+                c = colors[(int)h2c[i][1]];
+                flag = true;
+                break;
+            }
+        }
+
+        if(!flag)
+        {
+            Vector<2> hc;
+            hc[0] = h;
+            hc[1] = h2c.size();
+            h2c.push_back(hc);
+            c = colors[h2c.size()];
+        }
+    }
+
+    return c;
 }
 
 void PlayLog::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
@@ -752,6 +814,8 @@ void PlayLog::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateK
         drawTrajectory = !drawTrajectory;
     else if(Key['4'])
         drawWaypoints = !drawWaypoints;
+    else if(Key['5'])
+        ortho = !ortho;
 
 //    if(key['`'])
 //    {

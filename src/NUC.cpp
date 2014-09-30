@@ -428,9 +428,9 @@ void NUC::glDraw()
      if(pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
-         glLineWidth(4);
+         glLineWidth(10);
          glBegin(GL_LINES);
-         for(unsigned int i=0; i<pathHistory.size()-1;i++)
+         for(unsigned int i=1; i<pathHistory.size()-1;i++)
          {
              TooN::Vector<3> p1 =pathHistory[i+1];
              TooN::Vector<3> p2 =pathHistory[i];
@@ -444,8 +444,8 @@ void NUC::glDraw()
          }
          glEnd();
 
-         glColor3f(1,0,0);
-         glPointSize(5);
+         glColor3f(0,0,0);
+         glPointSize(12);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {
