@@ -328,7 +328,7 @@ void HilbertStrategy::glDraw()
         if(k==curCurve && !hilbert[k].empty())
         {
             glColor3f(1,0.5,0.0);
-            glLineWidth(10);
+            glLineWidth(7);
             glBegin(GL_LINES);
             for(unsigned int i=0; i<hilbert[k].size()-1;i++)
             {
@@ -340,7 +340,7 @@ void HilbertStrategy::glDraw()
             glEnd();
 
             glColor3f(0,0.0,0.0);
-            glPointSize(15);
+            glPointSize(10);
             glBegin(GL_POINTS);
             for(unsigned int i=0; i<hilbert[k].size();i++)
             {
