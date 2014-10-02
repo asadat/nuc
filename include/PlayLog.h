@@ -34,10 +34,14 @@ public:
 
     void velCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg);
 
+    bool ortho;
+
 private:
 
     PlayLog(int argc, char **argv);
     static PlayLog* instance;
+
+    TooN::Vector<3> GetColor(double h);
 
     void Clear();
 
@@ -59,6 +63,7 @@ private:
     
     double fixedYaw;
     TooN::Vector<3> vel;
+
 
     std::vector<TooN::Vector<3> > waypoints;
     std::vector<TooN::Vector<4> > footprints;
