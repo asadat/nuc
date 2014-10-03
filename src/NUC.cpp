@@ -401,11 +401,11 @@ void NUC::glDraw()
      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
      glBegin(GL_POLYGON);
 
-     glVertex3f(-w/2, -w/2, 0.1);     
-     glVertex3f( w/2, -w/2, 0.1);     
-     glVertex3f( w/2, w/2, 0.1);
-     glVertex3f(-w/2, w/2, 0.1);
-     glVertex3f(-w/2, -w/2, 0.1);
+     glVertex3f(-w/2, -w/2, 0.0);
+     glVertex3f( w/2, -w/2, 0.0);
+     glVertex3f( w/2, w/2, 0.0);
+     glVertex3f(-w/2, w/2, 0.0);
+     glVertex3f(-w/2, -w/2, 0.0);
 
      glEnd();
 
@@ -428,7 +428,7 @@ void NUC::glDraw()
      if(pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
-         glLineWidth(10);
+         glLineWidth(5);
          glBegin(GL_LINES);
          for(unsigned int i=1; i<pathHistory.size()-1;i++)
          {
@@ -445,7 +445,7 @@ void NUC::glDraw()
          glEnd();
 
          glColor3f(0,0,0);
-         glPointSize(12);
+         glPointSize(7);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {

@@ -13,10 +13,7 @@ do
 	for STRATEGY in `seq 1 1 3`  
 	do
 		for PERCENT in `seq 10 10 90` 
-		do
-			#if [ $PATCHES -gt 1 ] && [ $PERCENT -gt 40 ]; then 
-			#	continue
-			#fi
+		do		
 
 			for i in `seq 1 1 10`
 			do 
@@ -36,11 +33,12 @@ do
 
 			    if [ $STRATEGY -eq 3 ]; then
 				    echo "strategy: hi"
-                    echo "strategy: hi" >> ../launch/batchrun_param.yaml
-                 fi
-                 echo "run:$i strategy:$STRATEGY patches:$PATCHES percent:$PERCENT" 
+                    		    echo "strategy: hi" >> ../launch/batchrun_param.yaml
+                 	    fi
+                 
+			    echo "run:$i strategy:$STRATEGY patches:$PATCHES percent:$PERCENT" 
 			    roslaunch nuc batchrun.launch  | grep "STRATEGY" >> results
- 			    # roslaunch nuc batchrun.launch  | grep -e "#waypoint"
+ 			    
 			done
 		done
 	done
