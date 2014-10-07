@@ -193,12 +193,30 @@ void CNode::glDraw()
         else
             glColor4f(0,0,0,0.1+1-depth/5.0);
 
+        if(IsInterestingnessSet())
+        {
+            if(!IsNodeInteresting())
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                glColor4f(1,0.5,0.5,1);
+            }
+            else
+            {
+                if(IsLeaf() && visited)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glColor4f(0.0,0.4,0.0,1);
+                }
+            }
+
+        }
+
         glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], -(0.6-depth/20.0));
-        glVertex3f(v2[0],v2[1], -(0.6-depth/20.0));
-        glVertex3f(v3[0],v3[1], -(0.6-depth/20.0));
-        glVertex3f(v4[0],v4[1], -(0.6-depth/20.0));
-        glVertex3f(v1[0],v1[1], -(0.6-depth/20.0));
+        glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
+        glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
+        glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
+        glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
+        glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
         glEnd();
 
         if(drawCoverage)

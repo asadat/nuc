@@ -2,8 +2,8 @@ simulation: True
 visualization: True
 branching_sqrt: 2
 FOV: 1.57
-min_footprint: 5.0
-speed: 10
+min_footprint: 3.0
+speed: 0
 strategy: hi
 area_length: 32.0
 area_rotation: 0.0
@@ -11,4 +11,4 @@ logging: false
 patches: 2
 percent_interesting: 40.0
 auto_exit: false
-bypass_controller: true
+bypass_controller: false

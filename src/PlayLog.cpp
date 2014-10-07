@@ -629,7 +629,7 @@ void PlayLog::glDraw()
 
      glColor3f(0.4,0,1);
      
-     glPointSize(drawImages?15:10);
+     glPointSize(drawImages?12:10);
      if(drawWaypoints)
      {
          glBegin(GL_POINTS);
@@ -637,7 +637,7 @@ void PlayLog::glDraw()
             glVertex3f(waypoints[i][0],waypoints[i][1],zorder*waypoints[i][2]);
          glEnd();
 
-         glLineWidth(10);
+         glLineWidth(7);
          glBegin(GL_LINES);
          for(unsigned int i=0; i<waypoints.size()-1;i++)
          {
@@ -645,9 +645,9 @@ void PlayLog::glDraw()
             TooN::Vector<3> c2 = GetColor(waypoints[i+1][2]);
 
             glColor3f(c1[0],c1[1],c1[2]);
-            glVertex3f(waypoints[i][0],waypoints[i][1],zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0],waypoints[i][1],zorder*(waypoints[i][2]+0.01));
             glColor3f(c2[0],c2[1],c2[2]);
-            glVertex3f(waypoints[i+1][0],waypoints[i+1][1],zorder*waypoints[i+1][2]);
+            glVertex3f(waypoints[i+1][0],waypoints[i+1][1],zorder*(waypoints[i+1][2]+0.01));
          }
          glEnd();
      }
@@ -664,23 +664,23 @@ void PlayLog::glDraw()
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, gluintsRaw[i]);
             glBegin(GL_QUADS);
-            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
-            glTexCoord2f (0.0, 0.0);
-            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glTexCoord2f (1.0, 0.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glTexCoord2f (1.0, 1.0);
-            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
-            glTexCoord2f (0.0, 1.0);
-
-//            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
 //            glTexCoord2f (0.0, 0.0);
-//            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
 //            glTexCoord2f (1.0, 0.0);
-//            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
 //            glTexCoord2f (1.0, 1.0);
-//            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
 //            glTexCoord2f (0.0, 1.0);
+
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
+            glTexCoord2f (0.0, 0.0);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glTexCoord2f (1.0, 0.0);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glTexCoord2f (1.0, 1.0);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
+            glTexCoord2f (0.0, 1.0);
 
             glEnd();
             glDisable(GL_TEXTURE_2D);
@@ -704,15 +704,26 @@ void PlayLog::glDraw()
             glColor3f(0,0,0);
             glLineWidth(3);
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//            glBegin(GL_LINES);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+//            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+//            glEnd();
+
             glBegin(GL_LINES);
-            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][0]+ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][2]-ep,footprints[i][3]-ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][2]-ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
-            glVertex3f(footprints[i][0]+ep,footprints[i][1]+ep,zorder*1/waypoints[i][2]);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]+fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] + fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
+            glVertex3f(waypoints[i][0] - fl,waypoints[i][1]-fl,zorder*waypoints[i][2]);
             glEnd();
          }
 
