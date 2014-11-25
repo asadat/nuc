@@ -166,16 +166,21 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
+        //start at leaf level
         it = hilbert[lastDepth].begin();
-        firstCall = false;
         curDepth = lastDepth;
+
+        //start at the root
+        //it = hilbert[0].begin();
+        //curDepth = 0;
+
+        firstCall = false;
         return true;
     }
     //**
 
     while(!flag)
     {
-
         if(curDepth > 1 && !(*it)->IsNodeInteresting() /*&& !(*it)->parent->visited*/)
         {            
             bool stayAtBottom = false;

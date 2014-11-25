@@ -17,7 +17,6 @@
 FILE *NUC::logFile = NULL;
 std::string NUC::logFileName = std::string("");
 
-#define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 //#define AREA_LENGTH 16
 //#define AREA_CX 0
 //#define AREA_CY 0
@@ -389,6 +388,7 @@ void NUC::MarkNodesInterestingness()
     for(unsigned int i=0; i<targets.size(); i++)
     {
         tree->PropagateInterestingness(targets[i]);
+        tree->InitializePrior(targets[i]);
     }
 }
 
@@ -489,18 +489,19 @@ void NUC::glDraw()
              Vector<2,double> r4 = c + rot*(v4-c);
 
 
-             if(!CNode::drawCoverage)
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-             else
+//             if(!CNode::drawCoverage)
+//                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//             else
+             glLineWidth(11);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
              glColor4f(0.2,1,0.2,0.4);
              glBegin(GL_POLYGON);
-             glVertex3f(r1[0],r1[1], 0.11);
-             glVertex3f(r2[0],r2[1], 0.11);
-             glVertex3f(r3[0],r3[1], 0.11);
-             glVertex3f(r4[0],r4[1], 0.11);
-             glVertex3f(r1[0],r1[1], 0.11);
+             glVertex3f(r1[0],r1[1], 0.511);
+             glVertex3f(r2[0],r2[1], 0.511);
+             glVertex3f(r3[0],r3[1], 0.511);
+             glVertex3f(r4[0],r4[1], 0.511);
+             glVertex3f(r1[0],r1[1], 0.511);
 
              glEnd();
 
@@ -607,10 +608,12 @@ bool NUC::VisitGoal()
     if(NUCParam::simulation)
     {
         // In simulations it uses the precomputed interestingness
-        curGoal->SetIsInteresting(curGoal->trueIsInteresting);
+        //curGoal->SetIsInteresting(curGoal->trueIsInteresting);
+        curGoal->GenerateObservationAndPropagate();
+
         //simulating interestingness
-        for(unsigned int i=0; i<curGoal->children.size();i++)
-            curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
+        //for(unsigned int i=0; i<curGoal->children.size();i++)
+        //    curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
 
         curGoal->propagateCoverage(curGoal->pos[2]);
         return true;

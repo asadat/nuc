@@ -28,6 +28,7 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
     pos[0] = (0.5)*(footPrint[0]+footPrint[2]);
     pos[1] = (0.5)*(footPrint[1]+footPrint[3]);
     pos[2] = (0.5)*fabs((footPrint[0]-footPrint[2])/tan(NUCParam::FOV/2.0));
+    p_X = PRIOR_UNINTERESTING;
 
     if(rootHeight < pos[2])
         rootHeight = pos[2];
@@ -193,21 +194,28 @@ void CNode::glDraw()
         else
             glColor4f(0,0,0,0.1+1-depth/5.0);
 
-        if(IsInterestingnessSet())
+        if(true || IsInterestingnessSet())
         {
-            if(!IsNodeInteresting())
+            if(IsLeaf())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glColor4f(1,0.5,0.5,1);
+                glColor4f(p_X,p_X,p_X,0.5);
+
             }
-            else
-            {
-                if(IsLeaf() && visited)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glColor4f(0.0,0.4,0.0,1);
-                }
-            }
+
+//            if(!IsNodeInteresting())
+//            {
+//                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//                glColor4f(1,0.5,0.5,1);
+//            }
+//            else
+//            {
+//                if(IsLeaf() && visited)
+//                {
+//                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//                    glColor4f(0.0,0.4,0.0,1);
+//                }
+//            }
 
         }
 
@@ -271,6 +279,29 @@ bool CNode::PropagateInterestingness(Rect r)
     trueIsInteresting = trueIsInteresting || flag;
 
     return trueIsInteresting;
+}
+
+double CNode::InitializePrior(Rect r)
+{
+    if(children.empty())
+    {
+        if(IN(pos,r))
+        {
+            p_X = PRIOR_INTERESTING;//RAND(0.5,0.7);
+        }
+
+        return p_X;
+    }
+
+    double prod = 1;
+    for(unsigned int i=0; i<children.size(); i++)
+    {
+        prod *= (1-children[i]->InitializePrior(r));
+    }
+
+    p_X = 1-prod;
+
+    return p_X;
 }
 
 bool CNode::VisitedInterestingDescendentExists()
@@ -360,6 +391,94 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
     return children[minidx]->GetNearestLeafAndParents(p, list);
 }
 
+void CNode::GenerateObservationAndPropagate()
+{
+    if(!IsLeaf())
+    {
+        bool obs[2][2];
+
+        for(unsigned int i=0; i<children.size();i++)
+        {
+            bool observation = false;
+            if(children[i]->trueIsInteresting)
+            {
+                observation = (RAND(0,1)) < nuc_beta ? false : true;
+            }
+            else
+            {
+                observation = (RAND(0,1)) < nuc_alpha ? true : false;
+            }
+
+            obs[children[i]->grd_x][children[i]->grd_y] = observation;
+        }
+
+        for(unsigned int i=0; i<children.size();i++)
+        {
+            children[i]->PropagateObservation(obs[children[i]->grd_x][children[i]->grd_y]);
+        }
+
+        this->RecomputeProbability();
+
+        for(unsigned int i=0; i<children.size(); i++)
+            ROS_INFO("%d %d %.2f", children[i]->grd_x, children[i]->grd_y, children[i]->p_X);
+
+        ROS_INFO("p_X: %.2f", p_X);
+
+    }
+    else
+    {
+        bool X = trueIsInteresting;
+        this->PropagateObservation(X);
+        parent->RecomputeProbability();
+        ROS_INFO("p_X: %.2f", p_X);
+    }
+}
+
+void CNode::RecomputeProbability()
+{
+    double prod = 1;
+    for(unsigned int i=0; i<children.size();i++)
+    {
+        prod *= (1-children[i]->p_X);
+    }
+
+    p_X = 1-prod;
+
+    if(parent)
+        parent->RecomputeProbability();
+}
+
+void CNode::PropagateObservation(bool X)
+{
+    double p_X_1 = p_X;
+    double new_p_X;
+
+    if(X)
+    {
+        new_p_X = (p_X_1 * (1-nuc_beta))/(p_X_1*(1-nuc_beta) + (1-p_X_1)*nuc_alpha);
+    }
+    else
+    {
+        new_p_X = (p_X_1 * nuc_beta)/(p_X_1*nuc_beta + (1-p_X_1)*(1-nuc_alpha));
+    }
+
+    UpdateProbability(new_p_X);
+}
+
+void CNode::UpdateProbability(double new_p_X)
+{
+    double a = sqrt(sqrt((1-new_p_X)/(1-p_X)));
+
+    for(unsigned int i=0; i<children.size();i++)
+    {
+        double px = children[i]->p_X;
+        double newpx = 1- a*(1-px);
+        children[i]->UpdateProbability(newpx);
+    }
+
+    p_X = new_p_X;
+}
+
 void CNode::propagateCoverage(double height)
 {
     //double newcoverage = 1 - (height/rootHeight);
@@ -383,15 +502,17 @@ bool CNode::NeedsVisitation()
     CNode * par = parent;
     while(par!=NULL)
     {
-        if(par->isInterestingnessSet && !par->isInteresting)
+        if(!parent->IsNodeInteresting()/*par->isInterestingnessSet && !par->isInteresting*/)
             return false;
         par = par->parent;
     }
 
     if(IsLeaf())
-        return !(visited || (isInterestingnessSet && !isInteresting));
+        return !visited && IsNodeInteresting();//!(visited || (isInterestingnessSet && !isInteresting));
     else
     {
+        return !visited && IsNodeInteresting();
+
         if(visited || (isInterestingnessSet && !isInteresting))
             return false;
         else

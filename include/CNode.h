@@ -11,6 +11,14 @@ class ShortCutStrategy;
 class TestStrategy;
 class NUC;
 
+#define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
+
+#define nuc_alpha   0.1
+#define nuc_beta    0.25
+#define PRIOR_INTERESTING 0.8
+#define PRIOR_UNINTERESTING 0.4
+#define INTERESTING_THRESHOLD   0.3
+
 
 class CNode
 {
@@ -24,7 +32,7 @@ public:
     // tree related methods
     CNode* CreateChildNode(Rect fp);
 
-    bool IsNodeInteresting(){return isInteresting;}// || trueIsInteresting;}
+    bool IsNodeInteresting(){if(IsLeaf()) return p_X>INTERESTING_THRESHOLD; else return p_X>0.5;}//return isInteresting;}// || trueIsInteresting;}
     void SetIsInteresting(bool interesting){isInterestingnessSet=true;isInteresting=interesting;}
     bool IsInterestingnessSet(){return isInterestingnessSet;}
     TooN::Vector<3> GetPos(){return pos;}
@@ -42,6 +50,11 @@ public:
 
     void propagateCoverage(double height);
 
+    void GenerateObservationAndPropagate();
+    void PropagateObservation(bool X);
+    void UpdateProbability(double new_p_X);
+    void RecomputeProbability();
+
     // if there is any descendant that is not visited or we
     // don't know if it is interesting or not
     bool NeedsVisitation();
@@ -56,6 +69,7 @@ public:
 
     static bool drawEdges;
     static bool drawCoverage;
+    double p_X;
 
 private:
 
@@ -64,6 +78,7 @@ private:
     //this is used for simulation only
     bool trueIsInteresting;
     bool PropagateInterestingness(Rect r);
+    double InitializePrior(Rect r);
     void PropagateDepth();
 
     bool VisitedInterestingDescendentExists();
