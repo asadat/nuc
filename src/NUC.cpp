@@ -492,16 +492,16 @@ void NUC::glDraw()
 //             if(!CNode::drawCoverage)
 //                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 //             else
-             glLineWidth(11);
+             glLineWidth(8);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-             glColor4f(0.2,1,0.2,0.4);
+             glColor4f(0.2,1,0.2,0.9);
              glBegin(GL_POLYGON);
-             glVertex3f(r1[0],r1[1], 0.511);
-             glVertex3f(r2[0],r2[1], 0.511);
-             glVertex3f(r3[0],r3[1], 0.511);
-             glVertex3f(r4[0],r4[1], 0.511);
-             glVertex3f(r1[0],r1[1], 0.511);
+             glVertex3f(r1[0],r1[1], 0.7511);
+             glVertex3f(r2[0],r2[1], 0.7511);
+             glVertex3f(r3[0],r3[1], 0.7511);
+             glVertex3f(r4[0],r4[1], 0.7511);
+             glVertex3f(r1[0],r1[1], 0.7511);
 
              glEnd();
 
@@ -531,7 +531,7 @@ void NUC::SetNextGoal()
         NUC_LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
-        ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+        //ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
     }
 }
 

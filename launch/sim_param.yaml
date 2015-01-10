@@ -11,4 +11,4 @@ logging: false
 patches: 2
 percent_interesting: 50.0
 auto_exit: false
-bypass_controller: true
+bypass_controller: false

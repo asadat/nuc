@@ -14,6 +14,8 @@ HilbertStrategy::HilbertStrategy(CNode *root)
 
     isover = false;
     lastDepth = HilbertCurveOther(root);
+
+    CNode::PopulateInt_Thr(lastDepth);
 //    for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
 //        nodeStack.push_back(hilbert[lastDepth][i]);
 }
@@ -181,27 +183,11 @@ bool HilbertStrategy::UpdateIterator()
 
     while(!flag)
     {
-        if(curDepth > 1 && !(*it)->IsNodeInteresting() /*&& !(*it)->parent->visited*/)
+        if(curDepth > 1 && !(*it)->IsNodeInteresting())
         {            
-            bool stayAtBottom = false;
-            if(false && curDepth == lastDepth)
+            CNode* parent = (*it)->parent;
+            if(!parent->visited/*!parent->ChildrenNeedVisitation()*/)
             {
-                for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
-                {
-                    if(it == hilbert[curDepth].begin()+i)
-                    {
-                        if(i%4 !=0)
-                        {
-                            stayAtBottom = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if(!stayAtBottom)
-            {
-                CNode* parent = (*it)->parent;
                 for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
                 {
                     if(hilbert[curDepth-1][i]==parent)
@@ -213,7 +199,6 @@ bool HilbertStrategy::UpdateIterator()
                     }
                 }
             }
-
         }
         else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
         {
@@ -238,7 +223,7 @@ bool HilbertStrategy::UpdateIterator()
         CNode * cur_parent = (*it)->parent;
         //CNode * cur_node = (*it);
         int nseek = 0;
-        while(!(*it)->NeedsVisitation()/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
+        while(!(*it)->NeedsVisitation()  && nseek < 4/*(*it)->visited || ((*it)->IsInterestingnessSet() && !(*it)->IsNodeInteresting())*/)
         {
             nseek++;
             it++;

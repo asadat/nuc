@@ -13,10 +13,10 @@ class NUC;
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 
-#define nuc_alpha   0.1
+#define nuc_alpha   0.3
 #define nuc_beta    0.25
-#define PRIOR_INTERESTING 0.8
-#define PRIOR_UNINTERESTING 0.4
+#define PRIOR_INTERESTING 0.5
+#define PRIOR_UNINTERESTING 0.5
 #define INTERESTING_THRESHOLD   0.3
 
 
@@ -32,7 +32,7 @@ public:
     // tree related methods
     CNode* CreateChildNode(Rect fp);
 
-    bool IsNodeInteresting(){if(IsLeaf()) return p_X>INTERESTING_THRESHOLD; else return p_X>0.5;}//return isInteresting;}// || trueIsInteresting;}
+    bool IsNodeInteresting();
     void SetIsInteresting(bool interesting){isInterestingnessSet=true;isInteresting=interesting;}
     bool IsInterestingnessSet(){return isInterestingnessSet;}
     TooN::Vector<3> GetPos(){return pos;}
@@ -59,9 +59,15 @@ public:
     // don't know if it is interesting or not
     bool NeedsVisitation();
     bool ChildrenNeedVisitation();
+    bool ChildrenVisited();
+
    // static float fov;
     //static int bf_sqrt;
     //static float minFootprintWidth;
+
+    static int maxDepth;
+    static double int_thr[20];
+    static void PopulateInt_Thr(int maxdepth);
 
     static TooN::Vector<3> Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2> c);
 

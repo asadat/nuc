@@ -8,6 +8,8 @@
 bool CNode::drawEdges = true;
 bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
+int CNode::maxDepth = 0;
+double CNode::int_thr[20];
 
 //float CNode::fov = 90 *3.14/(180);
 //int CNode::bf_sqrt = 2;
@@ -54,6 +56,11 @@ CNode * CNode::CreateChildNode(Rect fp)
     cnode->depth = depth +1;
     children.push_back(cnode);
     return cnode;
+}
+
+bool CNode::IsNodeInteresting()
+{
+    return p_X >= INTERESTING_THRESHOLD;
 }
 
 void CNode::PopulateChildren()
@@ -118,6 +125,19 @@ TooN::Vector<3> CNode::Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2>
     return TooN::makeVector(v2[0], v2[1], v[2]);
 }
 
+void CNode::PopulateInt_Thr(int maxdepth)
+{
+    maxDepth = maxdepth;
+
+    int_thr[maxDepth] = INTERESTING_THRESHOLD;
+
+    for(int i=maxDepth-1; i >= 0; i--)
+    {
+        int_thr[i] = 1-(1-int_thr[i+1])*(1-int_thr[i+1])*(1-int_thr[i+1])*(1-int_thr[i+1]);
+        ROS_INFO("THR Depth:%d  %f", i, int_thr[i]);
+    }
+}
+
 void CNode::glDraw()
 {
     TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
@@ -134,20 +154,20 @@ void CNode::glDraw()
         glEnd();
     }
 
-    if(IsNodeInteresting())
+    if(/*IsNodeInteresting() && !visited*/ NeedsVisitation())
     {
-        glPointSize(3);
+        glPointSize(10);
         glColor3f(0,1,0);
     }
     else
     {
-        glPointSize(2);
+        glPointSize(10);
         glColor3f(0,0,0);
     }
 
     if(drawEdges)
     {
-        glPointSize(3);
+        //glPointSize(3);
         glBegin(GL_POINTS);
         glVertex3f(v2[0],v2[1],v2[2]);
         glEnd();
@@ -161,7 +181,7 @@ void CNode::glDraw()
     {
 
         double dc = 0.01;
-        glLineWidth(1+10 - 2*depth);
+        glLineWidth(1+5 - 1*depth);
         //glLineWidth(2);
         if(drawCoverage)
         {
@@ -496,32 +516,51 @@ bool CNode::ChildrenNeedVisitation()
 
     return false;
 }
+bool CNode::ChildrenVisited()
+{
+    if(IsLeaf())
+    {
+        return visited;
+    }
+    else
+    {
+        if(visited)
+        {
+            return true;
+        }
+        else
+        {
+            for(unsigned int i=0; i<children.size(); i++)
+                if(!children[i]->ChildrenVisited())
+                    return false;
+
+            return true;
+        }
+    }
+}
 
 bool CNode::NeedsVisitation()
 {
+    if(ChildrenVisited())
+        return false;
+
     CNode * par = parent;
     while(par!=NULL)
     {
-        if(!parent->IsNodeInteresting()/*par->isInterestingnessSet && !par->isInteresting*/)
+        if(!parent->IsNodeInteresting())
             return false;
         par = par->parent;
     }
 
     if(IsLeaf())
-        return !visited && IsNodeInteresting();//!(visited || (isInterestingnessSet && !isInteresting));
-    else
     {
         return !visited && IsNodeInteresting();
-
-        if(visited || (isInterestingnessSet && !isInteresting))
-            return false;
+    }
+    else
+    {
+        if(ChildrenNeedVisitation())
+            return true;
         else
-        {
-            for(unsigned int i=0; i<children.size(); i++)
-                if(children[i]->NeedsVisitation())
-                    return true;
-
-            return false;
-        }
+            return !ChildrenVisited() && !visited && IsNodeInteresting();
     }
 }
