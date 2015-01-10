@@ -137,7 +137,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     }
     //
 
-    StartTraversing();   
+    StartTraversing();
 }
 
 NUC::~NUC()

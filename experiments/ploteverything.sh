@@ -45,6 +45,7 @@ echo       "'hi' using 2:(\$1==$P?\$3:1/0) with lines ls 25 notitle, \\">>gp
 echo       "'df' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 3 title 'Depth-First', \\">>gp
 echo       "'sc' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 9 title 'Shortcut', \\">>gp
 echo       "'hi' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 25 title 'Hilbert', \\">>gp
+echo 	   "'per' using 1:(\$2+\$3) with lines title 'min bound', \\">>gp
 echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
 done
 echo "unset multiplot">>gp
