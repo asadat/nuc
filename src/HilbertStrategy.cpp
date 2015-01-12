@@ -16,6 +16,7 @@ HilbertStrategy::HilbertStrategy(CNode *root)
     lastDepth = HilbertCurveOther(root);
 
     CNode::PopulateInt_Thr(lastDepth);
+    root->PrintoutParams();
 //    for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
 //        nodeStack.push_back(hilbert[lastDepth][i]);
 }

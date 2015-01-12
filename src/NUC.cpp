@@ -30,6 +30,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 {
     //runCircleDetection();
     //runPhotoStitcher();
+    drawPath = true;
     traverseLength = 0;
     isOver = false;
     sim_running = true;
@@ -425,7 +426,7 @@ void NUC::glDraw()
      glEnd();
 
 
-     if(pathHistory.size() > 2 && !CNode::drawCoverage)
+     if(drawPath && pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
          glLineWidth(5);
@@ -759,6 +760,12 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['2'])
     {
         CNode::drawCoverage = !CNode::drawCoverage;
+        //updateKey = false;
+
+    }
+    else if(key['`'])
+    {
+        drawPath = !drawPath;
         //updateKey = false;
 
     }

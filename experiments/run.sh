@@ -8,14 +8,14 @@ roslaunch pelican_ctrl sim.launch &
 sleep 5.0
 
 echo > results
-for PATCHES in `seq 1 1 4` 
+for PATCHES in `seq 1 1 1` 
 do
-	for STRATEGY in `seq 1 1 3`  
+	for STRATEGY in `seq 3 1 3`  
 	do
-		for PERCENT in `seq 10 10 90` 
+		for PERCENT in `seq 10 20 90` 
 		do		
 
-			for i in `seq 1 1 10`
+			for i in `seq 1 2 10`
 			do 
 			    cat param.yaml > ../launch/batchrun_param.yaml
 			    echo "patches: $PATCHES" >> ../launch/batchrun_param.yaml

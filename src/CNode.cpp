@@ -60,7 +60,16 @@ CNode * CNode::CreateChildNode(Rect fp)
 
 bool CNode::IsNodeInteresting()
 {
-    return p_X >= INTERESTING_THRESHOLD;
+    //return p_X >= INTERESTING_THRESHOLD/(1.0*depth);
+    if(IsLeaf())
+        return p_X >= INTERESTING_THRESHOLD;
+    else
+    {
+        for(unsigned int i=0; i < this->children.size(); i++)
+            if(this->children[i]->IsNodeInteresting())
+                return true;
+        return false;
+    }
 }
 
 void CNode::PopulateChildren()
@@ -136,6 +145,17 @@ void CNode::PopulateInt_Thr(int maxdepth)
         int_thr[i] = 1-(1-int_thr[i+1])*(1-int_thr[i+1])*(1-int_thr[i+1])*(1-int_thr[i+1]);
         ROS_INFO("THR Depth:%d  %f", i, int_thr[i]);
     }
+
+
+}
+
+void CNode::PrintoutParams()
+{
+    float al = nuc_alpha(pos[2],rootHeight);
+    float be = nuc_beta(pos[2],rootHeight);
+    ROS_INFO("D:%d \t H:%.2f \t alpha:%.2f \t beta:%.2f", depth, pos[2], al, be);
+    if(!IsLeaf())
+        children[0]->PrintoutParams();
 }
 
 void CNode::glDraw()
@@ -220,7 +240,6 @@ void CNode::glDraw()
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glColor4f(p_X,p_X,p_X,0.5);
-
             }
 
 //            if(!IsNodeInteresting())
@@ -422,11 +441,11 @@ void CNode::GenerateObservationAndPropagate()
             bool observation = false;
             if(children[i]->trueIsInteresting)
             {
-                observation = (RAND(0,1)) < nuc_beta ? false : true;
+                observation = (RAND(0,1)) < nuc_beta(pos[2],rootHeight) ? false : true;
             }
             else
             {
-                observation = (RAND(0,1)) < nuc_alpha ? true : false;
+                observation = (RAND(0,1)) < nuc_alpha(pos[2],rootHeight) ? true : false;
             }
 
             obs[children[i]->grd_x][children[i]->grd_y] = observation;
@@ -439,10 +458,10 @@ void CNode::GenerateObservationAndPropagate()
 
         this->RecomputeProbability();
 
-        for(unsigned int i=0; i<children.size(); i++)
-            ROS_INFO("%d %d %.2f", children[i]->grd_x, children[i]->grd_y, children[i]->p_X);
+        //for(unsigned int i=0; i<children.size(); i++)
+        //    ROS_INFO("%d %d %.2f", children[i]->grd_x, children[i]->grd_y, children[i]->p_X);
 
-        ROS_INFO("p_X: %.2f", p_X);
+        //ROS_INFO("p_X: %.2f", p_X);
 
     }
     else
@@ -450,7 +469,7 @@ void CNode::GenerateObservationAndPropagate()
         bool X = trueIsInteresting;
         this->PropagateObservation(X);
         parent->RecomputeProbability();
-        ROS_INFO("p_X: %.2f", p_X);
+        //ROS_INFO("p_X: %.2f", p_X);
     }
 }
 
@@ -475,11 +494,11 @@ void CNode::PropagateObservation(bool X)
 
     if(X)
     {
-        new_p_X = (p_X_1 * (1-nuc_beta))/(p_X_1*(1-nuc_beta) + (1-p_X_1)*nuc_alpha);
+        new_p_X = (p_X_1 * (1-nuc_beta(pos[2],rootHeight)))/(p_X_1*(1-nuc_beta(pos[2],rootHeight)) + (1-p_X_1)*nuc_alpha(pos[2],rootHeight));
     }
     else
     {
-        new_p_X = (p_X_1 * nuc_beta)/(p_X_1*nuc_beta + (1-p_X_1)*(1-nuc_alpha));
+        new_p_X = (p_X_1 * nuc_beta(pos[2],rootHeight))/(p_X_1*nuc_beta(pos[2],rootHeight) + (1-p_X_1)*(1-nuc_alpha(pos[2],rootHeight)));
     }
 
     UpdateProbability(new_p_X);

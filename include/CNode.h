@@ -13,11 +13,12 @@ class NUC;
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 
-#define nuc_alpha   0.3
-#define nuc_beta    0.25
+#define nuc_alpha(h,mh)   (0.1 + (h/mh)*0.5)
+#define nuc_beta(h,mh)    (0.1 + (h/mh)*0.5)
+
 #define PRIOR_INTERESTING 0.5
 #define PRIOR_UNINTERESTING 0.5
-#define INTERESTING_THRESHOLD   0.3
+#define INTERESTING_THRESHOLD   0.31
 
 
 class CNode
@@ -86,6 +87,7 @@ private:
     bool PropagateInterestingness(Rect r);
     double InitializePrior(Rect r);
     void PropagateDepth();
+    void PrintoutParams();
 
     bool VisitedInterestingDescendentExists();
 
