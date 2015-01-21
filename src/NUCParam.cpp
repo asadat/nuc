@@ -24,7 +24,11 @@ int NUCParam::patches = 5;
 bool NUCParam::auto_exit = true;
 std::string NUCParam::strategy = "lm";
 bool NUCParam::bypass_controller = false;
-
+double NUCParam::int_prob_thr = 0.31;
+double NUCParam::alpha_h0 = 0.1;
+double NUCParam::alpha_hm = 0.4;
+double NUCParam::beta_h0 = 0.1;
+double NUCParam::beta_hm = 0.4;
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
 {
@@ -50,4 +54,10 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<double>("percent_interesting",percent_interesting,30.0);
     nh.param<bool>("auto_exit", auto_exit, true);
     nh.param<bool>("bypass_controller", bypass_controller, false);
+
+    nh.param<double>("int_prob_thr",int_prob_thr,0.31);
+    nh.param<double>("alpha_h0",alpha_h0,0.1);
+    nh.param<double>("alpha_hm",alpha_hm,0.4);
+    nh.param<double>("beta_h0",beta_h0,0.1);
+    nh.param<double>("beta_hm",beta_hm,0.4);
 }

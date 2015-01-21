@@ -496,7 +496,7 @@ void NUC::glDraw()
              glLineWidth(8);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-             glColor4f(0.2,1,0.2,0.9);
+             glColor4f(0.8,0.4,0.0,1);
              glBegin(GL_POLYGON);
              glVertex3f(r1[0],r1[1], 0.7511);
              glVertex3f(r2[0],r2[1], 0.7511);

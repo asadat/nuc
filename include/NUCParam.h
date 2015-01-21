@@ -38,6 +38,12 @@ public:
     static bool auto_exit;
     static bool bypass_controller;
 
+    static double int_prob_thr;
+    static double alpha_h0;
+    static double alpha_hm;
+    static double beta_h0;
+    static double beta_hm;
+
 };
 
 #endif

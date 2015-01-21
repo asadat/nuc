@@ -5,7 +5,15 @@
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
-bool CNode::drawEdges = true;
+#define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
+#define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
+
+#define PRIOR_INTERESTING 0.5
+#define PRIOR_UNINTERESTING 0.5
+#define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
+
+
+bool CNode::drawEdges = false;
 bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
 int CNode::maxDepth = 0;
