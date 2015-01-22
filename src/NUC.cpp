@@ -13,6 +13,7 @@
 #include "NUCParam.h"
 //#include "HuskyInterface.h"
 
+#define AREA(r) (fabs(r[0]-r[2]) * fabs(r[1]-r[3]))
 
 FILE *NUC::logFile = NULL;
 std::string NUC::logFileName = std::string("");
@@ -324,6 +325,7 @@ void NUC::PopulateTargets()
         double ly = patch / (r[2]-r[0]);
         double ly1 = ceil(ly/cellW)*cellW;
         double ly2 = floor(ly/cellW)*cellW;
+
         if(fabs(ly - ly1) < fabs(ly-ly2))
             ly = ly1;
         else
@@ -339,10 +341,8 @@ void NUC::PopulateTargets()
         r[3] = r[1]+ly;
 
 
-//        r[0] = -13;
-//        r[1] = -14;
-//        r[2] = 10;
-//        r[3] = 9;
+        if(fabs(r[0]-r[2]) < cellW || fabs(r[1]-r[3]) < cellW)
+                continue;
 
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
@@ -369,6 +369,10 @@ void NUC::PopulateTargets()
         }
 
     }
+
+    for(unsigned int i=0; i < targets.size(); i++)
+        ROS_INFO("target:%d area:%.2f %.2f %.2f %.2f %.2f", i, AREA(targets[i]), targets[i][0],targets[i][1],targets[i][2],targets[i][3]);
+
 //    srand(time(NULL));
 //    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
 //    double l =2*NUCParam::min_footprint;
