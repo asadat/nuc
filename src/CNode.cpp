@@ -247,7 +247,10 @@ void CNode::glDraw()
             if(IsLeaf())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glColor4f(p_X,p_X,p_X,0.5);
+                if(visited)
+                    glColor4f(1,1,1,0.5);
+                else
+                    glColor4f(p_X,p_X,p_X,0.5);
             }
 
 //            if(!IsNodeInteresting())
@@ -449,11 +452,11 @@ void CNode::GenerateObservationAndPropagate()
             bool observation = false;
             if(children[i]->trueIsInteresting)
             {
-                observation = (RAND(0,1)) < nuc_beta(pos[2],rootHeight) ? false : true;
+                observation = (RAND(0,1) < nuc_beta(pos[2],rootHeight)) ? false : true;
             }
             else
             {
-                observation = (RAND(0,1)) < nuc_alpha(pos[2],rootHeight) ? true : false;
+                observation = (RAND(0,1) < nuc_alpha(pos[2],rootHeight)) ? true : false;
             }
 
             obs[children[i]->grd_x][children[i]->grd_y] = observation;
@@ -524,6 +527,7 @@ void CNode::UpdateProbability(double new_p_X)
     }
 
     p_X = new_p_X;
+    ROS_INFO("P_X: %.2f", p_X);
 }
 
 void CNode::propagateCoverage(double height)
