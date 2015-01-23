@@ -5,6 +5,7 @@
 
 using namespace TooN;
 
+
 HilbertStrategy::HilbertStrategy(CNode *root)
 {
     for(unsigned int i=0; i< MAX_HILBERT_ORDER; i++)
@@ -14,8 +15,10 @@ HilbertStrategy::HilbertStrategy(CNode *root)
 
     isover = false;
     lastDepth = HilbertCurveOther(root);
-//    for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
-//        nodeStack.push_back(hilbert[lastDepth][i]);
+    LML = lastDepth-2;
+
+    lms = NULL;
+
 }
 
 int HilbertStrategy::HilbertCurveOther(CNode *parent)
@@ -99,35 +102,14 @@ int HilbertStrategy::HilbertCurveOther(CNode *parent)
 
 void HilbertStrategy::RotatePointOrderBy90(std::vector<TooN::Vector<3> > & list, bool clockwise)
 {
-    //static bool first = true;
-
-//    if(first && clockwise)
-//    {
-//        for(unsigned int i=0; i<list.size(); i++)
-//        {
-//            ROS_INFO("O(%f,%f)", list[i][0],list[i][1]);
-//        }
-//    }
     if(clockwise)
     {
-        //int s = sqrt(list.size());
         for(unsigned int i=0; i<list.size(); i++)
         {
             TooN::Vector<3> t = list[i];
             list[i][0] = t[1];
             list[i][1] = -t[0];
         }
-
-//        if(first)
-//        {
-//            for(unsigned int i=0; i<list.size(); i++)
-//            {
-//                ROS_INFO("M(%f,%f)", list[i][0],list[i][1]);
-//            }
-
-//            first = false;
-
-//        }
     }
 
     if(!clockwise)
@@ -166,16 +148,31 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
-        it = hilbert[lastDepth].begin();
+        it = hilbert[LML].begin();
+        curDepth = LML;
+        //it = hilbert[0].begin();
+        //curDepth = 0;
         firstCall = false;
-        curDepth = lastDepth;
+
         return true;
     }
-    //**
+
+    if(!lmWps.empty())
+    {
+        for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
+            if(hilbert[lastDepth][i] == lmWps[0])
+            {
+                curDepth = lastDepth;
+                it = hilbert[lastDepth].begin()+i;
+                lmWps.erase(lmWps.begin());
+                break;
+            }
+
+        return true;
+    }
 
     while(!flag)
     {
-
         if(curDepth > 1 && !(*it)->IsNodeInteresting() /*&& !(*it)->parent->visited*/)
         {            
             bool stayAtBottom = false;
@@ -210,7 +207,7 @@ bool HilbertStrategy::UpdateIterator()
             }
 
         }
-        else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
+        else if(curDepth < LML && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
         {
              /* ChildrenNeedVisitation() avoids this situation: when it goes up and finds out that the remaining children are uninteresting and
               * only some of the visited children are interesting.
@@ -258,15 +255,47 @@ bool HilbertStrategy::UpdateIterator()
         }
         else
         {
+
             flag = true;
         }
     }
+
+
+//    if((*it)->depth == 2)
+//    {
+//        GenerateLawnmower((*it), lmWps);
+//        ROS_INFO("Lawnmower ..... %d ", lmWps.size());
+//        return UpdateIterator();
+//    }
+
 
     return true;
 }
 
 CNode* HilbertStrategy::GetNextNode()
 {
+    if(lms==NULL && curDepth == LML && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
+    {
+        lms = new LawnmowerStrategy((*it), GetFirstLMNode(*it), GetLastLMNode(*it));
+    }
+
+    if(lms)
+    {
+        CNode * n = lms->GetNextNode();
+        while(n!=NULL && !n->NeedsVisitation())
+            n = lms->GetNextNode();
+
+        if(n)
+        {
+            return n;
+        }
+        else
+        {
+            delete lms;
+            lms = NULL;
+        }
+    }
+
     bool over = !UpdateIterator();
     if(over != isover)
     {
@@ -350,8 +379,107 @@ void HilbertStrategy::glDraw()
             glEnd();
         }
     }
-
-
-
-
 }
+
+
+void HilbertStrategy::GenerateLawnmower(CNode *parentNode, std::vector<CNode*>& lm)
+{
+    ROS_INFO("LM: start");
+
+    lm.clear();
+
+    CNode * firstN = GetFirstLMNode(parentNode);
+    CNode * lastN  = GetLastLMNode(parentNode);
+    ROS_INFO("LM: middle");
+    //double eps = 0.2;
+    //bool verlm = false;
+    double l = fabs(firstN->footPrint[0]-firstN->footPrint[2]);
+
+//    if(fabs(firstN->pos[0]-lastN->pos[0]) < eps) // decide if it is a vertical or horizontal lawnmower
+//    {
+//        verlm = true;
+//    }
+
+    Vector<2> interlapVec = makeVector(lastN->pos[0]-firstN->pos[0], lastN->pos[1]-firstN->pos[1]);
+    normalize(interlapVec);
+    Vector<2> testVec = makeVector(parentNode->pos[0]-lastN->pos[0], parentNode->pos[1]-lastN->pos[1]);
+    normalize(testVec);
+    Vector<2> interWp = makeVector(-interlapVec[1], interlapVec[0]);
+    if( interWp*testVec < 0)
+        interWp = makeVector(interlapVec[1], -interlapVec[0]);
+
+    int n = floor((fabs(parentNode->footPrint[0]-parentNode->footPrint[2])+0.2)/l);
+
+    Vector<3> interlapVec3 = l * makeVector(interlapVec[0], interlapVec[1], 0);
+    Vector<3> interWp3 = l * makeVector(interWp[0], interWp[1], 0);
+
+    ROS_INFO("LM: area:%.1f fp:%.1f", fabs(parentNode->footPrint[0]-parentNode->footPrint[2]), l);
+    ROS_INFO("interlap: %f %f %f", interlapVec3[0], interlapVec3[1], interlapVec3[2]);
+    ROS_INFO("interwp: %f %f %f", interWp3[0], interWp3[1], interWp3[2]);
+
+    for(int i=0; i< n; i++)
+        for(int j=0; j< n; j++)
+        {
+            int jj = (i%2 == 0)?j:n-j-1;
+            Vector<3> npos = firstN->pos + i * interlapVec3 + jj * interWp3;
+            lm.push_back(parentNode->GetNearestLeaf(npos));
+        }
+
+    ROS_INFO("LM: end");
+}
+
+CNode * HilbertStrategy::GetFirstLMNode(CNode *node)
+{
+    if(node->IsLeaf())
+        return node;
+
+    int parent_i=-1;
+    for(unsigned int i=0; i<hilbert[node->depth].size(); i++)
+    {
+        if(hilbert[node->depth][i] == node)
+        {
+            parent_i = i;
+            break;
+        }
+    }
+
+    CNode* curnode = hilbert[node->depth+1][parent_i*4];
+    parent_i = parent_i*4;
+
+    while(curnode->depth < lastDepth)
+    {
+        curnode = hilbert[curnode->depth+1][parent_i*4];
+        parent_i = parent_i*4;
+    }
+
+    return curnode;
+}
+
+CNode * HilbertStrategy::GetLastLMNode(CNode *node)
+{
+    if(node->IsLeaf())
+        return node;
+
+    int parent_i=-1;
+    for(unsigned int i=0; i<hilbert[node->depth].size(); i++)
+    {
+        if(hilbert[node->depth][i] == node)
+        {
+            parent_i = i;
+            break;
+        }
+    }
+
+    CNode* curnode = hilbert[node->depth+1][parent_i*4+3];
+    parent_i = parent_i*4+3;
+
+    while(curnode->depth < lastDepth)
+    {
+        curnode = hilbert[curnode->depth+1][parent_i*4+3];
+        parent_i = parent_i*4+3;
+    }
+
+    return curnode;
+}
+
+

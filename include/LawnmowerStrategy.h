@@ -7,7 +7,7 @@
 class LawnmowerStrategy: public TraversalStrategy
 {
 public:
-    LawnmowerStrategy(CNode* root);
+    LawnmowerStrategy(CNode* root, CNode* enterN=NULL, CNode* exitN=NULL);
     ~LawnmowerStrategy();
 
     void glDraw();

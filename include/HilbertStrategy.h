@@ -2,6 +2,8 @@
 #define _HILBERT_STRATEGY_
 
 #include "TraversalStrategy.h"
+#include "LawnmowerStrategy.h"
+
 #include "CNode.h"
 #define MAX_HILBERT_ORDER 20
 
@@ -16,16 +18,23 @@ public:
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 
 private:
+    bool NextNode();
     bool UpdateIterator();
     void RotatePointOrderBy90(std::vector<TooN::Vector<3> >& list, bool cockwise);
     CNode * findNode(int x, int y, std::vector<CNode*> & list);
     int HilbertCurveOther(CNode* parent);
+    void GenerateLawnmower(CNode* parentNode, std::vector<CNode*>& lm);
+    CNode * GetFirstLMNode(CNode* node);
+    CNode * GetLastLMNode(CNode* node);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> hilbert[MAX_HILBERT_ORDER];
     int waypointCount[MAX_HILBERT_ORDER];
-    //std::vector<TooN::Vector<3> > points;
+    int LML;
 
+    std::vector<CNode*> lmWps;
+    //std::vector<TooN::Vector<3> > points;
+    LawnmowerStrategy * lms;
     std::vector<CNode*>::iterator it;
     int lastDepth;
     int curDepth;
