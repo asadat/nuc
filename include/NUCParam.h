@@ -38,6 +38,8 @@ public:
     static bool auto_exit;
     static bool bypass_controller;
 
+    static int LML_start;
+
 };
 
 #endif

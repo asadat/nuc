@@ -15,7 +15,7 @@ HilbertStrategy::HilbertStrategy(CNode *root)
 
     isover = false;
     lastDepth = HilbertCurveOther(root);
-    LML = lastDepth-2;
+    LML = lastDepth-NUCParam::LML_start;
 
     lms = NULL;
 
@@ -139,6 +139,52 @@ CNode * HilbertStrategy::findNode(int x, int y, std::vector<CNode*> &list)
 HilbertStrategy::~HilbertStrategy()
 {
 
+}
+
+bool HilbertStrategy::IsLawnmowerBetter()
+{
+    bool isBetter = false;
+
+    return isBetter;
+
+}
+
+bool HilbertStrategy::UpdateLawnmowerDepth()
+{
+    if(IsLawnmowerBetter())
+    {
+        if(LML > 1 && curDepth>1)
+        {
+            int curidx = -1;
+            for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+            {
+                if(hilbert[curDepth][i] == *it)
+                {
+                    curidx = i;
+                    break;
+                }
+            }
+
+            if(curidx > 0 && curidx%4==3)
+            {
+
+                for(unsigned int i=0; i<hilbert[curDepth-1].size(); i++)
+                {
+                    if(hilbert[curDepth-1][i]==(*it)->parent)
+                    {
+                        it = hilbert[curDepth-1].begin()+i;
+                        curDepth--;
+                        LML--;
+                        ROS_INFO("LML changed to: %d", LML);
+                        return true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 bool HilbertStrategy::UpdateIterator()
@@ -296,6 +342,8 @@ CNode* HilbertStrategy::GetNextNode()
         }
     }
 
+    UpdateLawnmowerDepth();
+
     bool over = !UpdateIterator();
     if(over != isover)
     {
@@ -356,7 +404,7 @@ void HilbertStrategy::glDraw()
 
         if(k==curCurve && !hilbert[k].empty())
         {
-            glColor3f(1,0.5,0.0);
+            glColor3f(1,1,1.0);
             glLineWidth(7);
             glBegin(GL_LINES);
             for(unsigned int i=0; i<hilbert[k].size()-1;i++)

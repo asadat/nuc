@@ -24,6 +24,7 @@ int NUCParam::patches = 5;
 bool NUCParam::auto_exit = true;
 std::string NUCParam::strategy = "lm";
 bool NUCParam::bypass_controller = false;
+int NUCParam::LML_start = 0;
 
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
@@ -50,4 +51,6 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<double>("percent_interesting",percent_interesting,30.0);
     nh.param<bool>("auto_exit", auto_exit, true);
     nh.param<bool>("bypass_controller", bypass_controller, false);
+
+    nh.param<int>("LML_start",LML_start,0);
 }

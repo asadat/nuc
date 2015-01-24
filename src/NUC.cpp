@@ -261,7 +261,7 @@ TooN::Vector<3> NUC::GetColor(double h)
 
 bool NUC::RectIntersect(Rect r, Rect d)
 {
-    double ep = 0.1;
+    double ep = 0.4;
     if(r[0]+ep > d[2] || r[2]-ep < d[0] || r[1]+ep > d[3] || r[3]-ep < d[1])
         return false;
     return true;
@@ -270,7 +270,6 @@ bool NUC::RectIntersect(Rect r, Rect d)
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    //double xy_ratio = 1/5.0;
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
     Rect lr;
@@ -281,39 +280,11 @@ void NUC::PopulateTargets()
         cellW = fabs(lr[2]-lr[0]);
     }
 
-    //cellW *= 2;
-    //cellW *= 2;
     int n=0;
     double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
-    //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
-    double eps = 0.1;
-//    for(int i=0; i<(area[2]-area[0])/cellW; i++)
-//    {
-//        for(int j=0; j<(area[3]-area[1])/cellW; j++)
-//        {
-//            if(j%2 == i%2)
-//                continue;
 
-//            Rect r;
-//            r[0] = area[0] + i * cellW + eps;
-//            r[2] = area[0] + (i+1) * cellW - eps;
-//            r[1] = area[1] + j * cellW + eps;
-//            r[3] = area[1] + (j+1) * cellW - eps;
-//            targets.push_back(r);
-//        }
-//    }
-
-//    return;
     while(targets.size() < (unsigned int)NUCParam::patches)
     {
-//        Rect r;
-//        r[0] = RAND(area[0], area[2]-lx);
-//        r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
-//        r[1] = RAND(area[1], area[3]-lx/xy_ratio);
-//        r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
-//        r[2] = r[0]+lx;
-//        r[3] = r[1]+lx/xy_ratio;
-
         Rect r;
         r[0] = RAND(area[0], area[2]-cellW);
         r[0] = floor(r[0]/cellW)*cellW;
@@ -325,24 +296,25 @@ void NUC::PopulateTargets()
         double ly1 = ceil(ly/cellW)*cellW;
         double ly2 = floor(ly/cellW)*cellW;
         if(fabs(ly - ly1) < fabs(ly-ly2))
+        {
             ly = ly1;
+        }
         else
+        {
             ly = ly2;
-
+        }
 
         if(ly > area[3]-area[1])
+        {
             continue;
+        }
 
         r[1] = RAND(area[1], area[3]-ly);
         r[1] = floor(r[1]/cellW)*cellW;
-
         r[3] = r[1]+ly;
 
-
-//        r[0] = -13;
-//        r[1] = -14;
-//        r[2] = 10;
-//        r[3] = 9;
+        if(fabs(r[0]-r[2]) < cellW || fabs(r[1]-r[3]) < cellW)
+        continue;
 
         bool flag=true;
         for(unsigned int i=0; i<targets.size(); i++)
@@ -364,24 +336,13 @@ void NUC::PopulateTargets()
         {
             n++;
             if(n>10)
+            {
                 targets.clear();
-
+            }
         }
 
     }
-//    srand(time(NULL));
-//    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
-//    double l =2*NUCParam::min_footprint;
-//    for(int i=0; i<n; i++)
-//    {
-//        Rect r;
-//        r[0] = RAND(area[0], area[2]-l);
-//        r[1] = RAND(area[1], area[3]-l);
-//        r[2] = r[0]+ RAND(l*0.5,l*1.5);
-//        r[3] = r[1]+ RAND(l*0.5,l*1.5);
 
-//        targets.push_back(r);
-//    }
 }
 
 void NUC::MarkNodesInterestingness()
@@ -488,22 +449,30 @@ void NUC::glDraw()
              Vector<2,double> r3 = c + rot*(v3-c);
              Vector<2,double> r4 = c + rot*(v4-c);
 
+             for(int kk=0; kk<1; kk++)
+             {
+                 if(!CNode::drawCoverage)
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                 else
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-             if(!CNode::drawCoverage)
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-             else
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                 glColor4f(0.2,1,0.2,0.4);
 
-             glColor4f(0.2,1,0.2,0.4);
-             glBegin(GL_POLYGON);
-             glVertex3f(r1[0],r1[1], 0.11);
-             glVertex3f(r2[0],r2[1], 0.11);
-             glVertex3f(r3[0],r3[1], 0.11);
-             glVertex3f(r4[0],r4[1], 0.11);
-             glVertex3f(r1[0],r1[1], 0.11);
+                 if(kk==1)
+                 {
+                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                     glColor3f(0.2,1,0.2);
+                 }
 
-             glEnd();
+                 glBegin(GL_POLYGON);
+                 glVertex3f(r1[0],r1[1], 0.11);
+                 glVertex3f(r2[0],r2[1], 0.11);
+                 glVertex3f(r3[0],r3[1], 0.11);
+                 glVertex3f(r4[0],r4[1], 0.11);
+                 glVertex3f(r1[0],r1[1], 0.11);
 
+                 glEnd();
+             }
          }
      }
 }
@@ -560,11 +529,24 @@ void NUC::OnTraverseEnd()
     double asclength = 0;
     double desclength = 0;
     double xylength = 0;
+    int turns=0;
 
     if(pathHistory.size()>1)
     {
         for(unsigned int i=0; i<pathHistory.size()-1; i++)
         {
+            if(i>0)
+            {
+                Vector<3> p1 = (pathHistory[i]-pathHistory[i-1]);
+                Vector<3> p2 = (pathHistory[i+1]-pathHistory[i]);
+                Vector<3> p3 = p1^p2;
+
+                if( sqrt(p3*p3) > 0.1)
+                {
+                    turns++;
+                }
+            }
+
             traverseLength += sqrt((pathHistory[i]-pathHistory[i+1])*(pathHistory[i]-pathHistory[i+1]));
             asclength +=  (pathHistory[i+1][2]-pathHistory[i][2] > eps)?pathHistory[i+1][2]-pathHistory[i][2]:0;
             desclength +=  (pathHistory[i+1][2]-pathHistory[i][2] < -eps)?-(pathHistory[i+1][2]-pathHistory[i][2]):0;
@@ -574,12 +556,12 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength);
-    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+             asclength, desclength, asclength+desclength, xylength, turns);
+    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-        asclength, desclength, asclength+desclength, xylength);
+        asclength, desclength, asclength+desclength, xylength, turns);
     SAVE_LOG();
 
     if(NUCParam::auto_exit)
