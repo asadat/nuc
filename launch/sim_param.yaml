@@ -12,4 +12,4 @@ patches: 2
 percent_interesting: 70.0
 auto_exit: false
 bypass_controller: true
-LML_start: 3
+LML_start: 0
