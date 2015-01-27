@@ -556,12 +556,12 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d LML: %d\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength, turns);
-    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d\n",
+             asclength, desclength, asclength+desclength, xylength, turns, NUCParam::LML_start);
+    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f TURNS: %d LML: %d\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-        asclength, desclength, asclength+desclength, xylength, turns);
+        asclength, desclength, asclength+desclength, xylength, turns, NUCParam::LML_start);
     SAVE_LOG();
 
     if(NUCParam::auto_exit)

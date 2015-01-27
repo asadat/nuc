@@ -27,6 +27,7 @@ private:
     void GenerateLawnmower(CNode* parentNode, std::vector<CNode*>& lm);
     CNode * GetFirstLMNode(CNode* node);
     CNode * GetLastLMNode(CNode* node);
+    CNode * GetLMLParent(CNode* node);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> hilbert[MAX_HILBERT_ORDER];

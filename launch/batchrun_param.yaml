@@ -7,8 +7,10 @@ speed: 10
 area_length: 128.0
 area_rotation: 0.0
 logging: false
-auto_exit: false
-bypass_controller: false
-patches: 3
+auto_exit: true
+bypass_controller: true
+
+patches: 1
 percent_interesting: 40
+LML_start: 2
 strategy: hi

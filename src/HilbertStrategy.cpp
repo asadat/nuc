@@ -194,28 +194,28 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
-        it = hilbert[LML].begin();
-        curDepth = LML;
-        //it = hilbert[0].begin();
-        //curDepth = 0;
+        //it = hilbert[LML].begin();
+        //curDepth = LML;
+        it = hilbert[0].begin();
+        curDepth = 0;
         firstCall = false;
 
         return true;
     }
 
-    if(!lmWps.empty())
-    {
-        for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
-            if(hilbert[lastDepth][i] == lmWps[0])
-            {
-                curDepth = lastDepth;
-                it = hilbert[lastDepth].begin()+i;
-                lmWps.erase(lmWps.begin());
-                break;
-            }
+//    if(!lmWps.empty())
+//    {
+//        for(unsigned int i=0; i<hilbert[lastDepth].size(); i++)
+//            if(hilbert[lastDepth][i] == lmWps[0])
+//            {
+//                curDepth = lastDepth;
+//                it = hilbert[lastDepth].begin()+i;
+//                lmWps.erase(lmWps.begin());
+//                break;
+//            }
 
-        return true;
-    }
+//        return true;
+//    }
 
     while(!flag)
     {
@@ -253,7 +253,7 @@ bool HilbertStrategy::UpdateIterator()
             }
 
         }
-        else if(curDepth < LML && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
+        else if(curDepth < lastDepth && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
         {
              /* ChildrenNeedVisitation() avoids this situation: when it goes up and finds out that the remaining children are uninteresting and
               * only some of the visited children are interesting.
@@ -324,6 +324,21 @@ CNode* HilbertStrategy::GetNextNode()
     {
         lms = new LawnmowerStrategy((*it), GetFirstLMNode(*it), GetLastLMNode(*it));
     }
+    else if(lms == NULL && curDepth > LML && (*it)->IsNodeInteresting())
+    {
+        CNode * lmlp = GetLMLParent(*it);
+        lms = new LawnmowerStrategy(lmlp, GetFirstLMNode(lmlp), GetLastLMNode(lmlp));
+
+        for(unsigned int i=0; i<hilbert[lmlp->depth].size(); i++)
+        {
+            if(hilbert[lmlp->depth][i] == lmlp)
+            {
+                it = hilbert[lmlp->depth].begin()+i;
+                curDepth = lmlp->depth;
+                break;
+            }
+        }
+    }
 
     if(lms)
     {
@@ -339,6 +354,19 @@ CNode* HilbertStrategy::GetNextNode()
         {
             delete lms;
             lms = NULL;
+
+            CNode * lastLMn = GetLastLMNode(*it);
+            curDepth = lastLMn->depth;
+
+            for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+            {
+                if(hilbert[curDepth][i] == lastLMn)
+                {
+                    it = hilbert[curDepth].begin()+i;
+                    break;
+                }
+            }
+
         }
     }
 
@@ -501,6 +529,21 @@ CNode * HilbertStrategy::GetFirstLMNode(CNode *node)
     }
 
     return curnode;
+}
+
+CNode* HilbertStrategy::GetLMLParent(CNode *node)
+{
+    if(node)
+    {
+        if(node->depth < LML)
+            return NULL;
+
+        CNode * p=node;
+        while(p && p->depth > LML)
+            p = p->parent;
+
+        return p;
+    }
 }
 
 CNode * HilbertStrategy::GetLastLMNode(CNode *node)
