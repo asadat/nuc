@@ -44,6 +44,8 @@ public:
     static double beta_h0;
     static double beta_hm;
 
+    static double prob_r;
+
 };
 
 #endif

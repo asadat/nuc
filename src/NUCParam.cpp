@@ -29,6 +29,7 @@ double NUCParam::alpha_h0 = 0.1;
 double NUCParam::alpha_hm = 0.4;
 double NUCParam::beta_h0 = 0.1;
 double NUCParam::beta_hm = 0.4;
+double NUCParam::prob_r = 0.8;
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
 {
@@ -60,4 +61,6 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<double>("alpha_hm",alpha_hm,0.4);
     nh.param<double>("beta_h0",beta_h0,0.1);
     nh.param<double>("beta_hm",beta_hm,0.4);
+    nh.param<double>("prob_r",prob_r,0.8);
+
 }

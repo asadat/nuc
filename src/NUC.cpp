@@ -31,7 +31,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 {
     //runCircleDetection();
     //runPhotoStitcher();
-    drawPath = true;
+    drawPath = false;
     traverseLength = 0;
     isOver = false;
     sim_running = true;
@@ -580,12 +580,12 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength);
-    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f\n",
+             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r);
+    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-        asclength, desclength, asclength+desclength, xylength);
+        asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r);
     SAVE_LOG();
 
     if(NUCParam::auto_exit)

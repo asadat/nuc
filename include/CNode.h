@@ -34,6 +34,7 @@ public:
     void glDraw();
 
 
+    CNode * GetNeighbourLeaf(bool left, bool right, bool up, bool down);
     CNode* GetNearestNode(TooN::Vector<3> p);
     CNode* GetNearestLeaf(TooN::Vector<3> p);
     void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list);
@@ -85,6 +86,8 @@ private:
     bool VisitedInterestingDescendentExists();
 
     CNode *parent;
+    CNode *nds[4];
+    bool neighbours_populated;
 
     bool visited;
     bool waiting;

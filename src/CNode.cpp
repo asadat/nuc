@@ -68,9 +68,43 @@ CNode * CNode::CreateChildNode(Rect fp)
 
 bool CNode::IsNodeInteresting()
 {
+
     //return p_X >= INTERESTING_THRESHOLD/(1.0*depth);
     if(IsLeaf())
-        return p_X >= INTERESTING_THRESHOLD;
+    {
+        double r = NUCParam::prob_r;
+        double p_val = p_X;
+        double nval = 0;
+        int c=0;
+
+        if(!neighbours_populated)
+        {
+            nds[0] = GetNeighbourLeaf(true, false, false, false);
+            nds[1] = GetNeighbourLeaf(false, true, false, false);
+            nds[2] = GetNeighbourLeaf(false, false, true, false);
+            nds[3] = GetNeighbourLeaf(false, false, false, true);
+            neighbours_populated = true;
+        }
+
+        for(unsigned int i=0; i<4; i++)
+        {
+            if(nds[i]!=NULL && fabs(nds[i]->p_X-0.5) > 0.1 )
+            {
+                nval += nds[i]->p_X;
+                c++;
+            }
+        }
+
+        if(c > 0)
+        {
+            nval /= c;
+        }
+
+        p_val = ((r+(1-r)*((4-c)/4))*p_X) + (1-r)*(c/4)*nval;
+
+        return p_val >= INTERESTING_THRESHOLD;
+    }
+
     else
     {
         for(unsigned int i=0; i < this->children.size(); i++)
@@ -105,7 +139,8 @@ void CNode::PopulateChildren()
             /*
              *  (0,2)   (1,2)   (2,2)
              *  (0,1)   (1,1)   (2,1)
-             *  (0,0)   (1,0)   (2,0)
+
+     *  (0,0)   (1,0)   (2,0)
              */
             ch->grd_x = i;
             ch->grd_y = j;
@@ -370,6 +405,52 @@ bool CNode::VisitedInterestingDescendentExists()
     return false;
 }
 
+CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down)
+{
+    TooN::Vector<3> queryVec;
+    TooN::Vector<3> shiftVec;
+
+    if(left)
+    {
+        shiftVec = fabs(footPrint[0]-footPrint[2]) * TooN::makeVector(-1,0,0);
+    }
+    else if(right)
+    {
+        shiftVec = fabs(footPrint[0]-footPrint[2]) * TooN::makeVector(1,0,0);
+    }
+    else if(up)
+    {
+        shiftVec = fabs(footPrint[1]-footPrint[3]) * TooN::makeVector(0,1,0);
+    }
+    else if(down)
+    {
+        shiftVec = fabs(footPrint[1]-footPrint[3]) * TooN::makeVector(0,-1,0);
+    }
+
+    queryVec = pos + shiftVec;
+
+    CNode* root = this;
+
+    while(root->parent)
+        root = root->parent;
+
+    CNode *n = root->GetNearestLeaf(queryVec);
+
+    if(n)
+    {
+        if(!IN(queryVec, n->footPrint))
+        {
+            n = NULL;
+           // ROS_INFO("Not in rect");
+        }
+        else
+        {
+
+        }
+    }
+
+    return n;
+}
 
 CNode* CNode::GetNearestNode(TooN::Vector<3> p) // can be optimized
 {
