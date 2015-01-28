@@ -43,7 +43,6 @@ then
 echo "set yrange [0:6000]">>gp
 echo "set ytics 500">>gp
 echo "set ylabel '#cost'">>gp
-$LMCOST = 
 echo "f(x)=$1*63+4180">>gp
 
 fi
