@@ -320,6 +320,8 @@ bool HilbertStrategy::UpdateIterator()
 
 CNode* HilbertStrategy::GetNextNode()
 {
+    static CNode * lastLMNode = NULL;
+
     if(lms==NULL && curDepth == LML && (*it)->IsNodeInteresting() && (*it)->ChildrenNeedVisitation())
     {
         lms = new LawnmowerStrategy((*it), GetFirstLMNode(*it), GetLastLMNode(*it));
@@ -342,31 +344,55 @@ CNode* HilbertStrategy::GetNextNode()
 
     if(lms)
     {
-        CNode * n = lms->GetNextNode();
-        while(n!=NULL && !n->NeedsVisitation())
-            n = lms->GetNextNode();
-
-        if(n)
+        // if we visited an uminteresting node, resume hilbert strategy
+        if(lastLMNode && lastLMNode->visited && !lastLMNode->IsNodeInteresting())
         {
-            return n;
-        }
-        else
-        {
-            delete lms;
-            lms = NULL;
-
-            CNode * lastLMn = GetLastLMNode(*it);
-            curDepth = lastLMn->depth;
+            curDepth = lastLMNode->depth;
 
             for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
             {
-                if(hilbert[curDepth][i] == lastLMn)
+                if(hilbert[curDepth][i] == lastLMNode)
                 {
                     it = hilbert[curDepth].begin()+i;
                     break;
                 }
             }
 
+            delete lms;
+            lastLMNode = NULL;
+            lms = NULL;
+
+        }
+        else
+        {
+            CNode * n = lms->GetNextNode();
+            while(n!=NULL && !n->NeedsVisitation())
+                n = lms->GetNextNode();
+
+            if(n)
+            {
+                lastLMNode = n;
+                return n;
+            }
+            else
+            {
+                delete lms;
+                lastLMNode = NULL;
+                lms = NULL;
+
+                CNode * lastLMn = GetLastLMNode(*it);
+                curDepth = lastLMn->depth;
+
+                for(unsigned int i=0; i<hilbert[curDepth].size(); i++)
+                {
+                    if(hilbert[curDepth][i] == lastLMn)
+                    {
+                        it = hilbert[curDepth].begin()+i;
+                        break;
+                    }
+                }
+
+            }
         }
     }
 
@@ -387,6 +413,7 @@ CNode* HilbertStrategy::GetNextNode()
     {
         waypointCount[curDepth]++;
         nodeStack.push_back(*it);
+
         return *it;
     }
 

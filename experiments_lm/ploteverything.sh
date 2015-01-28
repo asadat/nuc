@@ -2,10 +2,10 @@ cd tables
 echo "set terminal pdf size 25cm, 20cm" > gp
 echo "set output 'graph.pdf'" >> gp
 echo "set lmargin 4">> gp
-echo "set multiplot layout 2,3" >>gp
+echo "set multiplot layout 3,3" >>gp
 
 
-for OUTPUT in `seq 1 1 2`
+for OUTPUT in `seq 1 1 3`
 do
 
 for INTR in `seq 20 20 60`
@@ -29,12 +29,22 @@ echo "set yrange [0:4900]">>gp
 echo "set ytics ( \"1Km\" 1000, \"2km\" 2000, \"3km\" 3000, \"4km\" 4000, \"5km\" 5000, \"6km\" 6000, \"7km\" 7000, \"8km\"  8000, \"9km\"  9000, \"10km\" 10000)">>gp
 echo "f(x)=4180">>gp
 
-else
+elif [ $OUTPUT -eq 2 ]
+then 
 
 echo "set yrange [0:800]">>gp
 echo "set ytics 50">>gp
 echo "set ylabel '#Turns'">>gp
 echo "f(x)=63">>gp
+
+elif [ $OUTPUT -eq 3 ]
+then
+
+echo "set yrange [0:6000]">>gp
+echo "set ytics 500">>gp
+echo "set ylabel '#cost'">>gp
+$LMCOST = 
+echo "f(x)=$1*63+4180">>gp
 
 fi
 
@@ -54,7 +64,7 @@ else
 		echo "set key right bottom">>gp
 	else
 	        echo "set ylabel \"#Turns\" font \",7\" offset 1.5">>gp
-		echo "set key right top">>gp
+		echo "set key left top">>gp
 	fi
 
 	echo "set title \"$INTR% interesting\"" >>gp
@@ -81,7 +91,8 @@ echo	   "'hi-3' using 1:(\$2==$INTR?\$3:1/0) with lines ls 28 notitle, \\">>gp
 echo       "'hi-3' using 1:(\$2==$INTR?\$3:1/0):4 with yerrorbars ls 28 title 'LML:3', \\">>gp
 echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
 
-else
+elif [ $OUTPUT -eq 2 ] 
+then
 
 echo "set pointsize 1.5">>gp
 echo "plot  'hi-0' using 1:(\$2==$INTR?\$9:1/0) with lines ls 25 notitle, \\">>gp
@@ -92,6 +103,20 @@ echo 	   "'hi-2' using 1:(\$2==$INTR?\$9:1/0) with lines ls 29 notitle, \\">>gp
 echo       "'hi-2' using 1:(\$2==$INTR?\$9:1/0):10 with yerrorbars ls 29 title 'LML:2', \\">>gp
 echo	   "'hi-3' using 1:(\$2==$INTR?\$9:1/0) with lines ls 28 notitle, \\">>gp
 echo       "'hi-3' using 1:(\$2==$INTR?\$9:1/0):10 with yerrorbars ls 28 title 'LML:3', \\">>gp
+echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
+
+elif [ $OUTPUT -eq 3 ] 
+then
+
+echo "set pointsize 1.5">>gp
+echo "plot  'hi-0' using 1:(\$2==$INTR?\$3+$1*\$9:1/0) with lines ls 25 notitle, \\">>gp
+echo       "'hi-0' using 1:(\$2==$INTR?\$3+$1*\$9:1/0):10 with yerrorbars ls 25 title 'LML:0', \\">>gp
+echo 	   "'hi-1' using 1:(\$2==$INTR?\$3+$1*\$9:1/0) with lines ls 26 notitle, \\">>gp
+echo       "'hi-1' using 1:(\$2==$INTR?\$3+$1*\$9:1/0):10 with yerrorbars ls 26 title 'LML:1', \\">>gp
+echo 	   "'hi-2' using 1:(\$2==$INTR?\$3+$1*\$9:1/0) with lines ls 29 notitle, \\">>gp
+echo       "'hi-2' using 1:(\$2==$INTR?\$3+$1*\$9:1/0):10 with yerrorbars ls 29 title 'LML:2', \\">>gp
+echo	   "'hi-3' using 1:(\$2==$INTR?\$3+$1*\$9:1/0) with lines ls 28 notitle, \\">>gp
+echo       "'hi-3' using 1:(\$2==$INTR?\$3+$1*\$9:1/0):10 with yerrorbars ls 28 title 'LML:3', \\">>gp
 echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
 
 fi
