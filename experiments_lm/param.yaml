@@ -10,7 +10,3 @@ logging: false
 auto_exit: true
 bypass_controller: true
 
-patches: 19
-percent_interesting: 60
-LML_start: 4
-strategy: hi
