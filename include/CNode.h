@@ -83,6 +83,8 @@ private:
     void PropagateDepth();
     void PrintoutParams();
 
+    double GetLocalPrior();
+
     bool VisitedInterestingDescendentExists();
 
     CNode *parent;

@@ -29,6 +29,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    visitedFalsePositives = 0;
     //runCircleDetection();
     //runPhotoStitcher();
     drawPath = false;
@@ -580,13 +581,14 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r);
+             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives);
     NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
         asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r);
     SAVE_LOG();
+
 
     if(NUCParam::auto_exit)
     {
@@ -615,6 +617,8 @@ bool NUC::VisitGoal()
         // In simulations it uses the precomputed interestingness
         //curGoal->SetIsInteresting(curGoal->trueIsInteresting);
         curGoal->GenerateObservationAndPropagate();
+        if(curGoal->IsLeaf() && !curGoal->trueIsInteresting)
+            visitedFalsePositives++;
 
         //simulating interestingness
         //for(unsigned int i=0; i<curGoal->children.size();i++)

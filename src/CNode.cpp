@@ -66,43 +66,70 @@ CNode * CNode::CreateChildNode(Rect fp)
     return cnode;
 }
 
+double CNode::GetLocalPrior()
+{
+    double r = NUCParam::prob_r;
+
+    if(depth < maxDepth-2)
+        return p_X;
+
+    //ROS_INFO_THROTTLE(1,"%d", maxDepth);
+
+    r = r + (1-r)*((double)(maxDepth - depth))/maxDepth;
+    //if(depth != maxDepth)
+    //    return p_X;
+
+    ROS_INFO("**** Depth: %d %c ****", depth, trueIsInteresting?'T':'F');
+
+    ROS_INFO("r: %.2f", r);
+
+    double p_val = p_X;
+    double nval = 0;
+    int c=0;
+
+    if(!neighbours_populated)
+    {
+        nds[0] = GetNeighbourLeaf(true, false, false, false);
+        nds[1] = GetNeighbourLeaf(false, true, false, false);
+        nds[2] = GetNeighbourLeaf(false, false, true, false);
+        nds[3] = GetNeighbourLeaf(false, false, false, true);
+        neighbours_populated = true;
+    }
+
+    for(unsigned int i=0; i<4; i++)
+    {
+        if(nds[i]!=NULL && fabs(nds[i]->p_X-0.5) > 0.1 )
+        {
+            ROS_INFO("p%d: %.2f",c, nds[i]->p_X);
+            nval += nds[i]->p_X;
+            c++;
+        }
+    }
+
+    if(c > 0)
+    {
+        nval /= c;
+    }
+
+    c=4;
+
+    ROS_INFO("p_X: %.2f", p_X);
+    p_val = ((r+(1-r)*((4.0-c)/4.0))*p_X) + (1.0-r)*(c/4.0)*nval;
+
+    ROS_INFO("new_p_X: %.2f", p_val);
+    ROS_INFO("**** End ****");
+
+    return p_val;
+}
+
 bool CNode::IsNodeInteresting()
 {
 
     //return p_X >= INTERESTING_THRESHOLD/(1.0*depth);
     if(IsLeaf())
     {
-        double r = NUCParam::prob_r;
-        double p_val = p_X;
-        double nval = 0;
-        int c=0;
-
-        if(!neighbours_populated)
-        {
-            nds[0] = GetNeighbourLeaf(true, false, false, false);
-            nds[1] = GetNeighbourLeaf(false, true, false, false);
-            nds[2] = GetNeighbourLeaf(false, false, true, false);
-            nds[3] = GetNeighbourLeaf(false, false, false, true);
-            neighbours_populated = true;
-        }
-
-        for(unsigned int i=0; i<4; i++)
-        {
-            if(nds[i]!=NULL && fabs(nds[i]->p_X-0.5) > 0.1 )
-            {
-                nval += nds[i]->p_X;
-                c++;
-            }
-        }
-
-        if(c > 0)
-        {
-            nval /= c;
-        }
-
-        p_val = ((r+(1-r)*((4-c)/4))*p_X) + (1-r)*(c/4)*nval;
-
-        return p_val >= INTERESTING_THRESHOLD;
+        //double p_val = GetLocalPrior();
+        return p_X >= INTERESTING_THRESHOLD;
     }
 
     else
@@ -283,9 +310,9 @@ void CNode::glDraw()
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 if(visited)
-                    glColor4f(1,1,1,0.5);
+                    glColor4f(1,1,1,1);
                 else
-                    glColor4f(p_X,p_X,p_X,0.5);
+                    glColor4f(p_X,p_X,p_X,1);
             }
 
 //            if(!IsNodeInteresting())
@@ -558,7 +585,17 @@ void CNode::GenerateObservationAndPropagate()
     }
     else
     {
-        bool X = trueIsInteresting;
+        bool X=trueIsInteresting;
+
+//        if(trueIsInteresting)
+//        {
+//            X = (RAND(0,1) < nuc_beta(pos[2],rootHeight)) ? false : true;
+//        }
+//        else
+//        {
+//            X = (RAND(0,1) < nuc_alpha(pos[2],rootHeight)) ? true : false;
+//        }
+
         this->PropagateObservation(X);
         parent->RecomputeProbability();
         //ROS_INFO("p_X: %.2f", p_X);
@@ -575,13 +612,19 @@ void CNode::RecomputeProbability()
 
     p_X = 1-prod;
 
+    assert(p_X>=0.0);
+    assert(p_X<=1.0);
+
     if(parent)
         parent->RecomputeProbability();
 }
 
 void CNode::PropagateObservation(bool X)
 {
-    double p_X_1 = p_X;
+    double p_X_1 = GetLocalPrior();// p_X;
+
+    ROS_INFO("Prior_X: %.2f", p_X_1);
+
     double new_p_X;
 
     if(X)
@@ -598,17 +641,51 @@ void CNode::PropagateObservation(bool X)
 
 void CNode::UpdateProbability(double new_p_X)
 {
-    double a = sqrt(sqrt((1-new_p_X)/(1-p_X)));
 
-    for(unsigned int i=0; i<children.size();i++)
+    double a = 0;
+    ROS_INFO("P_X_NEW: %.2f", new_p_X);
+
+    if(fabs(new_p_X-p_X) > 0.005 && fabs(1-p_X) > 0.01)
     {
-        double px = children[i]->p_X;
-        double newpx = 1- a*(1-px);
-        children[i]->UpdateProbability(newpx);
+
+        a = sqrt(sqrt((1-new_p_X)/(1-p_X)));
+
+        for(unsigned int i=0; i<children.size();i++)
+        {
+            double px = children[i]->p_X;
+            double newpx = 1- a*(1-px);
+            newpx = newpx < 0.0 ? 0.0: newpx;
+            ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
+            //children[i]->UpdateProbability(newpx);
+        }
+    }
+    else
+    {
+        ROS_INFO("Not too much change!");
+    }
+
+    ROS_INFO("P_X: %.2f", p_X);
+
+    assert(new_p_X>=0.0);
+    assert(new_p_X<=1.0);
+
+
+
+    if(fabs(new_p_X-p_X) > 0.005  && fabs(1-p_X) > 0.01)
+    {
+        for(unsigned int i=0; i<children.size();i++)
+        {
+            double px = children[i]->p_X;
+            double newpx = 1- a*(1-px);
+            newpx = newpx < 0.0 ? 0.0: newpx;
+            //ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
+            children[i]->UpdateProbability(newpx);
+        }
     }
 
     p_X = new_p_X;
-    ROS_INFO("P_X: %.2f", p_X);
+
+   // ROS_INFO("P_X: %.2f", p_X);
 }
 
 void CNode::propagateCoverage(double height)

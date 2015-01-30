@@ -72,6 +72,7 @@ private:
     ros::Time startTime;
     ros::Time endTime;
     double traverseLength;
+    int visitedFalsePositives;
 
     bool sim_running;
     bool drawPath;
