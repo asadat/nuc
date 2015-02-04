@@ -61,9 +61,14 @@ else
 	then
 	        echo "set ylabel \"Path length (m)\" font \",7\" offset 1.5">>gp
 		echo "set key right bottom">>gp
-	else
+	elif [ $OUTPUT -eq 2 ]
+	then
 	        echo "set ylabel \"#Turns\" font \",7\" offset 1.5">>gp
 		echo "set key left top">>gp
+	elif [ $OUTPUT -eq 3 ]
+	then	
+	 	echo "set ylabel \"Cost\" font \",7\" offset 1.5">>gp
+                echo "set key left top">>gp
 	fi
 
 	echo "set title \"$INTR% interesting\"" >>gp
