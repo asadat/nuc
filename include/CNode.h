@@ -56,6 +56,7 @@ public:
     bool ChildrenNeedVisitation();
     bool ChildrenVisited();
 
+    void GetUnvisitedFalseNegatives(int &n);
    // static float fov;
     //static int bf_sqrt;
     //static float minFootprintWidth;

@@ -288,7 +288,7 @@ void NUC::PopulateTargets()
     int n=0;
     double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
     //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
-    double eps = 0.1;
+    //double eps = 0.1;
 //    for(int i=0; i<(area[2]-area[0])/cellW; i++)
 //    {
 //        for(int j=0; j<(area[3]-area[1])/cellW; j++)
@@ -568,6 +568,9 @@ void NUC::OnTraverseEnd()
     double desclength = 0;
     double xylength = 0;
 
+    int UFN=0;
+    tree->GetUnvisitedFalseNegatives(UFN);
+
     if(pathHistory.size()>1)
     {
         for(unsigned int i=0; i<pathHistory.size()-1; i++)
@@ -581,12 +584,12 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d UFN:%d\n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives);
-    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f\n",
+             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives, UFN);
+    NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d UFN:%d\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-        asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r);
+        asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives, UFN);
     SAVE_LOG();
 
 

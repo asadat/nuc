@@ -79,9 +79,9 @@ double CNode::GetLocalPrior()
     //if(depth != maxDepth)
     //    return p_X;
 
-    ROS_INFO("**** Depth: %d %c ****", depth, trueIsInteresting?'T':'F');
+    //ROS_INFO("**** Depth: %d %c ****", depth, trueIsInteresting?'T':'F');
 
-    ROS_INFO("r: %.2f", r);
+    //ROS_INFO("r: %.2f", r);
 
     double p_val = p_X;
     double nval = 0;
@@ -100,7 +100,7 @@ double CNode::GetLocalPrior()
     {
         if(nds[i]!=NULL && fabs(nds[i]->p_X-0.5) > 0.1 )
         {
-            ROS_INFO("p%d: %.2f",c, nds[i]->p_X);
+            //ROS_INFO("p%d: %.2f",c, nds[i]->p_X);
             nval += nds[i]->p_X;
             c++;
         }
@@ -111,13 +111,13 @@ double CNode::GetLocalPrior()
         nval /= c;
     }
 
-    c=4;
+   // c=4;
 
-    ROS_INFO("p_X: %.2f", p_X);
+    //ROS_INFO("p_X: %.2f", p_X);
     p_val = ((r+(1-r)*((4.0-c)/4.0))*p_X) + (1.0-r)*(c/4.0)*nval;
 
-    ROS_INFO("new_p_X: %.2f", p_val);
-    ROS_INFO("**** End ****");
+    //ROS_INFO("new_p_X: %.2f", p_val);
+    //ROS_INFO("**** End ****");
 
     return p_val;
 }
@@ -623,7 +623,7 @@ void CNode::PropagateObservation(bool X)
 {
     double p_X_1 = GetLocalPrior();// p_X;
 
-    ROS_INFO("Prior_X: %.2f", p_X_1);
+    //ROS_INFO("Prior_X: %.2f", p_X_1);
 
     double new_p_X;
 
@@ -643,7 +643,7 @@ void CNode::UpdateProbability(double new_p_X)
 {
 
     double a = 0;
-    ROS_INFO("P_X_NEW: %.2f", new_p_X);
+    //ROS_INFO("P_X_NEW: %.2f", new_p_X);
 
     if(fabs(new_p_X-p_X) > 0.005 && fabs(1-p_X) > 0.01)
     {
@@ -655,16 +655,16 @@ void CNode::UpdateProbability(double new_p_X)
             double px = children[i]->p_X;
             double newpx = 1- a*(1-px);
             newpx = newpx < 0.0 ? 0.0: newpx;
-            ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
+            //ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
             //children[i]->UpdateProbability(newpx);
         }
     }
     else
     {
-        ROS_INFO("Not too much change!");
+        //ROS_INFO("Not too much change!");
     }
 
-    ROS_INFO("P_X: %.2f", p_X);
+    //ROS_INFO("P_X: %.2f", p_X);
 
     assert(new_p_X>=0.0);
     assert(new_p_X<=1.0);
@@ -724,6 +724,22 @@ bool CNode::ChildrenVisited()
                     return false;
 
             return true;
+        }
+    }
+}
+
+void CNode::GetUnvisitedFalseNegatives(int &n)
+{
+    if(IsLeaf())
+    {
+        if(trueIsInteresting && !visited)
+            n++;
+    }
+    else
+    {
+        for(unsigned int i=0; i<children.size(); i++)
+        {
+            children[i]->GetUnvisitedFalseNegatives(n);
         }
     }
 }
