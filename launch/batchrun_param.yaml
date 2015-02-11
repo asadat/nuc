@@ -15,7 +15,7 @@ alpha_hm: 0.3
 beta_h0: 0.05
 beta_hm: 0.15
 
-patches: 4
+patches: 5
 percent_interesting: 90
 strategy: hi
-prob_r: 1.0
+prob_r: 0.9

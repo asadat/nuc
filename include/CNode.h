@@ -89,7 +89,7 @@ private:
     bool VisitedInterestingDescendentExists();
 
     CNode *parent;
-    CNode *nds[4];
+    CNode *nds[8];
     bool neighbours_populated;
 
     bool visited;

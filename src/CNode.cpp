@@ -93,10 +93,47 @@ double CNode::GetLocalPrior()
         nds[1] = GetNeighbourLeaf(false, true, false, false);
         nds[2] = GetNeighbourLeaf(false, false, true, false);
         nds[3] = GetNeighbourLeaf(false, false, false, true);
+
+        if(nds[0])
+        {
+            nds[4] = nds[0]->GetNeighbourLeaf(false, false, true, false);
+        }
+        else if(nds[2])
+        {
+            nds[4] = nds[2]->GetNeighbourLeaf(true, false, false, false);
+        }
+
+        if(nds[0])
+        {
+            nds[5] = nds[0]->GetNeighbourLeaf(false, false, false, true);
+        }
+        else if(nds[3])
+        {
+            nds[5] = nds[3]->GetNeighbourLeaf(true, false, false, false);
+        }
+
+        if(nds[1])
+        {
+            nds[6] = nds[1]->GetNeighbourLeaf(false, false, true, false);
+        }
+        else if(nds[2])
+        {
+            nds[6] = nds[2]->GetNeighbourLeaf(false, true, false, false);
+        }
+
+        if(nds[1])
+        {
+            nds[7] = nds[1]->GetNeighbourLeaf(false, false, false, true);
+        }
+        else if(nds[3])
+        {
+            nds[7] = nds[3]->GetNeighbourLeaf(false, true, false, false);
+        }
+
         neighbours_populated = true;
     }
 
-    for(unsigned int i=0; i<4; i++)
+    for(unsigned int i=0; i<8; i++)
     {
         if(nds[i]!=NULL && fabs(nds[i]->p_X-0.5) > 0.1 )
         {
@@ -111,10 +148,10 @@ double CNode::GetLocalPrior()
         nval /= c;
     }
 
-   // c=4;
+   // c=8;
 
     //ROS_INFO("p_X: %.2f", p_X);
-    p_val = ((r+(1-r)*((4.0-c)/4.0))*p_X) + (1.0-r)*(c/4.0)*nval;
+    p_val = ((r+(1-r)*((8.0-c)/8.0))*p_X) + (1.0-r)*(c/8.0)*nval;
 
     //ROS_INFO("new_p_X: %.2f", p_val);
     //ROS_INFO("**** End ****");
