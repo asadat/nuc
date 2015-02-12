@@ -10,6 +10,7 @@ class DepthFirstStrategy;
 class ShortCutStrategy;
 class TestStrategy;
 class NUC;
+class GNode;
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 
@@ -111,6 +112,7 @@ private:
     friend class ShortCutStrategy;
     friend class TestStrategy;
     friend class NUC;
+    friend class GNode;
 };
 
 

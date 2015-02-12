@@ -15,7 +15,7 @@ public:
     CNode* GetNextNode();
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
 
-private:
+protected:
     bool UpdateIterator();
     void RotatePointOrderBy90(std::vector<TooN::Vector<3> >& list, bool cockwise);
     CNode * findNode(int x, int y, std::vector<CNode*> & list);

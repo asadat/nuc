@@ -18,9 +18,11 @@ set(NUC_SOURCES
     src/slic.cpp
     src/SuperPixelFeatures.cpp
     src/NUCParam.cpp
+    src/GNode.cpp
     #src/HuskyInterface.cpp
     src/TestStrategy.cpp
     src/HilbertStrategy.cpp
+    src/HilbertOptimization.cpp
     include/HilbertStrategy.h
     include/TestStrategy.h
     #include/HuskyInterface.h
@@ -33,8 +35,10 @@ set(NUC_SOURCES
     include/ShortCutStrategy.h
     include/LawnmowerStrategy.h
     include/TraversalStrategy.h
+    include/HilbertOptimization.h
     include/MAV.h
     include/NUCParam.h
+    include/GNode.h
 )
 
 
