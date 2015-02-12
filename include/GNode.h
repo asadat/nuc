@@ -12,6 +12,13 @@ public:
     GNode(CNode *node);
     ~GNode();
 
+    void AddNext(GNode *n);
+    void AddPrev(GNode *n);
+    double NodeReward();
+
+    double CostFrom(GNode* prevNode);
+    double CostTo(GNode* nextNode);
+
 private:
     CNode * cnode;
 
