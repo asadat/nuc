@@ -50,6 +50,7 @@ struct Path
     {
         reward =0;
         cost = 0;
+        pruned = false;
     }
 
     Path(Path *p, GNode* n)
@@ -59,11 +60,13 @@ struct Path
             copy(p->path.begin(),p->path.end(), std::back_inserter(path));
             reward = p->reward + n->NodeReward();
             cost = p->cost + path.back()->CostTo(n);
+            pruned = false;
         }
         else
         {
             reward = n->NodeReward();
             cost = 0;
+            pruned = false;
         }
 
         path.push_back(n);
@@ -71,6 +74,7 @@ struct Path
 
     void PrintOut()
     {
+        printf("path length: %d\n", path.size());
         for(unsigned int i=0; i<path.size(); i++)
         {
             printf("%s ->", path[i]->label.c_str());

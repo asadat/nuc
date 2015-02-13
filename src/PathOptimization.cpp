@@ -24,15 +24,21 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
         GNode* curNode = readyNodes.front();
         readyNodes.erase(readyNodes.begin());
 
+        //printf("expanding node: %s #next: %d #paths: %d\n", curNode->label.c_str(), curNode->next.size(), curNode->bestPaths.size());
+
         for(unsigned int i=0; i < curNode->next.size(); ++i)
         {
+
             for(unsigned int j=0; j < curNode->bestPaths.size(); j++)
             {
                 if(curNode->bestPaths[j]->pruned)
                     continue;
 
                 Path * path = new Path(curNode->bestPaths[j], curNode->next[i]);
-                curNode->next[i]->PruneOrAddBestPath(path, costBudget);
+                if(!curNode->next[i]->PruneOrAddBestPath(path, costBudget))
+                {
+                    delete path;
+                }
             }
 
             // check to see if the node is ready to be processed
@@ -42,6 +48,8 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
             if(it != openNodes.end())
             {
                 it->second += 1;
+                //openNodes[curNode->next[i]] += 1;
+
                 if(it->second >= curNode->next[i]->prev.size())
                 {
                     moveToReady = true;
@@ -62,19 +70,21 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
                 }
             }
 
-            if(moveToReady && goal == curNode->next[i])
-            {
-                goal->GetMaxRewardPath(p);
-                return true;
-            }
-            else if(moveToReady)
+            if(moveToReady)
             {
                 readyNodes.push_back(curNode->next[i]);
             }
 
         }
 
+        if(curNode == goal)
+        {
+            printf("Reached the goal.\n");
+            goal->GetMaxRewardPath(p);
+            return true;
+        }
     }
 
+    printf("No path is found.");
     return false;
 }

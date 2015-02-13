@@ -26,7 +26,7 @@ void GNode::AddNext(GNode *n)
 void GNode::AddPrev(GNode *n)
 {
     prev.push_back(n);
-    n->AddNext(this);
+    //n->AddNext(this);
 }
 
 double GNode::NodeReward()
@@ -49,6 +49,7 @@ double GNode::CostTo(GNode *nextNode)
 
 bool GNode::GetMaxRewardPath(Path &p)
 {
+    printf("#Paths: %d\n", bestPaths.size());
     int idx = -1;
     double maxReward = 0;
 
@@ -79,8 +80,8 @@ bool GNode::PruneOrAddBestPath(Path *p, double budget)
 {
     if(p->cost > budget)
     {
-        p->pruned = true;
-        bestPaths.push_back(p);
+        //p->pruned = true;
+        //bestPaths.push_back(p);
         return false;
     }
 
@@ -91,14 +92,16 @@ bool GNode::PruneOrAddBestPath(Path *p, double budget)
 
         if((bestPaths[i]->cost < p->cost && bestPaths[i]->reward > p->reward))
         {
-            p->pruned = true;
-            bestPaths.push_back(p);
-            return true;
+            //p->pruned = true;
+            //bestPaths.push_back(p);
+            return false;
         }
 
         if((bestPaths[i]->cost > p->cost && bestPaths[i]->reward < p->reward))
         {
-            bestPaths[i]->pruned = true;
+            //bestPaths[i]->pruned = true;
+            bestPaths.erase(bestPaths.begin()+i);
+            i--;
         }
     }
 
