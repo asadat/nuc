@@ -159,6 +159,12 @@ double CNode::GetLocalPrior()
     return p_val;
 }
 
+double CNode::CoverageReward()
+{
+    // implement some reward function. (expected number of targets beeing sensed with high resolution?)
+    return p_X;
+}
+
 bool CNode::IsNodeInteresting()
 {
 
@@ -239,6 +245,11 @@ TooN::Vector<3> CNode::Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2>
     v2 = c+rot*(v2-c);
 
     return TooN::makeVector(v2[0], v2[1], v[2]);
+}
+
+double CNode::Cost(CNode *from, CNode *to)
+{
+    return sqrt((from->pos-to->pos)*(from->pos-to->pos));
 }
 
 void CNode::PopulateInt_Thr(int maxdepth)

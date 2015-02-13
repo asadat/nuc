@@ -51,6 +51,7 @@ public:
     void UpdateProbability(double new_p_X);
     void RecomputeProbability();
 
+    double CoverageReward();
     // if there is any descendant that is not visited or we
     // don't know if it is interesting or not
     bool NeedsVisitation();
@@ -65,6 +66,8 @@ public:
     static int maxDepth;
     static double int_thr[20];
     static void PopulateInt_Thr(int maxdepth);
+
+    static double Cost(CNode* from, CNode* to);
 
     static TooN::Vector<3> Rotation2D(TooN::Vector<3> v, double deg, TooN::Vector<2> c);
 

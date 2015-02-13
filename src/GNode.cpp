@@ -20,3 +20,18 @@ void GNode::AddPrev(GNode *n)
 {
     prev.push_back(n);
 }
+
+double GNode::NodeReward()
+{
+    return cnode->CoverageReward();
+}
+
+double GNode::CostFrom(GNode *prevNode)
+{
+    return CNode::Cost(prevNode->cnode, cnode);
+}
+
+double GNode::CostTo(GNode *nextNode)
+{
+    return CNode::Cost(cnode, nextNode->cnode);
+}

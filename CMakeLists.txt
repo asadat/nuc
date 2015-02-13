@@ -19,6 +19,7 @@ set(NUC_SOURCES
     src/SuperPixelFeatures.cpp
     src/NUCParam.cpp
     src/GNode.cpp
+    src/PathOptimization.cpp
     #src/HuskyInterface.cpp
     src/TestStrategy.cpp
     src/HilbertStrategy.cpp
@@ -39,6 +40,7 @@ set(NUC_SOURCES
     include/MAV.h
     include/NUCParam.h
     include/GNode.h
+    include/PathOptimization.h
 )
 
 
