@@ -77,8 +77,12 @@ public:
     static bool drawCoverage;
     double p_X;
 
+    GNode * GetGNode(){return gnode;}
+    void SetGNode(GNode* gn){gnode = gn;}
+
 private:
 
+    GNode *gnode;
     std::vector<CNode*> children;
 
     //this is used for simulation only

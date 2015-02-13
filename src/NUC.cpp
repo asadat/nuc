@@ -136,7 +136,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     }
     else if(traversalStrategy == 5)
     {
-        traversal = new HilbertOptimization(tree);
+        traversal = new HilbertOptimization(tree, mav.GetPos(), mav.GetPos());
     }
     else
     {

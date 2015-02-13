@@ -8,15 +8,17 @@
 class HilbertOptimization: public HilbertStrategy
 {
     public:
-        HilbertOptimization(CNode *root);
+        HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, TooN::Vector<3> end_pos);
         ~HilbertOptimization();
 
         CNode* GetNextNode();
     private:
 
-        GNode * graph;
+        GNode * startNode;
+        GNode * endNode;
         PathOptimization *optimizer;
 
+        Path p;
 };
 
 #endif

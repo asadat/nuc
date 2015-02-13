@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "TooN/TooN.h"
 
 using namespace std;
 
@@ -13,12 +14,16 @@ struct Path;
 class GNode
 {
 public:
-    GNode(CNode *node, std::string l);
+    GNode(CNode *node, std::string l="");
+    GNode(TooN::Vector<3> pos, double reward);
     ~GNode();
 
     // constructing the graph
     void AddNext(GNode *n);
+    void AddNext(CNode *n);
+
     void AddPrev(GNode *n);
+    void AddPrev(CNode *n);
 
 
     // costs and rewards
@@ -31,8 +36,13 @@ public:
     bool GetMaxRewardPath(Path &p);
 
     std::string label;
+    CNode * GetCNode(){return cnode;}
 
 private:
+
+    bool dummy;
+    double dummy_reward;
+
     CNode * cnode;
 
     vector<GNode*> next;
@@ -74,7 +84,7 @@ struct Path
 
     void PrintOut()
     {
-        printf("path length: %d\n", path.size());
+        printf("path length: %d\n", (int)path.size());
         for(unsigned int i=0; i<path.size(); i++)
         {
             printf("%s ->", path[i]->label.c_str());

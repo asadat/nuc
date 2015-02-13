@@ -1,39 +1,28 @@
 #include "HilbertOptimization.h"
 
-HilbertOptimization::HilbertOptimization(CNode *root):
+HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, TooN::Vector<3> end_pos):
     HilbertStrategy(root)
 {
 
-//    GNode* g[7];
-//    g[0] = new GNode(NULL, "0");
-//    g[1] = new GNode(NULL, "1");
-//    g[2] = new GNode(NULL, "2");
-//    g[3] = new GNode(NULL, "3");
-//    g[4] = new GNode(NULL, "4");
-//    g[5] = new GNode(NULL, "5");
-//    g[6] = new GNode(NULL, "6");
 
-//    g[0]->AddNext(g[1]);
-//    g[0]->AddNext(g[2]);
-//    g[0]->AddNext(g[3]);
+    startNode = new GNode(init_pos, 0);
+    endNode = new GNode(end_pos, 0);
 
-//    g[1]->AddNext(g[6]);
-//    g[1]->AddNext(g[4]);
+    //generate forward links
+    for(unsigned int i=0; i < lastDepth; i++)
+    {
+        startNode->AddNext(hilbert[i][0]);
+        for(unsigned int j=0; j < hilbert[i].size()-1; j++)
+        {
+            hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]);
+        }
 
-//    g[2]->AddNext(g[1]);
-//    g[2]->AddNext(g[4]);
-//    g[2]->AddNext(g[3]);
+        hilbert[i].back()->GetGNode()->AddNext(endNode);
+    }
 
-//    g[3]->AddNext(g[4]);
-//    g[3]->AddNext(g[5]);
-
-//    g[4]->AddNext(g[5]);
-//    g[6]->AddNext(g[5]);
-
-//    optimizer = new PathOptimization(g[0]);
-//    Path p;
-//    optimizer->FindBestPath(g[5], 3.0, p);
-//    p.PrintOut();
+    optimizer = new PathOptimization(startNode);
+    optimizer->FindBestPath(endNode, 10000.0, p);
+    p.PrintOut();
 
 }
 
@@ -44,6 +33,17 @@ HilbertOptimization::~HilbertOptimization()
 
 CNode* HilbertOptimization::GetNextNode()
 {
-    return NULL;
+    static int i=0;
+
+    if(i >= p.path.size()-1)
+    {
+        return NULL;
+    }
+    else
+    {
+        i++;
+        return p.path[i]->GetCNode();
+    }
+
 }
 

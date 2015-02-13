@@ -5,7 +5,16 @@ GNode::GNode(CNode *node, string l):
     cnode(node),
     label(l)
 {
+    cnode->SetGNode(this);
+}
 
+GNode::GNode(TooN::Vector<3> pos, double reward)
+{
+    dummy = true;
+    dummy_reward = reward;
+    cnode = new CNode(TooN::makeVector(0,0,1,1));
+    cnode->SetGNode(this);
+    cnode->pos = pos;
 }
 
 GNode::~GNode()
@@ -15,6 +24,11 @@ GNode::~GNode()
         delete bestPaths.back();
         bestPaths.pop_back();
     }
+
+    if(dummy)
+    {
+        delete cnode;
+    }
 }
 
 void GNode::AddNext(GNode *n)
@@ -23,33 +37,56 @@ void GNode::AddNext(GNode *n)
     n->AddPrev(this);
 }
 
+void GNode::AddNext(CNode *n)
+{
+    if(!n->GetGNode())
+    {
+        GNode * g = new GNode(n);
+    }
+
+    AddNext(n->GetGNode());
+}
+
 void GNode::AddPrev(GNode *n)
 {
     prev.push_back(n);
-    //n->AddNext(this);
+}
+
+void GNode::AddPrev(CNode *n)
+{
+    if(!n->GetGNode())
+    {
+        GNode * g = new GNode(n);
+    }
+    AddPrev(n->GetGNode());
+    //AddPrev(g);
 }
 
 double GNode::NodeReward()
 {
-    return 1.0;
-    //return cnode->CoverageReward();
+    if(dummy)
+    {
+        return dummy_reward;
+    }
+    else
+    {
+        return cnode->CoverageReward();
+    }
 }
 
 double GNode::CostFrom(GNode *prevNode)
 {
-    return 1.0;
-    //return CNode::Cost(prevNode->cnode, cnode);
+    return CNode::Cost(prevNode->cnode, cnode);
 }
 
 double GNode::CostTo(GNode *nextNode)
 {
-    return 1.0;
-    //return CNode::Cost(cnode, nextNode->cnode);
+    return CNode::Cost(cnode, nextNode->cnode);
 }
 
 bool GNode::GetMaxRewardPath(Path &p)
 {
-    printf("#Paths: %d\n", bestPaths.size());
+    printf("#Paths: %d\n", (int)bestPaths.size());
     int idx = -1;
     double maxReward = 0;
 
