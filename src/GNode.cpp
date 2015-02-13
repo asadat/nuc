@@ -1,8 +1,9 @@
 #include "GNode.h"
 #include "CNode.h"
 
-GNode::GNode(CNode *node):
-    cnode(node)
+GNode::GNode(CNode *node, string l):
+    cnode(node),
+    label(l)
 {
 
 }
@@ -19,26 +20,31 @@ GNode::~GNode()
 void GNode::AddNext(GNode *n)
 {
     next.push_back(n);
+    n->AddPrev(this);
 }
 
 void GNode::AddPrev(GNode *n)
 {
     prev.push_back(n);
+    n->AddNext(this);
 }
 
 double GNode::NodeReward()
 {
-    return cnode->CoverageReward();
+    return 1.0;
+    //return cnode->CoverageReward();
 }
 
 double GNode::CostFrom(GNode *prevNode)
 {
-    return CNode::Cost(prevNode->cnode, cnode);
+    return 1.0;
+    //return CNode::Cost(prevNode->cnode, cnode);
 }
 
 double GNode::CostTo(GNode *nextNode)
 {
-    return CNode::Cost(cnode, nextNode->cnode);
+    return 1.0;
+    //return CNode::Cost(cnode, nextNode->cnode);
 }
 
 bool GNode::GetMaxRewardPath(Path &p)

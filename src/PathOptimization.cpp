@@ -1,5 +1,4 @@
 #include "PathOptimization.h"
-#define NULL 0
 
 PathOptimization::PathOptimization(GNode *start_node):
     startNode(start_node)

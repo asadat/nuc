@@ -8,8 +8,10 @@
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
 #include "InterestingnessSensor.h"
-#include "HilbertStrategy.h"
+//#include "HilbertStrategy.h"
 #include "TestStrategy.h"
+#include "HilbertOptimization.h"
+
 #include "NUCParam.h"
 //#include "HuskyInterface.h"
 
@@ -88,11 +90,18 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         ROS_INFO("test strategy");
 
         traversalStrategy = 3;
-    }else if(NUCParam::strategy == "hi")
+    }
+    else if(NUCParam::strategy == "hi")
     {
-        ROS_INFO("hilber strategy");
+        ROS_INFO("hilbert strategy");
 
         traversalStrategy = 4;
+    }
+    else if(NUCParam::strategy == "ho")
+    {
+        ROS_INFO("hilbert optimization strategy");
+
+        traversalStrategy = 5;
     }
 
     mav.Init(&nh, NUCParam::simulation);
@@ -124,6 +133,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     else if(traversalStrategy == 4)
     {
         traversal = new HilbertStrategy(tree);
+    }
+    else if(traversalStrategy == 5)
+    {
+        traversal = new HilbertOptimization(tree);
     }
     else
     {

@@ -2,6 +2,7 @@
 #define _GNODE_
 
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ struct Path;
 class GNode
 {
 public:
-    GNode(CNode *node);
+    GNode(CNode *node, std::string l);
     ~GNode();
 
     // constructing the graph
@@ -29,6 +30,8 @@ public:
     bool PruneOrAddBestPath(Path *p, double budget);
     bool GetMaxRewardPath(Path &p);
 
+    std::string label;
+
 private:
     CNode * cnode;
 
@@ -37,11 +40,18 @@ private:
 
     vector<Path*> bestPaths; // best paths found to this node so far
 
+
     friend class PathOptimization;
 };
 
 struct Path
 {
+    Path()
+    {
+        reward =0;
+        cost = 0;
+    }
+
     Path(Path *p, GNode* n)
     {
         if(p)
@@ -57,6 +67,16 @@ struct Path
         }
 
         path.push_back(n);
+    }
+
+    void PrintOut()
+    {
+        for(unsigned int i=0; i<path.size(); i++)
+        {
+            printf("%s ->", path[i]->label.c_str());
+        }
+
+        printf("\n cost: %f  reward: %f \n", cost, reward);
     }
 
     vector<GNode*> path;
