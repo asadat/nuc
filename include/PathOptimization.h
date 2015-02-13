@@ -17,7 +17,7 @@ public:
 private:
 
     set<GNode*> closedNodes; // already processed
-    vector<GNode*> resdyNodes; // can be expanded forward
+    vector<GNode*> readyNodes; // can be expanded forward
     map<GNode*, int> openNodes; // still waiting for the rest of the paths to them
 
     GNode* startNode;
