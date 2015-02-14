@@ -38,6 +38,10 @@ public:
     std::string label;
     CNode * GetCNode(){return cnode;}
 
+    void glDraw();
+
+    int visited_c;
+
 private:
 
     bool dummy;
@@ -51,6 +55,7 @@ private:
     vector<Path*> bestPaths; // best paths found to this node so far
 
 
+    friend class HilbertOptimization;
     friend class PathOptimization;
 };
 

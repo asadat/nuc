@@ -77,6 +77,8 @@ public:
     static bool drawCoverage;
     double p_X;
 
+    CNode* GetParent(){return parent;}
+
     GNode * GetGNode(){return gnode;}
     void SetGNode(GNode* gn){gnode = gn;}
 

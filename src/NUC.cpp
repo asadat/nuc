@@ -550,7 +550,7 @@ void NUC::SetNextGoal()
         NUC_LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
-        //ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+       // ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
     }
 }
 

@@ -13,6 +13,8 @@ PathOptimization::~PathOptimization()
 
 bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
 {
+    static double best_reward = 0;
+
     readyNodes.push_back(startNode);
     Path *init_p = new Path(NULL, startNode);
     startNode->PruneOrAddBestPath(init_p, costBudget);
@@ -35,6 +37,11 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
                     continue;
 
                 Path * path = new Path(curNode->bestPaths[j], curNode->next[i]);
+                if(path->cost <= costBudget && path->reward > best_reward)
+                {
+                    best_reward = path->reward;
+                }
+
                 if(!curNode->next[i]->PruneOrAddBestPath(path, costBudget))
                 {
                     delete path;
@@ -42,44 +49,49 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, Path &p)
             }
 
             // check to see if the node is ready to be processed
-            map<GNode*,int>::iterator it = openNodes.find(curNode->next[i]);
-            bool moveToReady = false;
+//            map<GNode*,int>::iterator it = openNodes.find(curNode->next[i]);
+//            bool moveToReady = false;
 
-            if(it != openNodes.end())
-            {
-                it->second += 1;
-                //openNodes[curNode->next[i]] += 1;
+//            if(it != openNodes.end())
+//            {
+//                it->second += 1;
+//                //openNodes[curNode->next[i]] += 1;
 
-                if(it->second >= curNode->next[i]->prev.size())
-                {
-                    moveToReady = true;
-                    //readyNodes->push_back(curNode->next[i]);
-                    openNodes.erase(it);
-                }
-            }
-            else
-            {
-                if(curNode->next[i]->prev.size() == 1)
-                {
-                    moveToReady = true;
-                    //readyNodes->push_back(curNode->next[i]);
-                }
-                else
-                {
-                    openNodes[curNode->next[i]] = 1;
-                }
-            }
+//                if(it->second >= curNode->next[i]->prev.size())
+//                {
+//                    moveToReady = true;
+//                    //readyNodes->push_back(curNode->next[i]);
+//                    openNodes.erase(it);
+//                }
+//            }
+//            else
+//            {
+//                if(curNode->next[i]->prev.size() == 1)
+//                {
+//                    moveToReady = true;
+//                    //readyNodes->push_back(curNode->next[i]);
+//                }
+//                else
+//                {
+//                    openNodes[curNode->next[i]] = 1;
+//                }
+//            }
 
-            if(moveToReady)
+//            if(moveToReady)
+//            {
+//                readyNodes.push_back(curNode->next[i]);
+//            }
+
+            curNode->next[i]->visited_c +=1;
+            if(curNode->next[i]->visited_c >= curNode->next[i]->prev.size())
             {
                 readyNodes.push_back(curNode->next[i]);
             }
-
         }
 
         if(curNode == goal)
         {
-            printf("Reached the goal.\n");
+            printf("Reached the goal. best reward reached %f\n", best_reward);
             goal->GetMaxRewardPath(p);
             return true;
         }

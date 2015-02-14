@@ -12,6 +12,9 @@ class HilbertOptimization: public HilbertStrategy
         ~HilbertOptimization();
 
         CNode* GetNextNode();
+        void glDraw();
+        void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
+
     private:
 
         GNode * startNode;
@@ -19,6 +22,8 @@ class HilbertOptimization: public HilbertStrategy
         PathOptimization *optimizer;
 
         Path p;
+
+        int draw_i_path;
 };
 
 #endif

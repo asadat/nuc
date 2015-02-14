@@ -1,15 +1,22 @@
 #include "GNode.h"
 #include "CNode.h"
+#include <GL/glut.h>
 
 GNode::GNode(CNode *node, string l):
     cnode(node),
     label(l)
 {
     cnode->SetGNode(this);
+    visited_c = 0;
+    dummy = false;
+    visited_c = 0;
+    dummy_reward = 0;
+
 }
 
 GNode::GNode(TooN::Vector<3> pos, double reward)
 {
+    visited_c = 0;
     dummy = true;
     dummy_reward = reward;
     cnode = new CNode(TooN::makeVector(0,0,1,1));
@@ -127,21 +134,44 @@ bool GNode::PruneOrAddBestPath(Path *p, double budget)
         if(bestPaths[i]->pruned)
             continue;
 
-        if((bestPaths[i]->cost < p->cost && bestPaths[i]->reward > p->reward))
+        if((bestPaths[i]->cost <= p->cost && bestPaths[i]->reward >= p->reward))
         {
+            printf(" %f ", p->reward);
             //p->pruned = true;
             //bestPaths.push_back(p);
             return false;
         }
 
-        if((bestPaths[i]->cost > p->cost && bestPaths[i]->reward < p->reward))
-        {
-            //bestPaths[i]->pruned = true;
-            bestPaths.erase(bestPaths.begin()+i);
-            i--;
-        }
+//        if((bestPaths[i]->cost > p->cost && bestPaths[i]->reward < p->reward))
+//        {
+//            //bestPaths[i]->pruned = true;
+//            printf(" %f ", bestPaths[i]->reward);
+//            bestPaths.erase(bestPaths.begin()+i);
+//            i--;
+//        }
     }
 
     bestPaths.push_back(p);
     return true;
+}
+
+void GNode::glDraw()
+{
+
+    //glColor3f(1,0.5,0.0);
+
+    for(unsigned int i=0; i<next.size();i++)
+    {
+        TooN::Vector<3> p1 = cnode->GetPos();
+        TooN::Vector<3> p2 = next[i]->cnode->GetPos();
+
+
+        glColor3f(1,0,0);
+        glVertex3f(p1[0],p1[1],p1[2]);
+        glColor3f(0,1,0);
+        glVertex3f(p2[0],p2[1],p2[2]);
+
+        next[i]->glDraw();
+    }
+
 }

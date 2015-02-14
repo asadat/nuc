@@ -8,8 +8,8 @@
 #define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
 #define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
 
-#define PRIOR_INTERESTING 0.5
-#define PRIOR_UNINTERESTING 0.5
+#define PRIOR_INTERESTING 0.99
+#define PRIOR_UNINTERESTING 0.00001
 #define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
 
 
@@ -462,6 +462,9 @@ double CNode::InitializePrior(Rect r)
 
     p_X = 1-prod;
 
+    assert(p_X <= 1);
+    assert(p_X >= 0);
+
     return p_X;
 }
 
@@ -670,8 +673,8 @@ void CNode::RecomputeProbability()
 
 void CNode::PropagateObservation(bool X)
 {
-    double p_X_1 = GetLocalPrior();// p_X;
-
+    //double p_X_1 = GetLocalPrior();// p_X;
+    double p_X_1 = p_X;
     //ROS_INFO("Prior_X: %.2f", p_X_1);
 
     double new_p_X;
