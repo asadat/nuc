@@ -8,8 +8,8 @@
 #define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
 #define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
 
-#define PRIOR_INTERESTING 0.99
-#define PRIOR_UNINTERESTING 0.00001
+#define PRIOR_INTERESTING 0.9
+#define PRIOR_UNINTERESTING 0.01
 #define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
 
 
@@ -163,7 +163,11 @@ double CNode::GetLocalPrior()
 double CNode::CoverageReward()
 {
     // implement some reward function. (expected number of targets beeing sensed with high resolution?)
-    return p_X;
+    return p_X*(((double)depth)/ maxDepth);
+    //if(IsNodeInteresting())
+     //   return 1.0*(((double)depth)/ maxDepth);;
+    //else
+    //    return 0.0;
 }
 
 bool CNode::IsNodeInteresting()
@@ -349,7 +353,7 @@ void CNode::glDraw()
         c = sqrt(c);
 
         if(drawCoverage)
-            glColor4f(c,c,c,1);
+            glColor4f(1-c,c,0,1);
         else
             glColor4f(0,0,0,0.1+1-depth/5.0);
 
@@ -361,7 +365,7 @@ void CNode::glDraw()
                 if(visited)
                     glColor4f(1,1,1,1);
                 else
-                    glColor4f(p_X,p_X,p_X,1);
+                    glColor4f(1-p_X,p_X,0,1);
             }
 
 //            if(!IsNodeInteresting())

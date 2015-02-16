@@ -83,11 +83,17 @@ double GNode::NodeReward()
 
 double GNode::CostFrom(GNode *prevNode)
 {
+    if(dummy || prevNode->dummy)
+        return 0;
+
     return CNode::Cost(prevNode->cnode, cnode);
 }
 
 double GNode::CostTo(GNode *nextNode)
 {
+    if(dummy || nextNode->dummy)
+        return 0;
+
     return CNode::Cost(cnode, nextNode->cnode);
 }
 
@@ -131,8 +137,8 @@ bool GNode::PruneOrAddBestPath(Path *p, double budget)
 
     for(unsigned int i=0; i < bestPaths.size(); i++)
     {
-        if(bestPaths[i]->pruned)
-            continue;
+        //if(bestPaths[i]->pruned)
+        //    continue;
 
         if((bestPaths[i]->cost <= p->cost && bestPaths[i]->reward >= p->reward))
         {

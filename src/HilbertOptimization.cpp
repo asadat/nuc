@@ -71,7 +71,7 @@ void HilbertOptimization::hanldeKeyPressed(map<unsigned char, bool> &key, bool &
     if(key[']'])
     {
         draw_i_path++;
-        updateKey = true;
+        updateKey = false;
         if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
         {
             ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
@@ -80,7 +80,7 @@ void HilbertOptimization::hanldeKeyPressed(map<unsigned char, bool> &key, bool &
     else if(key['['])
     {
         draw_i_path--;
-        updateKey = true;
+        updateKey = false;
         if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
         {
             ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
@@ -90,6 +90,10 @@ void HilbertOptimization::hanldeKeyPressed(map<unsigned char, bool> &key, bool &
 
 void HilbertOptimization::glDraw()
 {
+    //glBegin(GL_LINES);
+    //startNode->glDraw();
+    //glEnd();
+
     if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
     {
         Path * ps = endNode->bestPaths[draw_i_path];
@@ -97,7 +101,7 @@ void HilbertOptimization::glDraw()
         glLineWidth(7);
         glBegin(GL_LINES);
 
-        for(int i=0; i<ps->path.size()-1;++i)
+        for(int i=1; i<ps->path.size()-2;++i)
         {
             double r = ps->path[i+1]->NodeReward();
 
