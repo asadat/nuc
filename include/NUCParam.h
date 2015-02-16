@@ -45,6 +45,7 @@ public:
     static double beta_hm;
 
     static double prob_r;
+    static double pathCost;
 
 };
 

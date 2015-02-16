@@ -31,8 +31,9 @@ int HilbertStrategy::HilbertCurveOther(CNode *parent)
         l /= NUCParam::bf_sqrt;
     }
 
-    if(depth>99)
-        depth = 99;
+    if(depth>MAX_HILBERT_ORDER)
+        depth = MAX_HILBERT_ORDER;
+
 
     ROS_INFO("depth: %d", depth);
 

@@ -118,6 +118,12 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     tree = new CNode(area);
     tree->PropagateDepth();
 
+    if(NUCParam::simulation || NUCParam::interesting_simulation)
+    {
+        PopulateTargets();
+        MarkNodesInterestingness();
+    }
+
     if(traversalStrategy == 0)
     {
         traversal = new DepthFirstStrategy(tree);
@@ -146,11 +152,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     ROS_INFO("test strategy %d", traversalStrategy);
 
     //For simulating interestingness
-    if(NUCParam::simulation || NUCParam::interesting_simulation)
-    {
-        PopulateTargets();
-        MarkNodesInterestingness();
-    }
+
     //
 
     StartTraversing();

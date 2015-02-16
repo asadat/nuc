@@ -2,6 +2,7 @@
 #define _GNODE_
 
 #include <vector>
+#include <map>
 #include <string>
 #include "TooN/TooN.h"
 
@@ -14,6 +15,25 @@ struct Path;
 class GNode
 {
 public:
+
+    class Path
+    {
+    public:
+        Path();
+        //Path(Path *p, GNode* n);
+        void InitPath(Path *p, GNode* n);
+        void PrintOut();
+
+        double NextReward(GNode *n);
+        double NextCost(GNode* n);
+
+        vector<GNode*> path;
+        double cost;
+        double reward;
+
+        bool pruned;
+    };
+
     GNode(CNode *node, std::string l="");
     GNode(TooN::Vector<3> pos, double reward);
     ~GNode();
@@ -32,7 +52,8 @@ public:
     double CostTo(GNode* nextNode);
 
     //path evaluation
-    bool PruneOrAddBestPath(Path *p, double budget);
+    void AddBestPath(Path *p);
+    bool ShouldBePruned(double r, double c, double budget);
     bool GetMaxRewardPath(Path &p);
 
     std::string label;
@@ -52,57 +73,14 @@ private:
     vector<GNode*> next;
     vector<GNode*> prev;
 
-    vector<Path*> bestPaths; // best paths found to this node so far
+    vector<GNode::Path*> bestPaths; // best paths found to this node so far
 
+    map<GNode*,double> costTo;
 
     friend class HilbertOptimization;
     friend class PathOptimization;
 };
 
-struct Path
-{
-    Path()
-    {
-        reward =0;
-        cost = 0;
-        pruned = false;
-    }
 
-    Path(Path *p, GNode* n)
-    {
-        if(p)
-        {
-            copy(p->path.begin(),p->path.end(), std::back_inserter(path));
-            reward = p->reward + n->NodeReward();
-            cost = p->cost + path.back()->CostTo(n);
-            pruned = false;
-        }
-        else
-        {
-            reward = n->NodeReward();
-            cost = 0;
-            pruned = false;
-        }
-
-        path.push_back(n);
-    }
-
-    void PrintOut()
-    {
-        printf("path length: %d\n", (int)path.size());
-        for(unsigned int i=0; i<path.size(); i++)
-        {
-            printf("%s ->", path[i]->label.c_str());
-        }
-
-        printf("\n cost: %f  reward: %f \n", cost, reward);
-    }
-
-    vector<GNode*> path;
-    double cost;
-    double reward;
-
-    bool pruned;
-};
 
 #endif

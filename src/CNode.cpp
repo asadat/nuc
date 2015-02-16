@@ -8,8 +8,8 @@
 #define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
 #define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
 
-#define PRIOR_INTERESTING 0.9
-#define PRIOR_UNINTERESTING 0.01
+#define PRIOR_INTERESTING 0.5
+#define PRIOR_UNINTERESTING 0.3
 #define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
 
 
@@ -18,10 +18,6 @@ bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
 int CNode::maxDepth = 0;
 double CNode::int_thr[20];
-
-//float CNode::fov = 90 *3.14/(180);
-//int CNode::bf_sqrt = 2;
-//float CNode::minFootprintWidth = 3;
 
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
@@ -39,7 +35,7 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
     pos[0] = (0.5)*(footPrint[0]+footPrint[2]);
     pos[1] = (0.5)*(footPrint[1]+footPrint[3]);
     pos[2] = (0.5)*fabs((footPrint[0]-footPrint[2])/tan(NUCParam::FOV/2.0));
-    p_X = PRIOR_UNINTERESTING;
+    p_X = RAND(0.01,PRIOR_UNINTERESTING);
 
     if(rootHeight < pos[2])
         rootHeight = pos[2];
@@ -163,11 +159,7 @@ double CNode::GetLocalPrior()
 double CNode::CoverageReward()
 {
     // implement some reward function. (expected number of targets beeing sensed with high resolution?)
-    return p_X*(((double)depth)/ maxDepth);
-    //if(IsNodeInteresting())
-     //   return 1.0*(((double)depth)/ maxDepth);;
-    //else
-    //    return 0.0;
+    return p_X;
 }
 
 bool CNode::IsNodeInteresting()
@@ -179,7 +171,6 @@ bool CNode::IsNodeInteresting()
         //double p_val = GetLocalPrior();
         return p_X >= INTERESTING_THRESHOLD;
     }
-
     else
     {
         for(unsigned int i=0; i < this->children.size(); i++)
@@ -353,7 +344,7 @@ void CNode::glDraw()
         c = sqrt(c);
 
         if(drawCoverage)
-            glColor4f(1-c,c,0,1);
+            glColor4f(c,c,c,1);
         else
             glColor4f(0,0,0,0.1+1-depth/5.0);
 
@@ -365,7 +356,7 @@ void CNode::glDraw()
                 if(visited)
                     glColor4f(1,1,1,1);
                 else
-                    glColor4f(1-p_X,p_X,0,1);
+                    glColor4f(p_X,p_X,p_X,1);
             }
 
 //            if(!IsNodeInteresting())
@@ -452,7 +443,7 @@ double CNode::InitializePrior(Rect r)
     {
         if(IN(pos,r))
         {
-            p_X = PRIOR_INTERESTING;//RAND(0.5,0.7);
+            p_X = RAND(PRIOR_INTERESTING,0.99);//PRIOR_INTERESTING;
         }
 
         return p_X;

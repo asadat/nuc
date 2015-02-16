@@ -21,7 +21,7 @@ class HilbertOptimization: public HilbertStrategy
         GNode * endNode;
         PathOptimization *optimizer;
 
-        Path p;
+        GNode::Path p;
 
         int draw_i_path;
 };
