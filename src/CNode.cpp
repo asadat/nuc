@@ -52,6 +52,8 @@ CNode::~CNode()
 
         delete n;
     }
+
+    delete gnode;
 }
 
 CNode * CNode::CreateChildNode(Rect fp)
@@ -291,28 +293,27 @@ void CNode::glDraw()
         glEnd();
     }
 
-    if(/*IsNodeInteresting() && !visited*/ NeedsVisitation())
-    {
-        glPointSize(10);
-        glColor3f(0,1,0);
-    }
-    else
-    {
-        glPointSize(10);
-        glColor3f(0,0,0);
-    }
+//    if(/*IsNodeInteresting() && !visited*/ NeedsVisitation())
+//    {
+//        glPointSize(10);
+//        glColor3f(0,1,0);
+//    }
+//    else
+//    {
+//        glPointSize(10);
+//        glColor3f(0,0,0);
+//    }
 
-    if(drawEdges)
-    {
-        //glPointSize(3);
-        glBegin(GL_POINTS);
-        glVertex3f(v2[0],v2[1],v2[2]);
-        glEnd();
-    }
+//    if(drawEdges)
+//    {
+//        //glPointSize(3);
+//        glBegin(GL_POINTS);
+//        glVertex3f(v2[0],v2[1],v2[2]);
+//        glEnd();
+//    }
 
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
-
 
     //if(children.empty())
     {
@@ -386,7 +387,18 @@ void CNode::glDraw()
         glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
         glEnd();
 
-        if(drawCoverage)
+        glLineWidth(2);
+        glColor4f(0,0,0,1);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBegin(GL_POLYGON);
+        glVertex3f(v1[0],v1[1], (0.65-depth/20.0));
+        glVertex3f(v2[0],v2[1], (0.65-depth/20.0));
+        glVertex3f(v3[0],v3[1], (0.65-depth/20.0));
+        glVertex3f(v4[0],v4[1], (0.65-depth/20.0));
+        glVertex3f(v1[0],v1[1], (0.65-depth/20.0));
+        glEnd();
+
+        if(false && drawCoverage)
         {
             glLineWidth(1);
             glColor4f(0,0,0,1);
@@ -736,6 +748,14 @@ void CNode::UpdateProbability(double new_p_X)
     p_X = new_p_X;
 
    // ROS_INFO("P_X: %.2f", p_X);
+}
+int CNode::ComputeDepth(int & d)
+{
+    d++;
+    if(!IsLeaf())
+    {
+        children[0]->ComputeDepth(d);
+    }
 }
 
 void CNode::propagateCoverage(double height)

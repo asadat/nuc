@@ -44,12 +44,15 @@ public:
 
     bool IsLeaf(){return children.empty();}
 
+    int ComputeDepth(int & d);
+
     void propagateCoverage(double height);
 
     void GenerateObservationAndPropagate();
     void PropagateObservation(bool X);
     void UpdateProbability(double new_p_X);
     void RecomputeProbability();
+    void SetPrior(double p){p_X = p;}
 
     double CoverageReward();
     // if there is any descendant that is not visited or we

@@ -53,6 +53,8 @@ private:
     void runPhotoStitcher();
     void Cleanup();
 
+    void LoadPriorFromFile();
+
     static NUC* instance;
 
     ros::NodeHandle nh;

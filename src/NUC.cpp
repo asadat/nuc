@@ -120,8 +120,9 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
     if(NUCParam::simulation || NUCParam::interesting_simulation)
     {
-        PopulateTargets();
-        MarkNodesInterestingness();
+        LoadPriorFromFile();
+        //PopulateTargets();
+        //MarkNodesInterestingness();
     }
 
     if(traversalStrategy == 0)
@@ -174,6 +175,44 @@ void NUC::Cleanup()
         delete tree;
 
     tree = NULL;
+}
+
+void NUC::LoadPriorFromFile()
+{
+    cv::Mat img = cv::imread("/home/abbas/hydro_workspace/src/nuc/prior.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat pr;
+
+    int d =-1;
+    tree->ComputeDepth(d);
+    int w = pow(2,d);
+
+    //ROS_INFO("IMAGE SIZE: %d", w);
+
+    cv::Size s(w,w);
+    cv::resize(img, pr, s);
+    CNode * bl = tree->GetNearestLeaf(makeVector(area[0],area[1],0));
+    int dir = 1;
+    for(int i=0; i<w; i++)
+    {
+        for(int j=(dir>0)?1:w-2; (dir>0)?(j<w):(j>=0); j+=dir)
+        {
+            bl = bl->GetNeighbourLeaf((dir<0), (dir>0), false, false);
+            bl->SetPrior(pr.at<uchar>(w-i-1,j)*(1.0/255.0));
+        }
+
+        if(i<w-1)
+        {
+            bl = bl->GetNeighbourLeaf(false, false, true, false);
+
+            bl->SetPrior(pr.at<uchar>(w-i, (dir>0)?w-1:0)*(1.0/255.0));
+        }
+
+        dir *= -1;
+
+    }
+    //cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
+    //cv::imshow( "Display window", pr );
+    //cv::waitKey(0);
 }
 
 void NUC::runPhotoStitcher()
@@ -286,8 +325,8 @@ bool NUC::RectIntersect(Rect r, Rect d)
 
 void NUC::PopulateTargets()
 {
-   // srand(time(NULL));
-    srand(111);
+    srand(time(NULL));
+    //srand(111);
     //double xy_ratio = 1/5.0;
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
