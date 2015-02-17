@@ -2,13 +2,13 @@ simulation: True
 visualization: True
 branching_sqrt: 2
 FOV: 1.57
-min_footprint: 1.0
+min_footprint: 3.0
 speed: 0
 strategy: ho
 area_length: 64.0
 area_rotation: 0.0
 logging: false
-patches: 1
+patches: 3
 percent_interesting: 25.0
 auto_exit: false
 bypass_controller: true
@@ -18,4 +18,4 @@ alpha_hm: 0.3
 beta_h0: 0.1
 beta_hm: 0.3
 prob_r: 0.5
-path_cost: 500.0
+path_cost: 600.0

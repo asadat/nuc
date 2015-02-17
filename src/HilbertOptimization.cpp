@@ -21,6 +21,16 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
             //Add linke to next node
             hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]);
 
+            if(i == lastDepth)
+            {
+                hilbert[i][j]->GetGNode()->leaf = true;
+
+                if(j == hilbert[i].size()-2)
+                {
+                    hilbert[i][j+1]->GetGNode()->leaf = true;
+                }
+            }
+
             // linke to uncle
             if(j%4 == 3)
             {
@@ -52,8 +62,6 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
     ROS_INFO("Optimizer started \n");
     optimizer = new PathOptimization(startNode);
     optimizer->FindBestPath(endNode, NUCParam::pathCost, p);
-    delete optimizer;
-
     ROS_INFO("dtime: %f", (ros::Time::now()-s).toSec());
     p.PrintOut();
 
@@ -75,7 +83,7 @@ CNode* HilbertOptimization::GetNextNode()
     else
     {
         i++;
-        ROS_INFO("Node Reward: %f", p.path[i]->NodeReward());
+        //ROS_INFO("Node Reward: %f", p.path[i]->NodeReward());
         return p.path[i]->GetCNode();
 
     }

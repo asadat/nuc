@@ -58,6 +58,7 @@ GNode::GNode(CNode *node, string l):
     dummy = false;
     visited_c = 0;
     dummy_reward = 0;
+    leaf = false;
 
 }
 
@@ -69,6 +70,7 @@ GNode::GNode(TooN::Vector<3> pos, double reward)
     cnode = new CNode(TooN::makeVector(0,0,1,1));
     cnode->SetGNode(this);
     cnode->pos = pos;
+    leaf = false;
 }
 
 GNode::~GNode()
@@ -218,9 +220,10 @@ bool GNode::ShouldBePruned(double r, double c, double budget)
     return false;
 }
 
-void GNode::AddBestPath(Path *p)
+int GNode::AddBestPath(Path *p)
 {
     bestPaths.push_back(p);
+    return bestPaths.size()-1;
 }
 
 void GNode::glDraw()

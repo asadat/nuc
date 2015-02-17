@@ -25,10 +25,12 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path 
 
     while(!readyNodes.empty())
     {
+        bool check_for_ready = true;
+
         GNode* curNode = readyNodes.front();
         readyNodes.erase(readyNodes.begin());
 
-        //printf("expanding node: %s #next: %d #paths: %d\n", curNode->label.c_str(), curNode->next.size(), curNode->bestPaths.size());
+        //printf("#%d   expanding node: %s #next: %d #paths: %d\n", readyNodes.size(), curNode->label.c_str(), curNode->next.size(), curNode->bestPaths.size());
 
         for(unsigned int i=0; i < curNode->next.size(); ++i)
         {
@@ -36,6 +38,35 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path 
             {
                 if(curNode->bestPaths[j]->pruned)
                     continue;
+
+
+                // check if this is in the leaf level and
+                // we can easily add the next 3 nodes to the path
+                if(curNode->leaf & curNode->next.size()==1 )
+                {
+                    int pidx = j;
+                    GNode * gn = curNode;
+                    while(gn->next.size() == 1)
+                    {
+                        GNode::Path * sc = new GNode::Path();
+                        sc->InitPath(gn->bestPaths[pidx], gn->next[0]);
+
+                        pidx = gn->next[0]->AddBestPath(sc);
+                        gn = gn->next[0];
+                    }
+
+                    // add the end of mini path to the ready node once
+                    if(check_for_ready)
+                    {
+                        if(gn->bestPaths[pidx]->cost > costBudget)
+                            gn->bestPaths[pidx]->pruned = true;
+
+                        readyNodes.push_back(gn);
+                        check_for_ready = false;
+                    }
+
+                    continue;
+                }
 
                 double r = curNode->bestPaths[j]->NextReward(curNode->next[i]);
                 double c = curNode->bestPaths[j]->NextCost(curNode->next[i]);
@@ -48,10 +79,13 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path 
                 }
             }
 
-            curNode->next[i]->visited_c +=1;
-            if(curNode->next[i]->visited_c >= curNode->next[i]->prev.size())
+            if(check_for_ready)
             {
-                readyNodes.push_back(curNode->next[i]);
+                curNode->next[i]->visited_c +=1;
+                if(curNode->next[i]->visited_c == curNode->next[i]->prev.size())
+                {
+                    readyNodes.push_back(curNode->next[i]);
+                }
             }
         }
 

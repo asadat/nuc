@@ -286,7 +286,8 @@ bool NUC::RectIntersect(Rect r, Rect d)
 
 void NUC::PopulateTargets()
 {
-    srand(time(NULL));
+   // srand(time(NULL));
+    srand(111);
     //double xy_ratio = 1/5.0;
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));

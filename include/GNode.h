@@ -52,7 +52,7 @@ public:
     double CostTo(GNode* nextNode);
 
     //path evaluation
-    void AddBestPath(Path *p);
+    int AddBestPath(Path *p);
     bool ShouldBePruned(double r, double c, double budget);
     bool GetMaxRewardPath(Path &p);
 
@@ -67,6 +67,8 @@ private:
 
     bool dummy;
     double dummy_reward;
+
+    bool leaf;
 
     CNode * cnode;
 

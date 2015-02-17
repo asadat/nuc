@@ -3,7 +3,7 @@
 
 #include "TraversalStrategy.h"
 #include "CNode.h"
-#define MAX_HILBERT_ORDER 6
+#define MAX_HILBERT_ORDER 10
 
 class HilbertStrategy: public TraversalStrategy
 {
