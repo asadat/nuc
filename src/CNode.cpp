@@ -681,6 +681,25 @@ void CNode::RecomputeProbability()
         parent->RecomputeProbability();
 }
 
+double CNode::RecomputePrior()
+{
+    if(IsLeaf())
+        return p_X;
+
+    double prod = 1;
+    for(unsigned int i=0; i<children.size();i++)
+    {
+        prod *= (1-children[i]->RecomputePrior());
+    }
+
+    p_X = 1-prod;
+
+    assert(p_X>=0.0);
+    assert(p_X<=1.0);
+
+    return p_X;
+}
+
 void CNode::PropagateObservation(bool X)
 {
     //double p_X_1 = GetLocalPrior();// p_X;
@@ -756,6 +775,8 @@ int CNode::ComputeDepth(int & d)
     {
         children[0]->ComputeDepth(d);
     }
+
+    return d;
 }
 
 void CNode::propagateCoverage(double height)

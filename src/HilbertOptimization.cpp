@@ -36,10 +36,10 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
             {
                 hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent());
 
-                if(j%16 == 15)
-                {
-                    hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent()->GetParent());
-                }
+//                if(j%16 == 15)
+//                {
+//                    hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent()->GetParent());
+//                }
             }
 
             // link to nephew
@@ -47,11 +47,11 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
             {
                 hilbert[i][j-1]->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
 
-                if(j>0 && j%16==0)
-                {
-                    if(hilbert[i][j-1]->GetParent()->GetParent())
-                        hilbert[i][j-1]->GetParent()->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
-                }
+//                if(j>0 && j%16==0)
+//                {
+//                    if(hilbert[i][j-1]->GetParent()->GetParent())
+//                        hilbert[i][j-1]->GetParent()->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
+//                }
             }
         }
 

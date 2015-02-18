@@ -213,6 +213,7 @@ void NUC::LoadPriorFromFile()
     //cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
     //cv::imshow( "Display window", pr );
     //cv::waitKey(0);
+    tree->RecomputePrior();
 }
 
 void NUC::runPhotoStitcher()

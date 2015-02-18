@@ -52,6 +52,7 @@ public:
     void PropagateObservation(bool X);
     void UpdateProbability(double new_p_X);
     void RecomputeProbability();
+    double RecomputePrior();
     void SetPrior(double p){p_X = p;}
 
     double CoverageReward();
