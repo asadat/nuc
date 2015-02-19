@@ -44,6 +44,8 @@ int HilbertStrategy::HilbertCurveOther(CNode *parent)
     hilbert[1].push_back(findNode(1,0,parent->children));
     hilbert[1].push_back(findNode(1,1,parent->children));
 
+    copy(hilbert[1].begin(), hilbert[1].end(), std::back_inserter(hilbert[0][0]->ordered_children));
+
     for(int lvl=2; lvl < depth; lvl++)
     {
         for(int k=0; k<4; k++)
@@ -86,7 +88,9 @@ int HilbertStrategy::HilbertCurveOther(CNode *parent)
 
                p[2] = (0.5)*fabs((dx)/tan(NUCParam::FOV/2.0));
 
-               hilbert[lvl].push_back(parent->GetNearestNode(p));
+               CNode * child_hilb_ord = parent->GetNearestNode(p);
+               hilbert[lvl].push_back(child_hilb_ord);
+               child_hilb_ord->parent->ordered_children.push_back(child_hilb_ord);
 
 //               if(lvl+1 == depth)
 //               {

@@ -12,7 +12,7 @@ public:
     PathOptimization(GNode* start_node);
     ~PathOptimization();
 
-    bool FindBestPath(GNode* goal, double costBudget, GNode::Path & p);
+    bool FindBestPath(GNode* goal, double costBudget, double greedy_reward, GNode::Path & p);
 
 private:
 

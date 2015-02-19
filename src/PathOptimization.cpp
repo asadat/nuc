@@ -11,7 +11,7 @@ PathOptimization::~PathOptimization()
 
 }
 
-bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path &p)
+bool PathOptimization::FindBestPath(GNode *goal, double costBudget, double greedy_reward, GNode::Path &p)
 {
     static double best_reward = 0;
 
@@ -38,7 +38,6 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path 
             {
                 if(curNode->bestPaths[j]->pruned)
                     continue;
-
 
                 // check if this is in the leaf level and
                 // we can easily add the next 3 nodes to the path
@@ -71,7 +70,7 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, GNode::Path 
                 double r = curNode->bestPaths[j]->NextReward(curNode->next[i]);
                 double c = curNode->bestPaths[j]->NextCost(curNode->next[i]);
 
-                if(!curNode->next[i]->ShouldBePruned(r, c, costBudget))
+                if(!curNode->next[i]->ShouldBePruned(r, c, costBudget, greedy_reward))
                 {
                     GNode::Path * path = new GNode::Path();
                     path->InitPath(curNode->bestPaths[j], curNode->next[i]);

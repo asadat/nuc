@@ -24,8 +24,12 @@ public:
         void InitPath(Path *p, GNode* n);
         void PrintOut();
 
+        void ReplaceNode(GNode* n, vector<CNode*> & nds);
+        double ReplaceNodeReward(GNode* n, vector<CNode*> & nds, double budget) const;
+        void UpdateRewardCost();
         double NextReward(GNode *n);
         double NextCost(GNode* n);
+
 
         vector<GNode*> path;
         double cost;
@@ -53,7 +57,7 @@ public:
 
     //path evaluation
     int AddBestPath(Path *p);
-    bool ShouldBePruned(double r, double c, double budget);
+    bool ShouldBePruned(double r, double c, double budget, double greedy_reward);
     bool GetMaxRewardPath(Path &p);
 
     std::string label;
@@ -69,8 +73,10 @@ private:
     double dummy_reward;
 
     bool leaf;
-
+    int greedy_count;
     CNode * cnode;
+
+    double maxRewardToGoal;
 
     vector<GNode*> next;
     vector<GNode*> prev;

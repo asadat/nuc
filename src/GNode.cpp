@@ -1,6 +1,7 @@
 #include "GNode.h"
 #include "CNode.h"
 #include <GL/glut.h>
+#include "ros/ros.h"
 
 GNode::Path::Path()
 {
@@ -26,6 +27,74 @@ void GNode::Path::InitPath(Path *p, GNode* n)
     }
 
     path.push_back(n);
+}
+
+void GNode::Path::ReplaceNode(GNode *n, vector<CNode *> &nds)
+{
+    for(unsigned int i=0; i < path.size(); i++)
+    {
+        if(path[i] == n)
+        {
+            path.erase(path.begin()+i);
+
+            for(unsigned int j=0; j<nds.size(); j++)
+            {
+                path.insert(path.begin()+i+j, nds[j]->GetGNode());
+            }
+        }
+    }
+
+    this->UpdateRewardCost();
+}
+
+double GNode::Path::ReplaceNodeReward(GNode *n, vector<CNode *> &nds, double budget) const
+{
+    double rw = 0;
+    double cst = 0;
+    for(unsigned int i=0; i < path.size()-1; i++)
+    {
+        if(path[i+1] == n)
+        {
+            for(unsigned int j=0; j<nds.size(); j++)
+            {
+                rw += nds[j]->CoverageReward();
+                cst += path[i]->CostTo(nds[j]->GetGNode());
+            }
+        }
+        else  if(path[i] == n)
+        {
+            rw += path[i+1]->NodeReward();
+            cst += nds.back()->GetGNode()->CostTo(path[i+1]);
+        }
+        else
+        {
+            rw += path[i+1]->NodeReward();
+            cst += path[i]->CostTo(path[i+1]);
+        }
+
+        if(cst > budget)
+        {
+            rw = -1;
+            break;
+        }
+    }
+
+    return  rw;
+}
+
+void GNode::Path::UpdateRewardCost()
+{
+    if(path.size()<2)
+        return ;
+
+    reward = path[0]->NodeReward();
+    cost = 0;
+
+    for(unsigned int i=0; i< path.size()-1; i++)
+    {
+        reward += path[i+1]->NodeReward();
+        cost += path[i]->CostTo(path[i+1]);
+    }
 }
 
 void GNode::Path::PrintOut()
@@ -59,6 +128,8 @@ GNode::GNode(CNode *node, string l):
     visited_c = 0;
     dummy_reward = 0;
     leaf = false;
+    greedy_count = 0;
+    maxRewardToGoal = 0;
 
 }
 
@@ -71,6 +142,9 @@ GNode::GNode(TooN::Vector<3> pos, double reward)
     cnode->SetGNode(this);
     cnode->pos = pos;
     leaf = false;
+    greedy_count = 0;
+    maxRewardToGoal = 0;
+
 }
 
 GNode::~GNode()
@@ -170,10 +244,11 @@ bool GNode::GetMaxRewardPath(GNode::Path &p)
 
     for(int i=0; i<bestPaths.size(); i++)
     {
+        //printf("PATH_REWARD: %f \n",bestPaths[i]->reward);
+
         if(!bestPaths[i]->pruned && bestPaths[i]->reward > maxReward)
         {
             idx = i;
-            //printf(" FROM: %f   TO: %f \n",maxReward, bestPaths[i]->reward);
             maxReward = bestPaths[i]->reward;
         }
     }
@@ -192,7 +267,7 @@ bool GNode::GetMaxRewardPath(GNode::Path &p)
     }
 }
 
-bool GNode::ShouldBePruned(double r, double c, double budget)
+bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_reward)
 {
     if(c > budget)
     {
@@ -203,6 +278,13 @@ bool GNode::ShouldBePruned(double r, double c, double budget)
     {
         if(bestPaths[i]->pruned)
             continue;
+
+
+        if(greedy_reward > r + maxRewardToGoal )
+        {
+           // ROS_INFO("PRUNED by greedy bound.");
+            return true;
+        }
 
         if((bestPaths[i]->cost <= c && bestPaths[i]->reward >= r))
         {

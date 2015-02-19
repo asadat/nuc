@@ -600,7 +600,7 @@ void NUC::SetNextGoal()
 void NUC::OnReachedGoal()
 {
    // ROS_INFO("Reached Goal");
-    if(VisitGoal())
+    //if(VisitGoal())
     {
         SetNextGoal();
         if(curGoal == NULL)

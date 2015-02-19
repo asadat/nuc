@@ -4,6 +4,7 @@
 #include "TooN/TooN.h"
 
 typedef TooN::Vector<4> Rect;
+class HilbertOptimization;
 class HilbertStrategy;
 class LawnmowerStrategy;
 class DepthFirstStrategy;
@@ -90,6 +91,7 @@ private:
 
     GNode *gnode;
     std::vector<CNode*> children;
+    std::vector<CNode*> ordered_children;
 
     //this is used for simulation only
     bool trueIsInteresting;
@@ -119,6 +121,7 @@ private:
 
     double coverage;
 
+    friend class HilbertOptimization;
     friend class HilbertStrategy;
     friend class LawnmowerStrategy;
     friend class DepthFirstStrategy;

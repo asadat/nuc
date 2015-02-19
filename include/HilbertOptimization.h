@@ -17,12 +17,15 @@ class HilbertOptimization: public HilbertStrategy
 
     private:
 
+        void CreateGraph();
+        GNode::Path* FindGreedyPath();
+        void FindPath();
         GNode * startNode;
         GNode * endNode;
         PathOptimization *optimizer;
 
         GNode::Path p;
-
+        GNode::Path * greedyPath;
         int draw_i_path;
 };
 
