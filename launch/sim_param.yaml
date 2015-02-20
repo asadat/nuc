@@ -18,4 +18,4 @@ alpha_hm: 0.3
 beta_h0: 0.1
 beta_hm: 0.3
 prob_r: 0.5
-path_cost: 1000.0
+path_cost: 400.0

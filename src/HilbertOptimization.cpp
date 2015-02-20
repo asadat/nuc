@@ -31,6 +31,17 @@ HilbertOptimization::~HilbertOptimization()
 
 void HilbertOptimization::CreateGraph()
 {
+    for(unsigned int k=lastDepth; k >=0; k--)
+    {
+        for(unsigned int w=0; w < hilbert[k].size()-1; w++)
+        {
+            if(k == lastDepth)
+                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w+1];
+            else
+                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w]->ordered_children[3]->nextHilbertLeaf;
+        }
+    }
+
     //generate forward links
     for(unsigned int i=0; i <= lastDepth; i++)
     {

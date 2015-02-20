@@ -22,6 +22,7 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    nextHilbertLeaf = NULL;
     gnode = NULL;
     coverage = 0;
     isInterestingnessSet = false;

@@ -89,6 +89,7 @@ public:
 
 private:
 
+    CNode* nextHilbertLeaf;
     GNode *gnode;
     std::vector<CNode*> children;
     std::vector<CNode*> ordered_children;

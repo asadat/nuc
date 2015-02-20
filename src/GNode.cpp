@@ -280,10 +280,14 @@ bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_rewa
             continue;
 
 
-        if(greedy_reward > r + maxRewardToGoal )
+        if(cnode->nextHilbertLeaf != NULL)
         {
-           // ROS_INFO("PRUNED by greedy bound.");
-            return true;
+            ROS_INFO_THROTTLE_NAMED(0.5,"PRUNE","Checking by greedy bound.");
+            if(greedy_reward > r + cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal )
+            {
+                ROS_INFO("PRUNED by greedy bound.");
+                return true;
+            }
         }
 
         if((bestPaths[i]->cost <= c && bestPaths[i]->reward >= r))
