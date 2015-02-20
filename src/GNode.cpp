@@ -273,6 +273,7 @@ bool GNode::GetMaxRewardPath(GNode::Path &p)
 
 bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_reward, double leastRewardFound)
 {
+    static int nnn=0;
     if(c + minPathToGoalCost > budget)
     {
         return true;
@@ -288,7 +289,8 @@ bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_rewa
         {
             if(leastRewardFound > r + cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal)
             {
-               // ROS_INFO("UBound: %f CUR: %f %f", leastRewardFound, r, cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal);
+                nnn++;
+                ROS_INFO_THROTTLE_NAMED(1,"UBOUND","UBound %d: %f CUR: %f %f",nnn, leastRewardFound, r, cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal);
 
                 return true;
             }

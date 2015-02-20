@@ -267,28 +267,28 @@ void HilbertOptimization::glDraw()
 
 //    }
 
-    if(greedyPath)
-    {
-        glLineWidth(7);
-        glBegin(GL_LINES);
+//    if(greedyPath)
+//    {
+//        glLineWidth(7);
+//        glBegin(GL_LINES);
 
-        for(int i=0; i<greedyPath->path.size()-1;++i)
-        {
-            double r = greedyPath->path[i+1]->NodeReward()/(CNode::maxDepth+1);
+//        for(int i=0; i<greedyPath->path.size()-1;++i)
+//        {
+//            double r = greedyPath->path[i+1]->NodeReward()/(CNode::maxDepth+1);
 
-            //assert(r>=0);
-            //assert(r<=1);
+//            //assert(r>=0);
+//            //assert(r<=1);
 
-            glColor3f(0,r,1-r);
-            TooN::Vector<3> p1 = greedyPath->path[i]->cnode->GetPos();
-            TooN::Vector<3> p2 = greedyPath->path[i+1]->cnode->GetPos();
+//            glColor3f(0,r,1-r);
+//            TooN::Vector<3> p1 = greedyPath->path[i]->cnode->GetPos();
+//            TooN::Vector<3> p2 = greedyPath->path[i+1]->cnode->GetPos();
 
-            glVertex3f(p1[0],p1[1],p1[2]);
-            glVertex3f(p2[0],p2[1],p2[2]);
-        }
+//            glVertex3f(p1[0],p1[1],p1[2]);
+//            glVertex3f(p2[0],p2[1],p2[2]);
+//        }
 
-        glEnd();
+//        glEnd();
 
-    }
+//    }
 
 }
