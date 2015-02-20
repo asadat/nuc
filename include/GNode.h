@@ -57,7 +57,7 @@ public:
 
     //path evaluation
     int AddBestPath(Path *p);
-    bool ShouldBePruned(double r, double c, double budget, double greedy_reward);
+    bool ShouldBePruned(double r, double c, double budget, double greedy_reward, double leastRewardFound);
     bool GetMaxRewardPath(Path &p);
 
     std::string label;
@@ -77,6 +77,8 @@ private:
     CNode * cnode;
 
     double maxRewardToGoal;
+    double minPathToGoalCost;
+    double minPathToGoalReward;
 
     vector<GNode*> next;
     vector<GNode*> prev;

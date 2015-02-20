@@ -1,9 +1,10 @@
 #include "PathOptimization.h"
+#include "ros/ros.h"
 
 PathOptimization::PathOptimization(GNode *start_node):
     startNode(start_node)
 {
-
+    leastFeasibleRewardSoFar = 0;
 }
 
 PathOptimization::~PathOptimization()
@@ -61,6 +62,7 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, double greed
                             gn->bestPaths[pidx]->pruned = true;
 
                         readyNodes.push_back(gn);
+
                         check_for_ready = false;
                     }
 
@@ -70,11 +72,19 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, double greed
                 double r = curNode->bestPaths[j]->NextReward(curNode->next[i]);
                 double c = curNode->bestPaths[j]->NextCost(curNode->next[i]);
 
-                if(!curNode->next[i]->ShouldBePruned(r, c, costBudget, greedy_reward))
+                if(!curNode->next[i]->ShouldBePruned(r, c, costBudget, greedy_reward, leastFeasibleRewardSoFar))
                 {
                     GNode::Path * path = new GNode::Path();
                     path->InitPath(curNode->bestPaths[j], curNode->next[i]);
                     curNode->next[i]->AddBestPath(path);
+
+                    if(path->cost + path->path.back()->minPathToGoalCost <= costBudget
+                            && path->reward + path->path.back()->minPathToGoalReward > leastFeasibleRewardSoFar)
+                    {
+                        leastFeasibleRewardSoFar = path->reward + path->path.back()->minPathToGoalReward;
+                       // ROS_INFO("Least feasible reward: %f %f\n", path->reward, leastFeasibleRewardSoFar);
+
+                    }
                 }
             }
 

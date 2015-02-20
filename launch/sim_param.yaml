@@ -10,7 +10,7 @@ area_rotation: 0.0
 logging: false
 patches: 3
 percent_interesting: 50.0
-auto_exit: false
+auto_exit: true
 bypass_controller: true
 int_prob_thr: 0.3
 alpha_h0: 0.1
@@ -18,4 +18,4 @@ alpha_hm: 0.3
 beta_h0: 0.1
 beta_hm: 0.3
 prob_r: 0.5
-path_cost: 400.0
+path_cost: 600.0

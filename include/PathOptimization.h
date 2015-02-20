@@ -20,6 +20,7 @@ private:
     vector<GNode*> readyNodes; // can be expanded forward
     map<GNode*, int> openNodes; // still waiting for the rest of the paths to them
 
+    double leastFeasibleRewardSoFar;
     GNode* startNode;
 };
 

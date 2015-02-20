@@ -130,6 +130,8 @@ GNode::GNode(CNode *node, string l):
     leaf = false;
     greedy_count = 0;
     maxRewardToGoal = 0;
+    minPathToGoalCost = 0;
+    minPathToGoalReward = 0;
 
 }
 
@@ -144,6 +146,8 @@ GNode::GNode(TooN::Vector<3> pos, double reward)
     leaf = false;
     greedy_count = 0;
     maxRewardToGoal = 0;
+    minPathToGoalCost = 0;
+    minPathToGoalReward = 0;
 
 }
 
@@ -267,9 +271,9 @@ bool GNode::GetMaxRewardPath(GNode::Path &p)
     }
 }
 
-bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_reward)
+bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_reward, double leastRewardFound)
 {
-    if(c > budget)
+    if(c + minPathToGoalCost > budget)
     {
         return true;
     }
@@ -280,12 +284,21 @@ bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_rewa
             continue;
 
 
+        if(cnode->nextHilbertLeaf)
+        {
+            if(leastRewardFound > r + cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal)
+            {
+               // ROS_INFO("UBound: %f CUR: %f %f", leastRewardFound, r, cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal);
+
+                return true;
+            }
+        }
         if(cnode->nextHilbertLeaf != NULL)
         {
-            ROS_INFO_THROTTLE_NAMED(0.5,"PRUNE","Checking by greedy bound.");
-            if(greedy_reward > r + cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal )
+           // ROS_INFO_THROTTLE_NAMED(0.5,"PRUNE","Checking by greedy bound.");
+            if(greedy_reward >= r + cnode->nextHilbertLeaf->GetGNode()->maxRewardToGoal )
             {
-                ROS_INFO("PRUNED by greedy bound.");
+                //ROS_INFO("PRUNED by greedy bound.");
                 return true;
             }
         }

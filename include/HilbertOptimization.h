@@ -26,6 +26,8 @@ class HilbertOptimization: public HilbertStrategy
 
         GNode::Path p;
         GNode::Path * greedyPath;
+        double bestReward;
+
         int draw_i_path;
 };
 

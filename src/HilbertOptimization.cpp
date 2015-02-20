@@ -12,7 +12,7 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
     startNode->maxRewardToGoal = 0;
     endNode = new GNode(end_pos, 0);
     endNode->maxRewardToGoal = 0;
-
+    bestReward = 0;
     greedyPath = NULL;
 
     CreateGraph();
@@ -25,13 +25,13 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
 
 HilbertOptimization::~HilbertOptimization()
 {
-    GNode::Path * gp = new GNode::Path();
+    //GNode::Path * gp = new GNode::Path();
 
 }
 
 void HilbertOptimization::CreateGraph()
 {
-    for(unsigned int k=lastDepth; k >=0; k--)
+    for(unsigned int k=lastDepth; k > 0; k--)
     {
         for(unsigned int w=0; w < hilbert[k].size()-1; w++)
         {
@@ -66,10 +66,10 @@ void HilbertOptimization::CreateGraph()
             {
                 hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent());
 
-                if(j%16 == 15)
-                {
-                    hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent()->GetParent());
-                }
+//                if(j%16 == 15)
+//                {
+//                    hilbert[i][j]->GetGNode()->AddNext(hilbert[i][j+1]->GetParent()->GetParent());
+//                }
             }
 
             // link to nephew
@@ -77,11 +77,11 @@ void HilbertOptimization::CreateGraph()
             {
                 hilbert[i][j-1]->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
 
-                if(j>0 && j%16==0)
-                {
-                    if(hilbert[i][j-1]->GetParent()->GetParent())
-                        hilbert[i][j-1]->GetParent()->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
-                }
+//                if(j>0 && j%16==0)
+//                {
+//                    if(hilbert[i][j-1]->GetParent()->GetParent())
+//                        hilbert[i][j-1]->GetParent()->GetParent()->GetGNode()->AddNext(hilbert[i][j]);
+//                }
             }
         }
 
@@ -95,6 +95,43 @@ void HilbertOptimization::CreateGraph()
         hilbert[lastDepth][k-1]->GetGNode()->maxRewardToGoal = hilbert[lastDepth][k]->GetGNode()->maxRewardToGoal +
                 hilbert[lastDepth][k-1]->GetGNode()->NodeReward();
     }
+
+    for(unsigned int k=1; k <= lastDepth; k++)
+    {
+        //ROS_INFO("FINISHED : L %d", k);
+
+        for( int w=hilbert[k].size()-1; w >=0; w--)
+        {
+            //ROS_INFO("FINISHED : N %d", w);
+            if(w == hilbert[k].size()-1)
+            {
+                //ROS_INFO("FINISHED1");
+
+                hilbert[k][w]->GetGNode()->minPathToGoalCost = hilbert[k][w]->GetGNode()->CostTo(endNode);
+                hilbert[k][w]->GetGNode()->minPathToGoalReward = 0;
+            }
+            else if(w%4==3)
+            {
+                //ROS_INFO("FINISHED2");
+
+                hilbert[k][w]->GetGNode()->minPathToGoalCost = hilbert[k][w]->GetGNode()->CostTo(hilbert[k][w+1]->parent->GetGNode()) +
+                        hilbert[k][w+1]->parent->GetGNode()->minPathToGoalCost;
+                hilbert[k][w]->GetGNode()->minPathToGoalReward = hilbert[k][w+1]->parent->GetGNode()->minPathToGoalReward
+                        + hilbert[k][w+1]->parent->CoverageReward();
+            }
+            else
+            {
+                //ROS_INFO("FINISHED3");
+
+                hilbert[k][w]->GetGNode()->minPathToGoalCost = hilbert[k][w]->GetGNode()->CostTo(hilbert[k][w+1]->GetGNode()) +
+                        hilbert[k][w+1]->GetGNode()->minPathToGoalCost;
+                hilbert[k][w]->GetGNode()->minPathToGoalReward = hilbert[k][w+1]->GetGNode()->minPathToGoalReward
+                        + hilbert[k][w+1]->CoverageReward();
+            }
+        }
+    }
+
+    //ROS_INFO("FINISHED");
 }
 
 void HilbertOptimization::FindPath()
