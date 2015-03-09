@@ -32,26 +32,7 @@ HilbertOptimization::~HilbertOptimization()
 
 void HilbertOptimization::CreateGraph()
 {
-    // pre-compute next hilbert leaf
-    for(unsigned int k=lastDepth; k > 0; k--)
-    {
-        for(unsigned int w=0; w < hilbert[k].size()-1; w++)
-        {
-            // add parent to child edge (gives exception!)
-//            if(k<lastDepth)
-//            {
-//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[0]);
-//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[1]);
-//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[2]);
-//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[3]);
-//            }
 
-            if(k == lastDepth)
-                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w+1];
-            else
-                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w]->ordered_children[3]->nextHilbertLeaf;
-        }
-    }
 
     //generate forward links
     for(unsigned int i=0; i <= lastDepth; i++)
@@ -97,6 +78,36 @@ void HilbertOptimization::CreateGraph()
         }
 
         hilbert[i].back()->GetGNode()->AddNext(endNode);
+    }
+
+    // pre-compute next hilbert leaf
+    for(unsigned int k=lastDepth; k > 0; k--)
+    {
+        for(unsigned int w=0; w < hilbert[k].size()-1; w++)
+        {
+            // add parent to child edge
+//            if(k<lastDepth)
+//            {
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[0]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[1]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[2]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[3]);
+//            }
+
+//            // add child to parent edge
+//            if(k>1)
+//            {
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->parent);
+//                //hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[1]);
+//                //hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[2]);
+//                //hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[3]);
+//            }
+
+            if(k == lastDepth)
+                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w+1];
+            else
+                hilbert[k][w]->nextHilbertLeaf = hilbert[k][w]->ordered_children[3]->nextHilbertLeaf;
+        }
     }
 
     // pre-compute max-reward to goal
