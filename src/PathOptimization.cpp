@@ -46,14 +46,24 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, double greed
                 {
                     int pidx = j;
                     GNode * gn = curNode;
+
+                    GNode::Path * sc = new GNode::Path();
+                    sc->InitPath(gn->bestPaths[pidx], gn->next[0]);
+                    gn = gn->next[0];
+
                     while(gn->next.size() == 1)
                     {
-                        GNode::Path * sc = new GNode::Path();
-                        sc->InitPath(gn->bestPaths[pidx], gn->next[0]);
+                        //GNode::Path * sc = new GNode::Path();
+                        //sc->InitPath(gn->bestPaths[pidx], gn->next[0]);
 
-                        pidx = gn->next[0]->AddBestPath(sc);
+                        //pidx = gn->next[0]->AddBestPath(sc);
+                        sc->path.push_back(gn->next[0]);
                         gn = gn->next[0];
+
                     }
+
+                    sc->UpdateRewardCost();
+                    sc->path.back()->AddBestPath(sc);
 
                     // add the end of mini path to the ready node once
                     if(check_for_ready)
@@ -103,6 +113,15 @@ bool PathOptimization::FindBestPath(GNode *goal, double costBudget, double greed
             printf("Reached the goal. best reward reached %f\n", best_reward);
             goal->GetMaxRewardPath(p);
             return true;
+        }
+        else
+        {
+            while(!curNode->bestPaths.empty())
+            {
+                GNode::Path * toDelete = curNode->bestPaths.back();
+                curNode->bestPaths.pop_back();
+                delete toDelete;
+            }
         }
     }
 

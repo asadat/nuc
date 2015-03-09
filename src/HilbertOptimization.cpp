@@ -7,6 +7,7 @@ HilbertOptimization::HilbertOptimization(CNode *root, TooN::Vector<3> init_pos, 
     HilbertStrategy(root)
 {
 
+    draw_greedy = false;
     draw_i_path = 0;
     startNode = new GNode(init_pos, 0);
     startNode->maxRewardToGoal = 0;
@@ -31,10 +32,20 @@ HilbertOptimization::~HilbertOptimization()
 
 void HilbertOptimization::CreateGraph()
 {
+    // pre-compute next hilbert leaf
     for(unsigned int k=lastDepth; k > 0; k--)
     {
         for(unsigned int w=0; w < hilbert[k].size()-1; w++)
         {
+            // add parent to child edge (gives exception!)
+//            if(k<lastDepth)
+//            {
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[0]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[1]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[2]);
+//                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[3]);
+//            }
+
             if(k == lastDepth)
                 hilbert[k][w]->nextHilbertLeaf = hilbert[k][w+1];
             else
@@ -88,14 +99,15 @@ void HilbertOptimization::CreateGraph()
         hilbert[i].back()->GetGNode()->AddNext(endNode);
     }
 
+    // pre-compute max-reward to goal
     hilbert[lastDepth].back()->GetGNode()->maxRewardToGoal = hilbert[lastDepth].back()->CoverageReward();
-
     for(unsigned int k = hilbert[lastDepth].size()-1; k>0; k--)
     {
         hilbert[lastDepth][k-1]->GetGNode()->maxRewardToGoal = hilbert[lastDepth][k]->GetGNode()->maxRewardToGoal +
                 hilbert[lastDepth][k-1]->GetGNode()->NodeReward();
     }
 
+    // pre-compute min-path to goal cost
     for(unsigned int k=1; k <= lastDepth; k++)
     {
         //ROS_INFO("FINISHED : L %d", k);
@@ -215,31 +227,38 @@ CNode* HilbertOptimization::GetNextNode()
 
 void HilbertOptimization::hanldeKeyPressed(map<unsigned char, bool> &key, bool &updateKey)
 {
-//    if(key[']'])
-//    {
-//        draw_i_path++;
-//        updateKey = false;
-//        if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
-//        {
-//            ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
-//        }
-//    }
-//    else if(key['['])
-//    {
-//        draw_i_path--;
-//        updateKey = false;
-//        if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
-//        {
-//            ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
-//        }
-//    }
+
+    if(key['4'])
+    {
+        draw_greedy = !draw_greedy;
+        updateKey = false;
+    }
+
+    if(key[']'])
+    {
+        draw_i_path++;
+        updateKey = false;
+        if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
+        {
+            ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
+        }
+    }
+    else if(key['['])
+    {
+        draw_i_path--;
+        updateKey = false;
+        if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
+        {
+            ROS_INFO("#%d  reward:%f",draw_i_path, endNode->bestPaths[draw_i_path]->reward);
+        }
+    }
 }
 
 void HilbertOptimization::glDraw()
 {
-    //glBegin(GL_LINES);
-    //startNode->glDraw();
-    //glEnd();
+//    glBegin(GL_LINES);
+//    startNode->glDraw();
+//    glEnd();
 
 //    if(endNode && draw_i_path>=0 && draw_i_path<endNode->bestPaths.size())
 //    {
@@ -252,8 +271,8 @@ void HilbertOptimization::glDraw()
 //        {
 //            double r = ps->path[i+1]->NodeReward();
 
-//            assert(r>=0);
-//            assert(r<=1);
+//            //assert(r>=0);
+//            //assert(r<=1);
 
 //            glColor3f(0,r,1-r);
 //            TooN::Vector<3> p1 = ps->path[i]->cnode->GetPos();
@@ -267,28 +286,28 @@ void HilbertOptimization::glDraw()
 
 //    }
 
-//    if(greedyPath)
-//    {
-//        glLineWidth(7);
-//        glBegin(GL_LINES);
+    if(draw_greedy && greedyPath)
+    {
+        glLineWidth(7);
+        glBegin(GL_LINES);
 
-//        for(int i=0; i<greedyPath->path.size()-1;++i)
-//        {
-//            double r = greedyPath->path[i+1]->NodeReward()/(CNode::maxDepth+1);
+        for(int i=0; i<greedyPath->path.size()-1;++i)
+        {
+            double r = greedyPath->path[i+1]->NodeReward()/(CNode::maxDepth+1);
 
-//            //assert(r>=0);
-//            //assert(r<=1);
+            //assert(r>=0);
+            //assert(r<=1);
 
-//            glColor3f(0,r,1-r);
-//            TooN::Vector<3> p1 = greedyPath->path[i]->cnode->GetPos();
-//            TooN::Vector<3> p2 = greedyPath->path[i+1]->cnode->GetPos();
+            glColor3f(0,r,1-r);
+            TooN::Vector<3> p1 = greedyPath->path[i]->cnode->GetPos();
+            TooN::Vector<3> p2 = greedyPath->path[i+1]->cnode->GetPos();
 
-//            glVertex3f(p1[0],p1[1],p1[2]);
-//            glVertex3f(p2[0],p2[1],p2[2]);
-//        }
+            glVertex3f(p1[0],p1[1],p1[2]);
+            glVertex3f(p2[0],p2[1],p2[2]);
+        }
 
-//        glEnd();
+        glEnd();
 
-//    }
+    }
 
 }

@@ -124,8 +124,8 @@ GNode::GNode(CNode *node, string l):
 {
     cnode->SetGNode(this);
     visited_c = 0;
+    visited_out = 0;
     dummy = false;
-    visited_c = 0;
     dummy_reward = 0;
     leaf = false;
     greedy_count = 0;
@@ -138,6 +138,7 @@ GNode::GNode(CNode *node, string l):
 GNode::GNode(TooN::Vector<3> pos, double reward)
 {
     visited_c = 0;
+    visited_out = 0;
     dummy = true;
     dummy_reward = reward;
     cnode = new CNode(TooN::makeVector(0,0,1,1));
@@ -155,8 +156,9 @@ GNode::~GNode()
 {
     while(!bestPaths.empty())
     {
-        delete bestPaths.back();
+        Path * pp = bestPaths.back();
         bestPaths.pop_back();
+        delete pp;
     }
 
     if(dummy)
@@ -313,7 +315,11 @@ bool GNode::ShouldBePruned(double r, double c, double budget, double greedy_rewa
         if((bestPaths[i]->cost > c && bestPaths[i]->reward < r))
         {
             bestPaths[i]->pruned = true;
+
+            GNode::Path * toDelete =  bestPaths[i];
             bestPaths.erase(bestPaths.begin()+i);
+            delete toDelete;
+
             i--;
         }
     }

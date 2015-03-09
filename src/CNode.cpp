@@ -162,8 +162,8 @@ double CNode::GetLocalPrior()
 double CNode::CoverageReward()
 {
     // implement some reward function. (expected number of targets beeing sensed with high resolution?)
-    return p_X*0.5*(1-log(0.5+0.95*((double)depth)/maxDepth)/log(2));
-
+    //return p_X*0.5*(1-log(0.5+0.95*((double)depth)/maxDepth)/log(2));
+    return p_X;
     //return p_X*(1/(1+20*((double)depth)/maxDepth));
     //    if(IsLeaf())
     //        return p_X;

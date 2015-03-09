@@ -66,6 +66,7 @@ public:
     void glDraw();
 
     int visited_c;
+    int visited_out;
 
 private:
 

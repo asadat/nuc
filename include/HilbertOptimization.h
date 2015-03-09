@@ -29,6 +29,7 @@ class HilbertOptimization: public HilbertStrategy
         double bestReward;
 
         int draw_i_path;
+        bool draw_greedy;
 };
 
 #endif
