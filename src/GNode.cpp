@@ -58,7 +58,10 @@ double GNode::Path::ReplaceNodeReward(GNode *n, vector<CNode *> &nds, double bud
             for(unsigned int j=0; j<nds.size(); j++)
             {
                 rw += nds[j]->CoverageReward();
-                cst += path[i]->CostTo(nds[j]->GetGNode());
+                if(j==0)
+                    cst += path[i]->CostTo(nds[j]->GetGNode());
+                else
+                    cst += nds[j-1]->GetGNode()->CostTo(nds[j]->GetGNode());
             }
         }
         else  if(path[i] == n)

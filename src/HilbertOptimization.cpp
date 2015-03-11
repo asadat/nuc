@@ -94,7 +94,7 @@ void HilbertOptimization::CreateGraph()
 //                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->ordered_children[3]);
 //            }
 
-//            // add child to parent edge
+            // add child to parent edge
 //            if(k>1)
 //            {
 //                hilbert[k][w]->GetGNode()->AddNext(hilbert[k][w]->parent);
@@ -189,10 +189,9 @@ GNode::Path* HilbertOptimization::FindGreedyPath()
                 continue;
             }
 
-//            double mrg_ben = 0;
-//            double mrg_cst = 0;
-//            mrg_ben = gp->ReplaceNodeReward(gp->path[i], gp->path[i]->cnode->ordered_children, NUCParam::pathCost, mrg_cst);
-//            double util =
+            if(!((i<=1 || fabs(gp->path[i-1]->cnode->depth- gp->path[i]->cnode->depth-1) >=1 ) &&
+                    (i >= (gp->path.size()-2) || fabs(gp->path[i]->cnode->depth+1 - gp->path[i+1]->cnode->depth) >=1 )))
+                continue;
 
             double new_r = gp->ReplaceNodeReward(gp->path[i], gp->path[i]->cnode->ordered_children, NUCParam::pathCost);
             if( new_r > r)
@@ -302,7 +301,7 @@ void HilbertOptimization::glDraw()
         glLineWidth(7);
         glBegin(GL_LINES);
 
-        for(int i=0; i<greedyPath->path.size()-1;++i)
+        for(int i=1; i<greedyPath->path.size()-2;++i)
         {
             double r = greedyPath->path[i+1]->NodeReward()/(CNode::maxDepth+1);
 
