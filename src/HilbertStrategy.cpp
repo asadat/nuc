@@ -194,10 +194,10 @@ bool HilbertStrategy::UpdateIterator()
     static bool firstCall = true;
     if(firstCall)
     {
-        //it = hilbert[LML].begin();
-        //curDepth = LML;
-        it = hilbert[0].begin();
-        curDepth = 0;
+        it = hilbert[LML].begin();
+        curDepth = LML;
+        //it = hilbert[0].begin();
+        //curDepth = 0;
         firstCall = false;
 
         return true;

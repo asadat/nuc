@@ -198,7 +198,7 @@ void CNode::glDraw()
             if(!IsNodeInteresting())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glColor4f(1,0.5,0.5,1);
+                glColor4f(.9,0.9,0.9,1);
             }
             else
             {
