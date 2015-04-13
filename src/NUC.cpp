@@ -179,6 +179,7 @@ void NUC::Cleanup()
 
 void NUC::LoadPriorFromFile()
 {
+
     cv::Mat img = cv::imread("/home/abbas/hydro_workspace/src/nuc/prior.jpg", CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat pr;
 
