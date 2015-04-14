@@ -198,7 +198,16 @@ void NUC::LoadPriorFromFile()
         for(int j=(dir>0)?1:w-2; (dir>0)?(j<w):(j>=0); j+=dir)
         {
             bl = bl->GetNeighbourLeaf((dir<0), (dir>0), false, false);
-            bl->SetPrior(pr.at<uchar>(w-i-1,j)*(1.0/255.0));
+
+            double pr_round = pr.at<uchar>(w-i-1,j)*(1.0/255.0);
+            if(pr_round > 0.66)
+                pr_round = 1.0;
+            else if(pr_round > 0.33)
+                pr_round = 0.66;
+            else
+                pr_round = 0.33;
+
+            bl->SetPrior(pr_round);
         }
 
         if(i<w-1)

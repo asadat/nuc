@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -Wall") # For G++ <4.7; al
 set(NUC_LIBRARIES GL GLU glut)
 
 set(NUC_SOURCES
+    src/dubins.cpp
     src/NUC.cpp
     src/NUC_node.cpp
     src/CNode.cpp
@@ -24,8 +25,11 @@ set(NUC_SOURCES
     src/TestStrategy.cpp
     src/HilbertStrategy.cpp
     src/HilbertOptimization.cpp
+    src/Trajectory.cpp
+    include/dubins.h
     include/HilbertStrategy.h
     include/TestStrategy.h
+    include/Trajectory.h
     #include/HuskyInterface.h
     include/SuperPixelFeatures.h
     include/slic.h

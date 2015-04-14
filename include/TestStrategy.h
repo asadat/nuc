@@ -3,6 +3,8 @@
 
 #include "TraversalStrategy.h"
 #include "CNode.h"
+#include "dubins.h"
+
 
 class TestStrategy: public TraversalStrategy
 {
@@ -12,7 +14,7 @@ public:
 
     void glDraw();
     CNode* GetNextNode();
-
+    //int dubin_cb(double q[3], double x, void* user_data);
 private:
     std::vector<CNode*> nodeStack;
 };
