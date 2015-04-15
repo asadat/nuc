@@ -37,8 +37,10 @@ TestStrategy::TestStrategy(CNode *root)
     nodeStack.push_back(rb);
     nodeStack.push_back(lb);
 
-    Trajectory::GenerateDubinTrajectory(makeVector(0,0), makeVector(2,0),
-                                        makeVector(5,5), makeVector(0,5), 3, 1, dp);
+   Trajectory::GenerateDubinTrajectory(makeVector(-10,-10), makeVector(10,-10), makeVector(10,-5), makeVector(-10,-5),2.5, 1, dp);
+   Trajectory::GenerateDubinTrajectory(makeVector(10,-5), makeVector(-10,-5), makeVector(-10,0), makeVector(10,0), 2.5, 1, dp);
+   Trajectory::GenerateDubinTrajectory(makeVector(-10,0), makeVector(10,0), makeVector(10,5), makeVector(-10,5), 2.5, 1, dp);
+   Trajectory::GenerateDubinTrajectory(makeVector(10,5), makeVector(-10,5), makeVector(-10,10), makeVector(10,10), 2.5, 1, dp);
 //    double l = (r[0]-r[2])*(r[0]-r[2]);
 //    l = sqrt(l);
 //    double ld = l;
@@ -85,10 +87,10 @@ void TestStrategy::glDraw()
     glColor3f(0.0,1,0.0);
     glLineWidth(4);
     glBegin(GL_LINES);
-    for(unsigned int i=0; i<dp.size()-1;i++)
+    for(unsigned int i=1; i<dp.size();i++)
     {
-        TooN::Vector<2> p1 = dp[i+1];
-        TooN::Vector<2> p2 = dp[i];
+        TooN::Vector<2> p1 = dp[i];
+        TooN::Vector<2> p2 = dp[i-1];
 
         glVertex3f(p1[0],p1[1],10);
         glVertex3f(p2[0],p2[1],10);

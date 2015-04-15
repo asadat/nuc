@@ -14,6 +14,7 @@ set(NUC_SOURCES
     src/DepthFirstStrategy.cpp
     src/ShortCutStrategy.cpp
     src/LawnmowerStrategy.cpp
+    src/BudgetedStrategy.cpp
     src/MAV.cpp
     src/InterestingnessSensor.cpp
     src/slic.cpp
@@ -29,6 +30,7 @@ set(NUC_SOURCES
     include/dubins.h
     include/HilbertStrategy.h
     include/TestStrategy.h
+    include/BudgetedStrategy.h
     include/Trajectory.h
     #include/HuskyInterface.h
     include/SuperPixelFeatures.h

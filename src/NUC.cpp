@@ -7,6 +7,8 @@
 #include "DepthFirstStrategy.h"
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
+#include "BudgetedStrategy.h"
+
 #include "InterestingnessSensor.h"
 //#include "HilbertStrategy.h"
 #include "TestStrategy.h"
@@ -31,6 +33,7 @@ NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
+    traversal = NULL;
     visitedFalsePositives = 0;
     //runCircleDetection();
     //runPhotoStitcher();
@@ -103,6 +106,12 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
         traversalStrategy = 5;
     }
+    else if(NUCParam::strategy == "bu")
+    {
+        ROS_INFO("budgeted strategy");
+
+        traversalStrategy =6;
+    }
 
     mav.Init(&nh, NUCParam::simulation);
 
@@ -145,6 +154,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     {
         traversal = new HilbertOptimization(tree, mav.GetPos(), mav.GetPos());
     }
+    else if(traversalStrategy == 6)
+    {
+        traversal = new BudgetedStrategy(tree);
+    }
     else
     {
         traversal = new LawnmowerStrategy(tree);
@@ -179,9 +192,10 @@ void NUC::Cleanup()
 
 void NUC::LoadPriorFromFile()
 {
-
-    cv::Mat img = cv::imread("/home/abbas/hydro_workspace/src/nuc/prior.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-    cv::Mat pr;
+    std::string fn = "/home/abbas/hydro_workspace/src/nuc/";
+    fn += NUCParam::prior_file_name;
+    cv::Mat img = cv::imread(fn.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat priorImg;
 
     int d =-1;
     tree->ComputeDepth(d);
@@ -190,7 +204,7 @@ void NUC::LoadPriorFromFile()
     //ROS_INFO("IMAGE SIZE: %d", w);
 
     cv::Size s(w,w);
-    cv::resize(img, pr, s);
+    cv::resize(img, priorImg, s);
     CNode * bl = tree->GetNearestLeaf(makeVector(area[0],area[1],0));
     int dir = 1;
     for(int i=0; i<w; i++)
@@ -199,22 +213,23 @@ void NUC::LoadPriorFromFile()
         {
             bl = bl->GetNeighbourLeaf((dir<0), (dir>0), false, false);
 
-            double pr_round = pr.at<uchar>(w-i-1,j)*(1.0/255.0);
-            if(pr_round > 0.66)
-                pr_round = 1.0;
-            else if(pr_round > 0.33)
-                pr_round = 0.66;
-            else
-                pr_round = 0.33;
+            double pr_round = priorImg.at<uchar>(w-i-1,j)*(1.0/255.0);
+//            if(pr_round > 0.66)
+//                pr_round = 1.0;
+//            else if(pr_round > 0.33)
+//                pr_round = 0.66;
+//            else
+//                pr_round = 0.33;
 
             bl->SetPrior(pr_round);
+            bl->imgPrior = pr_round;
         }
 
         if(i<w-1)
         {
             bl = bl->GetNeighbourLeaf(false, false, true, false);
 
-            bl->SetPrior(pr.at<uchar>(w-i, (dir>0)?w-1:0)*(1.0/255.0));
+            bl->SetPrior(priorImg.at<uchar>(w-i, (dir>0)?w-1:0)*(1.0/255.0));
         }
 
         dir *= -1;
@@ -225,6 +240,7 @@ void NUC::LoadPriorFromFile()
     //cv::waitKey(0);
     tree->RecomputePrior();
 }
+
 
 void NUC::runPhotoStitcher()
 {
@@ -531,7 +547,7 @@ void NUC::glDraw()
      tree->glDraw();
      mav.glDraw();
 
-     //if(isOver)
+     if(traversal)
          traversal->glDraw();
 
      TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
@@ -846,6 +862,7 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
         //updateKey = false;
 
     }
+
 
     traversal->hanldeKeyPressed(key, updateKey);
 }

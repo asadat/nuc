@@ -81,6 +81,7 @@ public:
     static bool drawEdges;
     static bool drawCoverage;
     double p_X;
+    double imgPrior;
 
     CNode* GetParent(){return parent;}
 
@@ -120,9 +121,14 @@ private:
     bool isInteresting;
     static double rootHeight;
 
+    TooN::Vector<3> colorBasis;
     double coverage;
 
+    bool extra_info;
+    int label;
+
     friend class HilbertOptimization;
+    friend class BudgetedStrategy;
     friend class HilbertStrategy;
     friend class LawnmowerStrategy;
     friend class DepthFirstStrategy;

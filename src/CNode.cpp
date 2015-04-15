@@ -22,6 +22,9 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    label = -1;
+    extra_info = false;
+    colorBasis = TooN::makeVector(1,1,1);
     nextHilbertLeaf = NULL;
     gnode = NULL;
     coverage = 0;
@@ -364,7 +367,10 @@ void CNode::glDraw()
                 if(visited)
                     glColor4f(1,1,1,1);
                 else
-                    glColor4f(p_X,p_X,p_X,1);
+                {
+                    TooN::Vector<3> cl = p_X*colorBasis;
+                    glColor4f(cl[0],cl[1],cl[2],1);
+                }
             }
 
 //            if(!IsNodeInteresting())

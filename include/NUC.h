@@ -78,7 +78,6 @@ private:
 
     bool sim_running;
     bool drawPath;
-
     static std::string logFileName;
 
 };

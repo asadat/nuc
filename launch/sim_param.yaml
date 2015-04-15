@@ -2,9 +2,9 @@ simulation: True
 visualization: True
 branching_sqrt: 2
 FOV: 1.57
-min_footprint: 3.0
+min_footprint: 1.0
 speed: 0
-strategy: ts
+strategy: bu
 area_length: 64.0
 area_rotation: 0.0
 logging: false
@@ -19,3 +19,4 @@ beta_h0: 0.1
 beta_hm: 0.3
 prob_r: 0.5
 path_cost: 700.0
+prior_file_name: prior1.jpg
