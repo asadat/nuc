@@ -23,7 +23,7 @@ BudgetedStrategy::BudgetedStrategy(CNode *root)
     double rad = (GetNode(0,0)->footPrint[2]-GetNode(0,0)->footPrint[0]);
     Trajectory::GenerateDubinTrajectory(makeVector(-10,-10), makeVector(10,-10), makeVector(10,-5), makeVector(-10,-5),rad, 1, dp);
     Trajectory::GenerateDubinTrajectory(makeVector(10,-5), makeVector(-10,-5), makeVector(-10,6), makeVector(10,0), rad, 1, dp);
-    Trajectory::GenerateDubinTrajectory(makeVector(-10,6), makeVector(10,0), makeVector(10,8), makeVector(-10,8), 2*rad, 1, dp);
+    Trajectory::GenerateDubinTrajectory(makeVector(-10,6), makeVector(10,0), makeVector(10,8), makeVector(-10,8), 6*rad, 1, dp);
     Trajectory::GenerateDubinTrajectory(makeVector(10,8), makeVector(-10,8), makeVector(-10,10), makeVector(10,10), rad, 1, dp);
 }
 
@@ -61,8 +61,8 @@ void BudgetedStrategy::glDraw()
             else
                 glColor3f(1,0,0.0);
 
-            glVertex3f(p1[0],p1[1],h);
-            glVertex3f(p2[0],p2[1],h);
+            glVertex3f(p1[0],p1[1],2*h);
+            glVertex3f(p2[0],p2[1],2*h);
         }
         glEnd();
     }
