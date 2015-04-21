@@ -286,10 +286,9 @@ void CNode::PrintoutParams()
 
 void CNode::glDraw()
 {
-    TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
-
     if(parent != NULL && drawEdges)
     {
+        TooN::Vector<3> v2 = Rotation2D(pos, NUCParam::area_rotation, TooN::makeVector(NUCParam::cx, NUCParam::cy));
         glLineWidth(2);
         glColor4f(.1,.1,.1,0.3);
         glBegin(GL_LINES);
@@ -300,41 +299,14 @@ void CNode::glDraw()
         glEnd();
     }
 
-//    if(/*IsNodeInteresting() && !visited*/ NeedsVisitation())
-//    {
-//        glPointSize(10);
-//        glColor3f(0,1,0);
-//    }
-//    else
-//    {
-//        glPointSize(10);
-//        glColor3f(0,0,0);
-//    }
-
-//    if(drawEdges)
-//    {
-//        //glPointSize(3);
-//        glBegin(GL_POINTS);
-//        glVertex3f(v2[0],v2[1],v2[2]);
-//        glEnd();
-//    }
 
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
 
-    //if(children.empty())
-    {
 
-        double dc = 0.01;
-        glLineWidth(1+5 - 1*depth);
-        //glLineWidth(2);
-        if(drawCoverage)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            dc = 0;
-        }
-        else
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        double dc = 0.1;
+        glLineWidth(1);
 
         TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
         p1[0] = footPrint[0];
@@ -350,78 +322,22 @@ void CNode::glDraw()
         v3 = TooN::makeVector(-dc,-dc)+Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
         v4 = TooN::makeVector(-dc,dc)+Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
 
-        double c = 1-coverage/5;
-        c = sqrt(c);
-        c = sqrt(c);
-
-        if(drawCoverage)
-            glColor4f(c,c,c,1);
-        else
-            glColor4f(0,0,0,0.1+1-depth/5.0);
-
-        if(true || IsInterestingnessSet())
+        if(IsLeaf())
         {
-            if(IsLeaf())
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                if(visited)
-                    glColor4f(1,1,1,1);
-                else
-                {
-                    TooN::Vector<3> cl = p_X*colorBasis;
-                    glColor4f(cl[0],cl[1],cl[2],1);
-                }
-            }
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-//            if(!IsNodeInteresting())
-//            {
-//                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//                glColor4f(1,0.5,0.5,1);
-//            }
-//            else
-//            {
-//                if(IsLeaf() && visited)
-//                {
-//                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//                    glColor4f(0.0,0.4,0.0,1);
-//                }
-//            }
+            TooN::Vector<3> cl = p_X*colorBasis;
+            glColor4f(cl[0],cl[1],cl[2],0.2 + p_X);
 
-        }
-
-        glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
-        glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
-        glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
-        glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
-        glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
-        glEnd();
-
-        glLineWidth(2);
-        glColor4f(0,0,0,1);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glBegin(GL_POLYGON);
-        glVertex3f(v1[0],v1[1], (0.65-depth/20.0));
-        glVertex3f(v2[0],v2[1], (0.65-depth/20.0));
-        glVertex3f(v3[0],v3[1], (0.65-depth/20.0));
-        glVertex3f(v4[0],v4[1], (0.65-depth/20.0));
-        glVertex3f(v1[0],v1[1], (0.65-depth/20.0));
-        glEnd();
-
-        if(false && drawCoverage)
-        {
-            glLineWidth(1);
-            glColor4f(0,0,0,1);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glBegin(GL_POLYGON);
-            glVertex3f(v1[0],v1[1], 0.25);
-            glVertex3f(v2[0],v2[1], 0.25);
-            glVertex3f(v3[0],v3[1], 0.25);
-            glVertex3f(v4[0],v4[1], 0.25);
-            glVertex3f(v1[0],v1[1], 0.25);
+            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
+            glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
+            glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
+            glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
+            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
             glEnd();
+
         }
-    }
 
 }
 

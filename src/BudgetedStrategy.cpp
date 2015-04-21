@@ -73,21 +73,15 @@ void BudgetedStrategy::glDraw()
             continue;
 
 
-        glColor3f(1,1,1);
+        glColor3f(0.1,0.1,0.1);
         glLineWidth(4);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glBegin(GL_POLYGON);
 
         for(unsigned int i=0; i<hulls[j]->size();i++)
         {
             TooN::Vector<3> p1 = hulls[j]->at(i)->GetMAVWaypoint();
-            //TooN::Vector<3> p2 = hulls[j]->at((i==0)?hulls[j]->size()-1:i-1)->GetMAVWaypoint();
-
-            //TooN::Vector<3> cl =hulls[j]->at(i)->colorBasis;
-
-            //glColor3f(cl[0],cl[1],cl[2]);
-
             glVertex3f(p1[0],p1[1],2*p1[2]);
-            //glVertex3f(p2[0],p2[1],2*p2[2]);
         }
         glEnd();
     }

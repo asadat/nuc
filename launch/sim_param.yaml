@@ -2,7 +2,7 @@ simulation: True
 visualization: True
 branching_sqrt: 2
 FOV: 1.57
-min_footprint: 1.0
+min_footprint: 3.0
 speed: 0
 strategy: bu
 area_length: 64.0
