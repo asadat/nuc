@@ -17,7 +17,7 @@ public:
 private:
     CNode * GetNode(int i, int j);
     void SetupGrid(CNode* root);
-
+    void GenerateLawnmower();
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> grid;

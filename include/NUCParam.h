@@ -49,6 +49,8 @@ public:
 
     static std::string prior_file_name;
 
+    static int lm_height;
+
 };
 
 #endif

@@ -32,6 +32,8 @@ double NUCParam::beta_hm = 0.4;
 double NUCParam::prob_r = 0.8;
 double NUCParam::pathCost = 100;
 std::string NUCParam::prior_file_name = "prior.jpg";
+int NUCParam::lm_height = 2;
+
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
 {
@@ -68,5 +70,7 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<double>("path_cost",pathCost,100.0);
 
     nh.param("prior_file_name", prior_file_name, std::string("prior.jpg"));
+
+    nh.param("lm_height", lm_height, 2);
 
 }

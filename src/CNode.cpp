@@ -518,7 +518,7 @@ CNode* CNode::GetNearestLeaf(TooN::Vector<3> p, int revDepth)
         }
     }
 
-    return children[minidx]->GetNearestLeaf(p);
+    return children[minidx]->GetNearestLeaf(p, revDepth);
 }
 
 void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list)

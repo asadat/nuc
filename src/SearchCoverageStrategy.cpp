@@ -9,7 +9,6 @@ using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
-    ROS_INFO("SearchCoverageStrategy creating...");
 
     tree = root;
 
@@ -17,14 +16,39 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
     nodeStack.push_back(GetNode(0,0));
 
-    ROS_INFO("SearchCoverageStrategy created.");
-
+    GenerateLawnmower();
 
 }
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
 {
 
+}
+
+void SearchCoverageStrategy::GenerateLawnmower()
+{
+    Rect r = tree->GetFootPrint();
+    double l = (r[0]-r[2])*(r[0]-r[2]);
+    l = sqrt(l);
+
+    CNode * startNode = tree->GetNearestLeaf(makeVector(r[0],r[1],0), NUCParam::lm_height);
+    ROS_INFO("lm_height: %d depth: %d maxdepth: %d", NUCParam::lm_height, startNode->depth, CNode::maxDepth);
+    Vector<3> startPos = startNode->GetPos();
+
+    Rect rc = startNode->GetFootPrint();
+    double ld = sqrt((rc[0]-rc[2])*(rc[1]-rc[3]));
+    int n = l/ld;
+
+
+    printf("LM: n:%d l:%f ld:%f \n", n, l, ld);
+
+    for(int i=0; i< n; i++)
+        for(int j=0; j< n; j++)
+        {
+            int jj = (i%2 == 0)?j:n-j-1;
+            Vector<3> npos = startPos + makeVector(((double)i)*ld, ((double)jj)*ld, 0);
+            nodeStack.push_back(tree->GetNearestLeaf(npos,  NUCParam::lm_height));
+        }
 }
 
 CNode* SearchCoverageStrategy::GetNextNode()

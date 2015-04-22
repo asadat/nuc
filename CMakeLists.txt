@@ -28,6 +28,8 @@ set(NUC_SOURCES
     src/HilbertOptimization.cpp
     src/Trajectory.cpp
     src/SearchCoverageStrategy.cpp
+    src/TSP.cpp
+    include/TSP.h
     include/SearchCoverageStrategy.h
     include/dubins.h
     include/HilbertStrategy.h
