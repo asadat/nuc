@@ -348,6 +348,9 @@ void CNode::PropagateDepth()
     else
         depth = parent->depth +1;
 
+    if(maxDepth < depth)
+        maxDepth = depth;
+
     for(unsigned int i=0; i<children.size(); i++)
     {
         children[i]->PropagateDepth();
@@ -496,9 +499,11 @@ CNode* CNode::GetNearestNode(TooN::Vector<3> p) // can be optimized
         return list[minidx];
 }
 
-CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
+CNode* CNode::GetNearestLeaf(TooN::Vector<3> p, int revDepth)
 {
-    if(children.empty())
+ //   ROS_INFO("revDepth: %d  maxDepth: %d depth: %d", revDepth, maxDepth, depth);
+
+    if(children.empty() || (maxDepth-revDepth)==depth)
         return this;
 
     int minidx=0;

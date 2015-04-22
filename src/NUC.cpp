@@ -8,7 +8,7 @@
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
 #include "BudgetedStrategy.h"
-
+#include "SearchCoverageStrategy.h"
 #include "InterestingnessSensor.h"
 //#include "HilbertStrategy.h"
 #include "TestStrategy.h"
@@ -112,6 +112,12 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
         traversalStrategy =6;
     }
+    else if(NUCParam::strategy == "scs")
+    {
+        ROS_INFO("search and coverage strategy");
+
+        traversalStrategy =7;
+    }
 
     mav.Init(&nh, NUCParam::simulation);
 
@@ -127,12 +133,18 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     tree = new CNode(area);
     tree->PropagateDepth();
 
+    ROS_INFO("here 1");
+
     if(NUCParam::simulation || NUCParam::interesting_simulation)
     {
         LoadPriorFromFile();
         //PopulateTargets();
         //MarkNodesInterestingness();
     }
+
+
+    ROS_INFO("test strategy %d", traversalStrategy);
+
 
     if(traversalStrategy == 0)
     {
@@ -158,16 +170,14 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     {
         traversal = new BudgetedStrategy(tree);
     }
+    else if(traversalStrategy == 7)
+    {
+        traversal = new SearchCoverageStrategy(tree);
+    }
     else
     {
         traversal = new LawnmowerStrategy(tree);
     }
-
-    ROS_INFO("test strategy %d", traversalStrategy);
-
-    //For simulating interestingness
-
-    //
 
     StartTraversing();
 }

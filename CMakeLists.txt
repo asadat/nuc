@@ -27,6 +27,8 @@ set(NUC_SOURCES
     src/HilbertStrategy.cpp
     src/HilbertOptimization.cpp
     src/Trajectory.cpp
+    src/SearchCoverageStrategy.cpp
+    include/SearchCoverageStrategy.h
     include/dubins.h
     include/HilbertStrategy.h
     include/TestStrategy.h

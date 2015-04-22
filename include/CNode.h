@@ -38,7 +38,7 @@ public:
 
     CNode * GetNeighbourLeaf(bool left, bool right, bool up, bool down);
     CNode* GetNearestNode(TooN::Vector<3> p);
-    CNode* GetNearestLeaf(TooN::Vector<3> p);
+    CNode* GetNearestLeaf(TooN::Vector<3> p, int revDepth=0);
     void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list);
 
     Rect GetFootPrint(){return footPrint;}
@@ -127,6 +127,7 @@ private:
     bool extra_info;
     int label;
 
+    friend class SearchCoverageStrategy;
     friend class HilbertOptimization;
     friend class BudgetedStrategy;
     friend class HilbertStrategy;
