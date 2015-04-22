@@ -211,43 +211,34 @@ void NUC::LoadPriorFromFile()
     tree->ComputeDepth(d);
     int w = pow(2,d);
 
-    //ROS_INFO("IMAGE SIZE: %d", w);
-
     cv::Size s(w,w);
     cv::resize(img, priorImg, s);
     CNode * bl = tree->GetNearestLeaf(makeVector(area[0],area[1],0));
     int dir = 1;
     for(int i=0; i<w; i++)
     {
+        double pr_r = priorImg.at<uchar>(w-i, (dir<0)?w-1:0)*(1.0/255.0);
+        bl->SetPrior(0.5);
+        bl->imgPrior = pr_r;
+
         for(int j=(dir>0)?1:w-2; (dir>0)?(j<w):(j>=0); j+=dir)
         {
             bl = bl->GetNeighbourLeaf((dir<0), (dir>0), false, false);
-
             double pr_round = priorImg.at<uchar>(w-i-1,j)*(1.0/255.0);
-//            if(pr_round > 0.66)
-//                pr_round = 1.0;
-//            else if(pr_round > 0.33)
-//                pr_round = 0.66;
-//            else
-//                pr_round = 0.33;
-
-            bl->SetPrior(pr_round);
+            bl->SetPrior(0.5);
             bl->imgPrior = pr_round;
         }
 
         if(i<w-1)
         {
             bl = bl->GetNeighbourLeaf(false, false, true, false);
-
-            bl->SetPrior(priorImg.at<uchar>(w-i, (dir>0)?w-1:0)*(1.0/255.0));
         }
+
 
         dir *= -1;
 
     }
-    //cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
-    //cv::imshow( "Display window", pr );
-    //cv::waitKey(0);
+
     tree->RecomputePrior();
 }
 
@@ -635,8 +626,7 @@ void NUC::SetNextGoal()
 
 void NUC::OnReachedGoal()
 {
-   // ROS_INFO("Reached Goal");
-    //if(VisitGoal())
+    if(VisitGoal())
     {
         SetNextGoal();
         if(curGoal == NULL)
@@ -646,7 +636,6 @@ void NUC::OnReachedGoal()
         }
         else
         {
-            //ROS_INFO("New goal ... depth %d", curGoal->depth);
             if(!NUCParam::bypass_controller)
                 mav.SetGoal(curGoal->GetMAVWaypoint());
         }
@@ -704,22 +693,24 @@ bool NUC::VisitGoal()
        // ROS_INFO("start sensing ....");
         NUC_LOG("SENSING_START %f \n", sensingStart.toSec());
         sensingStart = ros::Time::now();
-        curGoal->visited = true;
+        curGoal->SetTreeVisited(true);
     }
 
     if(NUCParam::simulation)
     {
         // In simulations it uses the precomputed interestingness
         //curGoal->SetIsInteresting(curGoal->trueIsInteresting);
-        curGoal->GenerateObservationAndPropagate();
-        if(curGoal->IsLeaf() && !curGoal->trueIsInteresting)
-            visitedFalsePositives++;
+        //curGoal->GenerateObservationAndPropagate();
+        //if(curGoal->IsLeaf() && !curGoal->trueIsInteresting)
+        //    visitedFalsePositives++;
 
         //simulating interestingness
         //for(unsigned int i=0; i<curGoal->children.size();i++)
         //    curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
 
-        curGoal->propagateCoverage(curGoal->pos[2]);
+        //curGoal->propagateCoverage(curGoal->pos[2]);
+        //curGoal->GenerateTargets();
+        traversal->ReachedNode(curGoal);
         return true;
     }
     else

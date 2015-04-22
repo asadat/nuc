@@ -88,6 +88,9 @@ public:
     GNode * GetGNode(){return gnode;}
     void SetGNode(GNode* gn){gnode = gn;}
 
+    void GenerateTargets(double prob_cutoff);
+    void SetTreeVisited(bool visited);
+
 private:
 
     CNode* nextHilbertLeaf;

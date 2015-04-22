@@ -305,7 +305,7 @@ void CNode::glDraw()
 
 
 
-        double dc = 0.1;
+        double dc = 0.0;
         glLineWidth(1);
 
         TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
@@ -327,7 +327,7 @@ void CNode::glDraw()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             TooN::Vector<3> cl = p_X*colorBasis;
-            glColor4f(cl[0],cl[1],cl[2],0.2 + p_X);
+            glColor4f(cl[0],cl[1],cl[2],1);
 
             glBegin(GL_POLYGON);
             glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
@@ -356,6 +356,31 @@ void CNode::PropagateDepth()
         children[i]->PropagateDepth();
     }
 }
+
+void CNode::GenerateTargets(double prob_cutoff)
+{
+    if(IsLeaf())
+    {
+        p_X = (imgPrior < prob_cutoff)?0.0:1.0;
+    }
+    else
+    {
+        for(unsigned int i=0; i<children.size(); i++)
+        {
+            children[i]->GenerateTargets(prob_cutoff);
+        }
+    }
+}
+
+void CNode::SetTreeVisited(bool visited_)
+{
+    this->visited = visited_;
+    for(unsigned int i=0; i<children.size(); i++)
+    {
+        children[i]->SetTreeVisited(visited_);
+    }
+}
+
 
 bool CNode::PropagateInterestingness(Rect r)
 {
