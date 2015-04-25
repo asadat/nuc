@@ -25,15 +25,24 @@ private:
     void ConvexHull(int label, std::vector<CNode*>& ch);
     void FindConvexHulls();
 
+    //convex polygon lawnmower
+    double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
+    std::pair<int, int> BaseEdge(std::vector<CNode*> & ch);
+    void PlanLawnmovers();
+    void PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, std::vector<TooN::Vector<3> > * lm);
+
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
     std::vector<CNode*> grid;
+    double cellW;
 
     double cutoff_prob;
     int cluster_n;
     std::vector<TooN::Vector<3> > c;
     std::multimap<int, CNode*> clusters;
     std::vector<std::vector<CNode*> * > hulls;
+    std::vector<std::pair<int,int> > baseEdges;
+    std::map<int, std::vector<TooN::Vector<3> > * > lawnmovers;
 
     CNode* tree;
     int s;
