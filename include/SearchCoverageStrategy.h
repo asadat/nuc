@@ -27,6 +27,9 @@ private:
 
     //convex polygon lawnmower
     double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
+    double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
+    bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3, TooN::Vector<3> p4, TooN::Vector<3> &intersection_p);
+
     std::pair<int, int> BaseEdge(std::vector<CNode*> & ch);
     void PlanLawnmovers();
     void PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, std::vector<TooN::Vector<3> > * lm);

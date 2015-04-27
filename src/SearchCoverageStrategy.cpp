@@ -5,6 +5,9 @@
 #include <vector>
 
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
+#define MIN(a,b) ((a<b)?a:b)
+#define MAX(a,b) ((a<b)?b:a)
+#define D2(a,b) (a-b)*(a-b)
 
 using namespace std;
 using namespace TooN;
@@ -100,30 +103,37 @@ void SearchCoverageStrategy::glDraw()
         }
         glEnd();
 
-//        glColor3f(1,0,0);
-//        glLineWidth(8);
-//        glBegin(GL_LINES);
-//        TooN::Vector<3> p1 = hulls[j]->at(baseEdges[j].first)->GetMAVWaypoint();
-//        TooN::Vector<3> p2 = hulls[j]->at(baseEdges[j].second)->GetMAVWaypoint();
-//        glVertex3f(p1[0],p1[1],p1[2]);
-//        glVertex3f(p2[0],p2[1],p2[2]);
-//        glEnd();
+        if(baseEdges[j].first != baseEdges[j].second)
+        {
+            glColor3f(1,0,0);
+            glPointSize(15);
+            glBegin(GL_POINTS);
+            TooN::Vector<3> p1 = hulls[j]->at(baseEdges[j].first)->GetMAVWaypoint();
+            TooN::Vector<3> p2 = hulls[j]->at(baseEdges[j].second)->GetMAVWaypoint();
+            glColor3f(1,0,0);
+            glVertex3f(p1[0],p1[1],p1[2]);
+            glColor3f(0,1,0);
+            glVertex3f(p2[0],p2[1],p2[2]);
+            glEnd();
 
-//        if(lawnmovers.find((*hulls[j]->begin())->label) != lawnmovers.end())
-//        {
-//            vector<Vector<3> > & lm = *lawnmovers[(*hulls[j]->begin())->label];
-//            glColor3f(0,0,1);
-//            glLineWidth(3);
-//            glBegin(GL_LINES);
-//            for(int i=0; i<lm.size()-1; i++)
-//            {
-//               TooN::Vector<3> p1 = lm[i];
-//               TooN::Vector<3> p2 = lm[i+1];
-//               glVertex3f(p1[0],p1[1],p1[2]);
-//               glVertex3f(p2[0],p2[1],p2[2]);
-//            }
-//            glEnd();
-//        }
+            if(lawnmovers.find((*hulls[j]->begin())->label) != lawnmovers.end())
+            {
+                vector<Vector<3> > & lm = *lawnmovers[(*hulls[j]->begin())->label];
+                glColor3f(0,0,1);
+                glLineWidth(3);
+                glBegin(GL_LINES);
+                //glPointSize(8);
+                //glBegin(GL_POINTS);
+                for(int i=0; i<lm.size()-1; i+=2)
+                {
+                   TooN::Vector<3> p1 = lm[i];
+                   TooN::Vector<3> p2 = lm[i+1];
+                   glVertex3f(p1[0], p1[1], p1[2]+0.5);
+                   glVertex3f(p2[0], p2[1], p2[2]+0.5);
+                }
+                glEnd();
+            }
+        }
 
     }
 
@@ -175,7 +185,10 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
     if(n < grid.size())
         return grid[n];
     else
+    {
+        ROS_WARN("GetNode: out of boundary access ...");
         return NULL;
+    }
 }
 
 void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
@@ -200,6 +213,8 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
 
 void SearchCoverageStrategy::FindClusters()
 {
+    //ROS_INFO("Find Cluster started.");
+
     clusters.clear();
 
     int cn = -1;
@@ -250,10 +265,14 @@ void SearchCoverageStrategy::FindClusters()
 
     FindConvexHulls();
     PlanLawnmovers();
+
+    //ROS_INFO("Find Cluster finished.");
 }
 
 void SearchCoverageStrategy::FindConvexHulls()
 {
+   // ROS_INFO("Find convexhulls started.");
+
     baseEdges.clear();
 
     while(!hulls.empty())
@@ -271,6 +290,9 @@ void SearchCoverageStrategy::FindConvexHulls()
         hulls.push_back(h);
         baseEdges.push_back(BaseEdge(*h));
     }
+
+   // ROS_INFO("Find convexhulls ended.");
+
 }
 
 void SearchCoverageStrategy::ConvexHull(int label, vector<CNode*> & ch)
@@ -379,11 +401,47 @@ double SearchCoverageStrategy::pointToLineDist(Vector<3> p1, Vector<3> p2, Vecto
     return d;
 }
 
+double SearchCoverageStrategy::pointToLineSignedDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
+{
+    double d = ((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
+    return d;
+}
+
+bool SearchCoverageStrategy::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vector<3> p2, Vector<3> p3, Vector<3> &intersection_p)
+{
+    float p0_x = p0[0], p0_y = p0[1], p1_x = p1[0], p1_y=p1[1], p2_x = p2[0], p2_y=p2[1], p3_x = p3[0], p3_y=p3[1];
+
+    float s1_x, s1_y, s2_x, s2_y;
+    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
+    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
+
+    float s, t;
+    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Collision detected
+        //if (i_x != NULL)
+        intersection_p[0] = p0_x + (t * s1_x);
+        intersection_p[1] = p0_y + (t * s1_y);
+        return true;
+    }
+
+    return false; // No collision
+
+}
+
 std::pair<int, int> SearchCoverageStrategy::BaseEdge(std::vector<CNode*> & ch)
 {
     int sz = ch.size();
     double minHeight = 999999;
     int min_idx = -1;
+
+    if(sz <= 2)
+    {
+        return  std::pair<int,int>(0,0);
+    }
 
     for(int i=0; i < sz; i++)
     {
@@ -405,11 +463,17 @@ std::pair<int, int> SearchCoverageStrategy::BaseEdge(std::vector<CNode*> & ch)
         }
     }
 
-    return std::pair<int,int>(min_idx, (min_idx+1)%sz);
+    double sd = pointToLineSignedDist(ch[min_idx]->GetMAVWaypoint(), ch[(min_idx+1)%sz]->GetMAVWaypoint(), ch[(min_idx+2)%sz]->GetMAVWaypoint());
+    if(sd > 0)
+        return std::pair<int,int>(min_idx, (min_idx+1)%sz);
+    else
+        return std::pair<int,int>((min_idx+1)%sz, min_idx);
 }
 
 void SearchCoverageStrategy::PlanLawnmovers()
 {
+   // ROS_INFO("Planning Started.");
+
     // free vector objects
     while(!lawnmovers.empty())
     {
@@ -427,111 +491,108 @@ void SearchCoverageStrategy::PlanLawnmovers()
         lawnmovers[(*hulls[i]->begin())->label] = lm;
     }
 
-    ROS_INFO("Planning Done.");
+    //ROS_INFO("Planning Done.");
 }
 
 void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, std::vector<Vector<3> > * lm)
 {
-    int label = (*ch)[0]->label;
+    if(baseStart_idx == baseEnd_idx)
+        return ;
+
     Vector<3> baseDir  = ch->at(baseEnd_idx)->GetMAVWaypoint() - ch->at(baseStart_idx)->GetMAVWaypoint();
     Vector<3> baseDirNorm = baseDir;
+    baseDirNorm[2] = 0;
     normalize(baseDirNorm);
 
     //clockwise orthogonal vector
-    Vector<3> sweepDir = makeVector(baseDir[1], -baseDir[0], baseDir[2]);
+    Vector<3> sweepDir = makeVector(baseDir[1], -baseDir[0], 0);
     normalize(sweepDir);
 
-    double step = 0.1;
-    int n=-1;
+    // first lm track
+    lm-> push_back(ch->at(baseStart_idx)->GetMAVWaypoint());
+    lm-> push_back(ch->at(baseEnd_idx)->GetMAVWaypoint());
+
+    double n =-1;
     while(true)
     {
-        if(n++ > 100)
+        if(n > 30)
             break;
 
-        ROS_INFO("lawnmower track ... %d", lm->size());
+        n+=1.0;
+
+        //ROS_INFO("lawnmower track ... %d", lm->size());
 
         Vector<3> sn = ch->at(baseStart_idx)->GetMAVWaypoint();
         Vector<3> en = ch->at(baseEnd_idx)->GetMAVWaypoint();
-        sn += n * cellW * sweepDir;
-        en += n * cellW * sweepDir;
+        sn += n * (cellW + 1.5) * sweepDir;
+        en += n * (cellW + 1.5) * sweepDir;
 
-        CNode * tmp = NULL;
-        CNode * tmp_old = NULL;
+        sn -= 50.0 * baseDirNorm;
+        en += 50.0 * baseDirNorm;
 
-        bool atLeastOneTarget = false;
 
-        tmp = tree->GetNearestLeaf(en);
-        if(tmp->label == label)
+        vector<Vector<3> > intersections;
+
+        for(int i=0; i< ch->size(); i++)
         {
-            atLeastOneTarget = true;
-            while(tmp != tmp_old && tmp && tmp->label==label)
+           // if(i==baseStart_idx && (i+1)%ch->size() == baseEnd_idx || i==baseEnd_idx && (i+1)%ch->size() == baseEnd_idx)
+           //     continue;
+
+            Vector<3> ise =makeVector(0,0, ch->at(baseStart_idx)->GetMAVWaypoint()[2]);
+            if(GetLineSegmentIntersection(sn, en, ch->at(i)->GetMAVWaypoint(), ch->at((i+1)%(ch->size()))->GetMAVWaypoint(), ise))
             {
-                en += step*baseDirNorm;
-                tmp_old = tmp;
-                tmp = tree->GetNearestLeaf(en);
+                intersections.push_back(ise);
             }
+        }
+
+        if(intersections.size()<=1)
+        {
+           ROS_INFO("No lawnmower track found ...");
+           //break;
         }
         else
         {
-            while(tmp != tmp_old && tmp)
+            if(intersections.size() > 2)
+                ROS_INFO("Intersections %d ...",intersections.size());
+
+           // lm->push_back(intersections[0]);
+           // lm->push_back(intersections[1]);
+
+            ROS_INFO("Found a lawnmower track ...");
+            if(intersections.size() > 2)
             {
-                if(tmp->label!=label)
+                for(int i=0; i<intersections.size(); i++)
                 {
-                    en -= step*baseDirNorm;
-                    tmp_old = tmp;
-                    tmp = tree->GetNearestLeaf(en);
+                    for(int j=i+1; j<intersections.size(); j++)
+                    {
+                        if(D2(intersections[i],intersections[j]) < 0.1)
+                        {
+                            intersections.erase(intersections.begin()+j);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(intersections.size()>=2)
+            {
+                if(D2(intersections[0],lm->back()) < D2(intersections[1],lm->back()))
+                {
+                    //lm->push_back(sn);
+                    //lm->push_back(en);
+                    lm->push_back(intersections[0]);
+                    lm->push_back(intersections[1]);
                 }
                 else
                 {
-                    atLeastOneTarget = true;
+                    //lm->push_back(en);
+                    //lm->push_back(sn);
+                    lm->push_back(intersections[1]);
+                    lm->push_back(intersections[0]);
                 }
             }
         }
 
-        tmp = tree->GetNearestLeaf(sn);
-        if(tmp->label == label)
-        {
-            atLeastOneTarget = true;
-
-            while(tmp != tmp_old && tmp && tmp->label==label)
-            {
-                sn -= step*baseDirNorm;
-                tmp_old = tmp;
-                tmp = tree->GetNearestLeaf(sn);
-            }
-        }
-        else
-        {
-            while(tmp != tmp_old && tmp)
-            {
-                if(tmp->label!=label)
-                {
-                    sn += step*baseDirNorm;
-                    tmp_old = tmp;
-                    tmp = tree->GetNearestLeaf(sn);
-                }
-                else
-                {
-                    atLeastOneTarget = true;
-                }
-            }
-        }
-
-        if(lm->size()%4 == 0)
-        {
-            lm->push_back(sn);
-            lm->push_back(en);
-        }
-        else
-        {
-            lm->push_back(en);
-            lm->push_back(sn);
-        }
-
-//        if((sn-en)*(sn-en) < 5*cellW)
-//            break;
-        if(!atLeastOneTarget)
-            break;
-    }
+      }
 
  }
