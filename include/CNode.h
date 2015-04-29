@@ -91,6 +91,7 @@ public:
     void GenerateTargets(double prob_cutoff);
     void SetTreeVisited(bool visited);
 
+
 private:
 
     CNode* nextHilbertLeaf;
@@ -128,8 +129,10 @@ private:
     double coverage;
 
     bool extra_info;
+
     int label;
 
+    friend class TargetPolygon;
     friend class SearchCoverageStrategy;
     friend class HilbertOptimization;
     friend class BudgetedStrategy;

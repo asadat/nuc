@@ -16,7 +16,7 @@ public:
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
     void ReachedNode(CNode *node);
 
-private:
+private:    
     CNode * GetNode(int i, int j);
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
@@ -37,6 +37,7 @@ private:
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
     std::vector<CNode*> grid;
+    std::vector<TooN::Vector<3> > target_lms;
     double cellW;
 
     double cutoff_prob;
@@ -48,6 +49,7 @@ private:
     std::vector<double> chHeights;
     std::map<int, std::vector<TooN::Vector<3> > * > lawnmovers;
 
+    CNode* dummy;
 
     CNode* tree;
     int s;

@@ -3,6 +3,7 @@
 #include "NUCParam.h"
 #include <math.h>
 #include <vector>
+#include "TargetPolygon.h"
 
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
 #define MIN(a,b) ((a<b)?a:b)
@@ -14,6 +15,10 @@ using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
+    dummy = new CNode(Rect());
+    dummy->visited = false;
+    dummy->depth = dummy->maxDepth;
+
     cellW = 1;
     cluster_n=0;
     cutoff_prob = 0.60;
@@ -25,6 +30,7 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
 {
+    delete dummy;
 }
 
 void SearchCoverageStrategy::GenerateLawnmower()
@@ -65,21 +71,25 @@ CNode* SearchCoverageStrategy::GetNextNode()
 
 void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
-    double last_cutoff = 0;
-
-    visitedNodes.push_back(node);
-    if(fabs(last_cutoff-cutoff_prob) > 0.04)
+    if(node->depth == (node->maxDepth - NUCParam::lm_height))
     {
-        last_cutoff = cutoff_prob;
-        for(unsigned int i=0; i<visitedNodes.size(); i++)
-            visitedNodes[i]->GenerateTargets(cutoff_prob);
-    }
-    else
-    {
-        node->GenerateTargets(cutoff_prob);
-    }
 
-    FindClusters();
+        double last_cutoff = 0;
+
+        visitedNodes.push_back(node);
+        if(fabs(last_cutoff-cutoff_prob) > 0.04)
+        {
+            last_cutoff = cutoff_prob;
+            for(unsigned int i=0; i<visitedNodes.size(); i++)
+                visitedNodes[i]->GenerateTargets(cutoff_prob);
+        }
+        else
+        {
+            node->GenerateTargets(cutoff_prob);
+        }
+
+        FindClusters();
+    }
 }
 
 void SearchCoverageStrategy::glDraw()

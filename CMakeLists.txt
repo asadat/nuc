@@ -29,6 +29,8 @@ set(NUC_SOURCES
     src/Trajectory.cpp
     src/SearchCoverageStrategy.cpp
     src/TSP.cpp
+    src/TargetPolygon.cpp
+    include/TargetPolygon.h
     include/TSP.h
     include/SearchCoverageStrategy.h
     include/dubins.h
