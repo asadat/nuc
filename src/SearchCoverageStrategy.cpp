@@ -284,6 +284,7 @@ void SearchCoverageStrategy::FindConvexHulls()
    // ROS_INFO("Find convexhulls started.");
 
     baseEdges.clear();
+    chHeights.clear();
 
     while(!hulls.empty())
     {
@@ -298,7 +299,9 @@ void SearchCoverageStrategy::FindConvexHulls()
         vector<CNode*> * h = new vector<CNode*>();
         ConvexHull(i, *h);
         hulls.push_back(h);
-        baseEdges.push_back(BaseEdge(*h));
+        double height=0;
+        baseEdges.push_back(BaseEdge(*h, height));
+        chHeights.push_back(height);
     }
 
    // ROS_INFO("Find convexhulls ended.");
@@ -442,7 +445,7 @@ bool SearchCoverageStrategy::GetLineSegmentIntersection(Vector<3> p0, Vector<3> 
 
 }
 
-std::pair<int, int> SearchCoverageStrategy::BaseEdge(std::vector<CNode*> & ch)
+std::pair<int, int> SearchCoverageStrategy::BaseEdge(std::vector<CNode*> & ch, double &height)
 {
     int sz = ch.size();
     double minHeight = 999999;
@@ -469,6 +472,7 @@ std::pair<int, int> SearchCoverageStrategy::BaseEdge(std::vector<CNode*> & ch)
         if(minHeight > maxHeight)
         {
             minHeight = maxHeight;
+            height = minHeight;
             min_idx = i;
         }
     }
@@ -497,15 +501,17 @@ void SearchCoverageStrategy::PlanLawnmovers()
     for(int i=0; i < hulls.size(); i++)
     {
         vector<Vector<3> > * lm = new vector<Vector<3> >();
-        PlanLawnmower(hulls[i], baseEdges[i].first, baseEdges[i].second, lm);
+        PlanLawnmower(hulls[i], baseEdges[i].first, baseEdges[i].second, chHeights[i], lm);
         lawnmovers[(*hulls[i]->begin())->label] = lm;
     }
 
     //ROS_INFO("Planning Done.");
 }
 
-void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, std::vector<Vector<3> > * lm)
+void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, double height, std::vector<Vector<3> > * lm)
 {
+    double interlap_d = 4*cellW;
+
     if(baseStart_idx == baseEnd_idx)
         return ;
 
@@ -518,9 +524,16 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
     Vector<3> sweepDir = makeVector(baseDir[1], -baseDir[0], 0);
     normalize(sweepDir);
 
+    Vector<3> sn0 = ch->at(baseStart_idx)->GetMAVWaypoint();
+    Vector<3> en0 = ch->at(baseEnd_idx)->GetMAVWaypoint();
+    double offset0 = interlap_d*0.5;//(ceil(height / interlap_d)*interlap_d-height)*0.5;
+
+    sn0 += offset0 * sweepDir;
+    en0 += offset0 * sweepDir;
+
     // first lm track
-    lm-> push_back(ch->at(baseStart_idx)->GetMAVWaypoint());
-    lm-> push_back(ch->at(baseEnd_idx)->GetMAVWaypoint());
+    lm-> push_back(sn0);
+    lm-> push_back(en0);
 
     double n =-1;
     while(true)
@@ -532,10 +545,10 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
 
         //ROS_INFO("lawnmower track ... %d", lm->size());
 
-        Vector<3> sn = ch->at(baseStart_idx)->GetMAVWaypoint();
-        Vector<3> en = ch->at(baseEnd_idx)->GetMAVWaypoint();
-        sn += n * (4*cellW) * sweepDir;
-        en += n * (4*cellW) * sweepDir;
+        Vector<3> sn = sn0;
+        Vector<3> en = en0;
+        sn += n * interlap_d * sweepDir;
+        en += n * interlap_d * sweepDir;
 
         sn -= 50.0 * baseDirNorm;
         en += 50.0 * baseDirNorm;
@@ -548,7 +561,7 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
            // if(i==baseStart_idx && (i+1)%ch->size() == baseEnd_idx || i==baseEnd_idx && (i+1)%ch->size() == baseEnd_idx)
            //     continue;
 
-            Vector<3> ise =makeVector(0,0, ch->at(baseStart_idx)->GetMAVWaypoint()[2]);
+            Vector<3> ise =makeVector(0,0, sn0[2]);
             if(GetLineSegmentIntersection(sn, en, ch->at(i)->GetMAVWaypoint(), ch->at((i+1)%(ch->size()))->GetMAVWaypoint(), ise))
             {
                 intersections.push_back(ise);
@@ -562,8 +575,8 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
         }
         else
         {
-            if(intersections.size() > 2)
-                ROS_INFO("Intersections %d ...",intersections.size());
+//            if(intersections.size() > 2)
+//                ROS_INFO("Intersections %d ...",intersections.size());
 
            // lm->push_back(intersections[0]);
            // lm->push_back(intersections[1]);
@@ -604,5 +617,13 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
         }
 
       }
+
+//    if(!lm->empty() && 2.0*offset0 < interlap_d*0.5)
+//    {
+//        Vector<3> sn_n = lm->back() + interlap_d*sweepDir;
+//        Vector<3> en_n = *(lm->end()-2) + interlap_d*sweepDir;
+//        lm->push_back(sn_n);
+//        lm->push_back(en_n);
+//    }
 
  }

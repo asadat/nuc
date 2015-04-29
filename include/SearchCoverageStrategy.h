@@ -30,9 +30,9 @@ private:
     double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
     bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3, TooN::Vector<3> p4, TooN::Vector<3> &intersection_p);
 
-    std::pair<int, int> BaseEdge(std::vector<CNode*> & ch);
+    std::pair<int, int> BaseEdge(std::vector<CNode*> & ch, double & height);
     void PlanLawnmovers();
-    void PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, std::vector<TooN::Vector<3> > * lm);
+    void PlanLawnmower(std::vector<CNode*> * ch, int baseStart_idx, int baseEnd_idx, double height, std::vector<TooN::Vector<3> > * lm);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
@@ -45,7 +45,9 @@ private:
     std::multimap<int, CNode*> clusters;
     std::vector<std::vector<CNode*> * > hulls;
     std::vector<std::pair<int,int> > baseEdges;
+    std::vector<double> chHeights;
     std::map<int, std::vector<TooN::Vector<3> > * > lawnmovers;
+
 
     CNode* tree;
     int s;
