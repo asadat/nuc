@@ -119,12 +119,12 @@ void SearchCoverageStrategy::glDraw()
             if(lawnmovers.find((*hulls[j]->begin())->label) != lawnmovers.end())
             {
                 vector<Vector<3> > & lm = *lawnmovers[(*hulls[j]->begin())->label];
-                glColor3f(0,0,1);
-                glLineWidth(3);
+                glColor3f(0.5,0.5,1);
+                glLineWidth(6);
                 glBegin(GL_LINES);
                 //glPointSize(8);
                 //glBegin(GL_POINTS);
-                for(int i=0; i<lm.size()-1; i+=2)
+                for(int i=0; i<lm.size()-1; i+=1)
                 {
                    TooN::Vector<3> p1 = lm[i];
                    TooN::Vector<3> p2 = lm[i+1];
@@ -193,22 +193,32 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
 
 void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
+    bool flag = false;
     if(key['\''])
     {
         cutoff_prob = (cutoff_prob<1.0)?cutoff_prob+0.05:cutoff_prob;
         updateKey = true;
+        flag = true;
     }
     else if(key[';'])
     {
         cutoff_prob = (cutoff_prob>0.0)?cutoff_prob-0.05:cutoff_prob;
         updateKey = true;
-
+        flag = true;
     }
     else if(key['l'])
     {
         updateKey = true;
-
     }
+
+    if(flag)
+    {
+        for(unsigned int i=0; i<visitedNodes.size(); i++)
+            visitedNodes[i]->GenerateTargets(cutoff_prob);
+        FindClusters();
+    }
+
+
 }
 
 void SearchCoverageStrategy::FindClusters()
@@ -524,8 +534,8 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
 
         Vector<3> sn = ch->at(baseStart_idx)->GetMAVWaypoint();
         Vector<3> en = ch->at(baseEnd_idx)->GetMAVWaypoint();
-        sn += n * (cellW + 1.5) * sweepDir;
-        en += n * (cellW + 1.5) * sweepDir;
+        sn += n * (4*cellW) * sweepDir;
+        en += n * (4*cellW) * sweepDir;
 
         sn -= 50.0 * baseDirNorm;
         en += 50.0 * baseDirNorm;
@@ -547,7 +557,7 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
 
         if(intersections.size()<=1)
         {
-           ROS_INFO("No lawnmower track found ...");
+           //ROS_INFO("No lawnmower track found ...");
            //break;
         }
         else
@@ -558,7 +568,7 @@ void SearchCoverageStrategy::PlanLawnmower(std::vector<CNode*> * ch, int baseSta
            // lm->push_back(intersections[0]);
            // lm->push_back(intersections[1]);
 
-            ROS_INFO("Found a lawnmower track ...");
+           // ROS_INFO("Found a lawnmower track ...");
             if(intersections.size() > 2)
             {
                 for(int i=0; i<intersections.size(); i++)
