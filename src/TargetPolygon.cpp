@@ -1,7 +1,12 @@
 #include "TargetPolygon.h"
 #include <algorithm>
+#include <GL/glut.h>
+#include "ros/ros.h"
 
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
+#define MIN(a,b) ((a<b)?a:b)
+#define MAX(a,b) ((a<b)?b:a)
+#define D2(a,b) (a-b)*(a-b)
 
 using namespace std;
 
@@ -12,6 +17,13 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs)
     height = 0;
     base_idx[0] = -1;
     base_idx[1] = -1;
+
+    Vector<4> fp = cs.back()->footPrint;
+    cellW = fp[2]-fp[0];
+
+    ConvexHull();
+    FindBaseEdge();
+    PlanLawnmower();
 }
 
 TargetPolygon::~TargetPolygon()
@@ -106,4 +118,260 @@ void TargetPolygon::ConvexHull()
         }
     }
 
+}
+
+void TargetPolygon::FindBaseEdge()
+{
+    int sz = ch.size();
+    double minHeight = 999999;
+    int min_idx = -1;
+
+    if(sz <= 2)
+    {
+        base_idx[0] = base_idx[1] = 0;
+        return;
+    }
+
+    for(int i=0; i < sz; i++)
+    {
+        double maxHeight = 0;
+
+        for(int j=0; j < sz; j++)
+        {
+            if(j==i || (i+1)%sz ==j)
+                continue;
+
+            double h = pointToLineDist(ch[i]->GetMAVWaypoint(), ch[(i+1)%sz]->GetMAVWaypoint(), ch[j]->GetMAVWaypoint());
+            maxHeight = (maxHeight < h) ? h : maxHeight;
+        }
+
+        if(minHeight > maxHeight)
+        {
+            minHeight = maxHeight;
+            height = minHeight;
+            min_idx = i;
+        }
+    }
+
+    double sd = pointToLineSignedDist(ch[min_idx]->GetMAVWaypoint(), ch[(min_idx+1)%sz]->GetMAVWaypoint(), ch[(min_idx+2)%sz]->GetMAVWaypoint());
+    if(sd > 0)
+    {
+        base_idx[0] = min_idx;
+        base_idx[1] = (min_idx+1)%sz;
+        //return std::pair<int,int>(min_idx, (min_idx+1)%sz);
+    }
+    else
+    {
+        base_idx[1] = min_idx;
+        base_idx[0] = (min_idx+1)%sz;
+        //return std::pair<int,int>((min_idx+1)%sz, min_idx);
+    }
+}
+
+double TargetPolygon::pointToLineDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
+{
+    double d = fabs((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
+    return d;
+}
+
+double TargetPolygon::pointToLineSignedDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
+{
+    double d = ((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
+    return d;
+}
+
+bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vector<3> p2, Vector<3> p3, Vector<3> &intersection_p)
+{
+    float p0_x = p0[0], p0_y = p0[1], p1_x = p1[0], p1_y=p1[1], p2_x = p2[0], p2_y=p2[1], p3_x = p3[0], p3_y=p3[1];
+
+    float s1_x, s1_y, s2_x, s2_y;
+    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
+    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
+
+    float s, t;
+    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Collision detected
+        //if (i_x != NULL)
+        intersection_p[0] = p0_x + (t * s1_x);
+        intersection_p[1] = p0_y + (t * s1_y);
+        return true;
+    }
+
+    return false; // No collision
+
+}
+
+void TargetPolygon::PlanLawnmower()
+{
+    double interlap_d = 4*cellW;
+
+    if(base_idx[0] == base_idx[1])
+        return ;
+
+    Vector<3> baseDir  = ch[base_idx[1]]->GetMAVWaypoint() - ch[base_idx[0]]->GetMAVWaypoint();
+    Vector<3> baseDirNorm = baseDir;
+    baseDirNorm[2] = 0;
+    normalize(baseDirNorm);
+
+    //clockwise orthogonal vector
+    Vector<3> sweepDir = makeVector(baseDir[1], -baseDir[0], 0);
+    normalize(sweepDir);
+
+    Vector<3> sn0 = ch[base_idx[0]]->GetMAVWaypoint();
+    Vector<3> en0 = ch[base_idx[1]]->GetMAVWaypoint();
+    double offset0 = interlap_d*0.5;
+
+    sn0 += offset0 * sweepDir;
+    en0 += offset0 * sweepDir;
+
+    // first lm track
+    lm.push_back(sn0);
+    lm.push_back(en0);
+
+    double n =-1;
+    while(true)
+    {
+        if(n > 30)
+            break;
+
+        n+=1.0;
+
+        //ROS_INFO("lawnmower track ... %d", lm->size());
+
+        Vector<3> sn = sn0;
+        Vector<3> en = en0;
+        sn += n * interlap_d * sweepDir;
+        en += n * interlap_d * sweepDir;
+
+        sn -= 50.0 * baseDirNorm;
+        en += 50.0 * baseDirNorm;
+
+
+        vector<Vector<3> > intersections;
+
+        for(int i=0; i< ch.size(); i++)
+        {
+           // if(i==baseStart_idx && (i+1)%ch->size() == baseEnd_idx || i==baseEnd_idx && (i+1)%ch->size() == baseEnd_idx)
+           //     continue;
+
+            Vector<3> ise =makeVector(0,0, sn0[2]);
+            if(GetLineSegmentIntersection(sn, en, ch[i]->GetMAVWaypoint(), ch[(i+1)%(ch.size())]->GetMAVWaypoint(), ise))
+            {
+                intersections.push_back(ise);
+            }
+        }
+
+        if(intersections.size()<=1)
+        {
+           //ROS_INFO("No lawnmower track found ...");
+           //break;
+        }
+        else
+        {
+//            if(intersections.size() > 2)
+//                ROS_INFO("Intersections %d ...",intersections.size());
+
+           // lm->push_back(intersections[0]);
+           // lm->push_back(intersections[1]);
+
+           // ROS_INFO("Found a lawnmower track ...");
+            if(intersections.size() > 2)
+            {
+                for(int i=0; i<intersections.size(); i++)
+                {
+                    for(int j=i+1; j<intersections.size(); j++)
+                    {
+                        if(D2(intersections[i],intersections[j]) < 0.1)
+                        {
+                            intersections.erase(intersections.begin()+j);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(intersections.size()>=2)
+            {
+                if(D2(intersections[0],lm.back()) < D2(intersections[1],lm.back()))
+                {
+                    //lm->push_back(sn);
+                    //lm->push_back(en);
+                    lm.push_back(intersections[0]);
+                    lm.push_back(intersections[1]);
+                }
+                else
+                {
+                    //lm->push_back(en);
+                    //lm->push_back(sn);
+                    lm.push_back(intersections[1]);
+                    lm.push_back(intersections[0]);
+                }
+            }
+        }
+
+      }
+
+//    if(!lm->empty() && 2.0*offset0 < interlap_d*0.5)
+//    {
+//        Vector<3> sn_n = lm->back() + interlap_d*sweepDir;
+//        Vector<3> en_n = *(lm->end()-2) + interlap_d*sweepDir;
+//        lm->push_back(sn_n);
+//        lm->push_back(en_n);
+//    }
+
+ }
+
+void TargetPolygon::glDraw()
+{
+    if(ch.size()<=1)
+        return;
+
+
+    glColor3f(1,1,1);
+    glLineWidth(4);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_POLYGON);
+
+    for(unsigned int i=0; i<ch.size();i++)
+    {
+        //glColor3f(RAND((i%5)/0.5,(i%5)/0.5+0.2),RAND(0,1),RAND(0,1));
+        TooN::Vector<3> p1 = ch[i]->GetMAVWaypoint();
+        glVertex3f(p1[0],p1[1],p1[2]);
+    }
+    glEnd();
+
+    if(base_idx[0] != base_idx[1])
+    {
+        glColor3f(1,0,0);
+        glPointSize(15);
+        glBegin(GL_POINTS);
+        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
+        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
+        glColor3f(1,0,0);
+        glVertex3f(p1[0],p1[1],p1[2]);
+        glColor3f(0,1,0);
+        glVertex3f(p2[0],p2[1],p2[2]);
+        glEnd();
+
+        if(lm.size() > 1)
+        {
+            glColor3f(0.5,0.5,1);
+            glLineWidth(6);
+            glBegin(GL_LINES);
+            //glPointSize(8);
+            //glBegin(GL_POINTS);
+            for(int i=0; i<lm.size()-1; i+=1)
+            {
+               TooN::Vector<3> p1 = lm[i];
+               TooN::Vector<3> p2 = lm[i+1];
+               glVertex3f(p1[0], p1[1], p1[2]+0.5);
+               glVertex3f(p2[0], p2[1], p2[2]+0.5);
+            }
+            glEnd();
+        }
+    }
 }

@@ -19,5 +19,5 @@ beta_h0: 0.1
 beta_hm: 0.3
 prob_r: 0.5
 path_cost: 700.0
-prior_file_name: prior4.jpg
+prior_file_name: prior.jpg
 lm_height: 3

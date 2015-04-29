@@ -131,7 +131,7 @@ void BudgetedStrategy::SetupGrid(CNode *root)
 
 CNode * BudgetedStrategy::GetNode(int i, int j)
 {
-    int n = i*s+j;
+    size_t n = i*s+j;
     if(n < grid.size())
         return grid[n];
     else

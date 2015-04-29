@@ -182,7 +182,7 @@ void GNode::AddNext(CNode *n)
     {
         if(!n->GetGNode())
         {
-            GNode * g = new GNode(n);
+            new GNode(n);
         }
 
         AddNext(n->GetGNode());
@@ -200,7 +200,7 @@ void GNode::AddPrev(CNode *n)
     {
         if(!n->GetGNode())
         {
-            GNode * g = new GNode(n);
+            new GNode(n);
         }
         AddPrev(n->GetGNode());
     }
@@ -251,7 +251,7 @@ bool GNode::GetMaxRewardPath(GNode::Path &p)
     int idx = -1;
     double maxReward = 0;
 
-    for(int i=0; i<bestPaths.size(); i++)
+    for(size_t i=0; i<bestPaths.size(); i++)
     {
         //printf("PATH_REWARD: %f \n",bestPaths[i]->reward);
 
