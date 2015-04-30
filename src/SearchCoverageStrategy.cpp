@@ -56,6 +56,13 @@ void SearchCoverageStrategy::GenerateLawnmower()
 
 CNode* SearchCoverageStrategy::GetNextNode()
 {
+    if(!target_lms.empty())
+    {
+        dummy->pos = target_lms.front();
+        target_lms.erase(target_lms.begin());
+        return dummy;
+    }
+
     if(nodeStack.empty())
         return NULL;
 
@@ -84,6 +91,12 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         }
 
         FindClusters();
+
+        for(size_t i=0; i < targets.size(); i++)
+        {
+            targets[i]->GetLawnmowerPlan(target_lms);
+            targets[i]->MarkAsVisited();
+        }
     }
 }
 

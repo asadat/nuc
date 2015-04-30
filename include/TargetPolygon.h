@@ -12,6 +12,8 @@ class TargetPolygon
         ~TargetPolygon();
 
         void glDraw();
+        void GetLawnmowerPlan(vector<Vector<3> > &v);
+        void MarkAsVisited();
 
     private:
         void ConvexHull();

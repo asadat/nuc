@@ -30,6 +30,20 @@ TargetPolygon::~TargetPolygon()
 {
 }
 
+void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
+{
+    std::copy(lm.begin(), lm.end(), std::back_inserter(v));
+}
+
+void TargetPolygon::MarkAsVisited()
+{
+    vector<CNode*>::iterator it = cells.begin();
+    while(it != cells.end())
+    {
+        (*it++)->SetTreeVisited(true);
+    }
+}
+
 void TargetPolygon::ConvexHull()
 {
     // first node is the bottom most node
@@ -360,10 +374,10 @@ void TargetPolygon::glDraw()
         if(lm.size() > 1)
         {
             glColor3f(0.5,0.5,1);
-            glLineWidth(6);
-            glBegin(GL_LINES);
-            //glPointSize(8);
-            //glBegin(GL_POINTS);
+            //glLineWidth(6);
+            //glBegin(GL_LINES);
+            glPointSize(8);
+            glBegin(GL_POINTS);
             for(int i=0; i<lm.size()-1; i+=1)
             {
                TooN::Vector<3> p1 = lm[i];
