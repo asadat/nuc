@@ -90,6 +90,7 @@ public:
 
     void GenerateTargets(double prob_cutoff);
     void SetTreeVisited(bool visited);
+    void SetAncestorVisited(bool av);
 
 
 private:
@@ -115,6 +116,7 @@ private:
     bool neighbours_populated;
 
     bool visited;
+    bool ancestor_visited;
     bool waiting;
     bool isInterestingnessSet;
 

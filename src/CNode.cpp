@@ -22,6 +22,7 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    ancestor_visited = false;
     label = -1;
     extra_info = false;
     colorBasis = TooN::makeVector(1,1,1);
@@ -325,9 +326,15 @@ void CNode::glDraw()
         if(IsLeaf())
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-            TooN::Vector<3> cl = p_X*colorBasis;
-            glColor4f(cl[0],cl[1],cl[2],1);
+            if(true || !visited)
+            {
+                TooN::Vector<3> cl = p_X*colorBasis;
+                glColor4f(cl[0],cl[1],cl[2],1);
+            }
+            else
+            {
+                glColor3f(.8,.8,.8);
+            }
 
             glBegin(GL_POLYGON);
             glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
@@ -378,6 +385,15 @@ void CNode::SetTreeVisited(bool visited_)
     for(unsigned int i=0; i<children.size(); i++)
     {
         children[i]->SetTreeVisited(visited_);
+    }
+}
+
+void CNode::SetAncestorVisited(bool av)
+{
+    this->ancestor_visited = av;
+    for(unsigned int i=0; i<children.size(); i++)
+    {
+        children[i]->SetAncestorVisited(av);
     }
 }
 

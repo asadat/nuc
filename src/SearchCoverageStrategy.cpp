@@ -10,7 +10,7 @@ using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
-    dummy = new CNode(Rect());
+    dummy = new CNode(makeVector(0,0,0,0));
     dummy->visited = false;
     dummy->depth = dummy->maxDepth;
 
@@ -19,6 +19,7 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
     cutoff_prob = 0.60;
 
     tree = root;
+    tree->SetTreeVisited(false);
     SetupGrid(root);    
     GenerateLawnmower();
 }
@@ -59,6 +60,7 @@ CNode* SearchCoverageStrategy::GetNextNode()
     if(!target_lms.empty())
     {
         dummy->pos = target_lms.front();
+        dummy->visited = false;
         target_lms.erase(target_lms.begin());
         return dummy;
     }
@@ -75,6 +77,13 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
     if(node->depth == (node->maxDepth - NUCParam::lm_height))
     {
+        // in the NUC upon reaching a node all the descendants are visited
+        // which is not what we want in this specific strategy, hence the
+        // following hack
+        for(size_t i=0; i<node->children.size(); i++)
+            node->children[i]->SetTreeVisited(false);
+
+        node->SetAncestorVisited(true);
 
         double last_cutoff = 0;
 
@@ -90,9 +99,12 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
             node->GenerateTargets(cutoff_prob);
         }
 
+        int last_c = targets.size();
         FindClusters();
 
-        for(size_t i=0; i < targets.size(); i++)
+        ROS_INFO("#clusters: %u", targets.size());
+
+        for(size_t i=last_c; i < targets.size(); i++)
         {
             targets[i]->GetLawnmowerPlan(target_lms);
             targets[i]->MarkAsVisited();
@@ -104,9 +116,6 @@ void SearchCoverageStrategy::glDraw()
 {
     for(int j=0; j<cluster_n; j++)
         targets[j]->glDraw();
-
-
-
 
     if(nodeStack.size() < 2)
         return;
@@ -128,6 +137,7 @@ void SearchCoverageStrategy::glDraw()
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)
 {
+
     Vector<4> fp = root->GetNearestLeaf(makeVector(0,0,0))->footPrint;
     double dx = fp[2]-fp[0];
     double dy = fp[3]-fp[1];
@@ -208,25 +218,27 @@ void SearchCoverageStrategy::FindClusters()
     //ROS_INFO("Find Cluster started.");
 
     //clusters.clear();
-    CleanupTargets();
+  //  CleanupTargets();
 
-    int cn = -1;
+    int cn = targets.size()-1;
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
        {
-          GetNode(i,j)->extra_info = false;
+           if(GetNode(i,j)->label==-1)
+            GetNode(i,j)->extra_info = false;
        }
 
     for(int i=0; i<s; i++)
     {
         for(int j=0; j<s; j++)
         {
-            if(!(!GetNode(i,j)->extra_info && GetNode(i,j)->p_X > 0.99 && GetNode(i,j)->visited))
+            if(GetNode(i,j)->extra_info || GetNode(i,j)->p_X < 0.99 || GetNode(i,j)->visited || !GetNode(i,j)->ancestor_visited)
                 continue;
 
             std::vector<CNode*> stack;
             stack.push_back(GetNode(i,j));
             cn++;
+            ROS_INFO("Cluster added.");
             if(c.size() < cn+1)
             {
                 c.push_back(makeVector(RAND(0,1), RAND(0,1), RAND(0,1)));
@@ -241,10 +253,10 @@ void SearchCoverageStrategy::FindClusters()
                 nd->label = cn;
                 clusters.insert(std::pair<int, CNode*>(cn, nd));
 
-                for(int i=1; i<5; i++)
+                for(int ii=1; ii<5; ii++)
                 {
-                    CNode * ne = nd->GetNeighbourLeaf(i==1,i==2,i==3,i==4);
-                    if( ne && !ne->extra_info && ne->p_X > 0.99 && GetNode(i,j)->visited)
+                    CNode * ne = nd->GetNeighbourLeaf(ii==1,ii==2,ii==3,ii==4);
+                    if( ne && !ne->extra_info && ne->p_X > 0.95 && !ne->visited && ne->ancestor_visited)
                     {
                         ne->extra_info = true;
                         stack.push_back(ne);
@@ -255,8 +267,8 @@ void SearchCoverageStrategy::FindClusters()
     }
 
     cluster_n = cn+1;
-
-    for(size_t i = 0; i< cluster_n; i++)
+    size_t old_cluster_n = targets.size();
+    for(size_t i = old_cluster_n; i< cluster_n; i++)
     {
         pair<multimap<int, CNode*>::iterator, multimap<int, CNode*>::iterator> seg_range;
         seg_range = clusters.equal_range(i);

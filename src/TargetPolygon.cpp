@@ -221,7 +221,7 @@ bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vecto
 
 void TargetPolygon::PlanLawnmower()
 {
-    double interlap_d = 4*cellW;
+    double interlap_d = 3*cellW;
 
     if(base_idx[0] == base_idx[1])
         return ;
@@ -239,8 +239,8 @@ void TargetPolygon::PlanLawnmower()
     Vector<3> en0 = ch[base_idx[1]]->GetMAVWaypoint();
     double offset0 = interlap_d*0.5;
 
-    sn0 += offset0 * sweepDir;
-    en0 += offset0 * sweepDir;
+    sn0 += (offset0-cellW/2) * sweepDir;
+    en0 += (offset0-cellW/2) * sweepDir;
 
     // first lm track
     lm.push_back(sn0);
@@ -254,8 +254,6 @@ void TargetPolygon::PlanLawnmower()
 
         n+=1.0;
 
-        //ROS_INFO("lawnmower track ... %d", lm->size());
-
         Vector<3> sn = sn0;
         Vector<3> en = en0;
         sn += n * interlap_d * sweepDir;
@@ -264,14 +262,10 @@ void TargetPolygon::PlanLawnmower()
         sn -= 50.0 * baseDirNorm;
         en += 50.0 * baseDirNorm;
 
-
         vector<Vector<3> > intersections;
 
         for(int i=0; i< ch.size(); i++)
         {
-           // if(i==baseStart_idx && (i+1)%ch->size() == baseEnd_idx || i==baseEnd_idx && (i+1)%ch->size() == baseEnd_idx)
-           //     continue;
-
             Vector<3> ise =makeVector(0,0, sn0[2]);
             if(GetLineSegmentIntersection(sn, en, ch[i]->GetMAVWaypoint(), ch[(i+1)%(ch.size())]->GetMAVWaypoint(), ise))
             {
@@ -286,13 +280,6 @@ void TargetPolygon::PlanLawnmower()
         }
         else
         {
-//            if(intersections.size() > 2)
-//                ROS_INFO("Intersections %d ...",intersections.size());
-
-           // lm->push_back(intersections[0]);
-           // lm->push_back(intersections[1]);
-
-           // ROS_INFO("Found a lawnmower track ...");
             if(intersections.size() > 2)
             {
                 for(int i=0; i<intersections.size(); i++)
@@ -312,15 +299,11 @@ void TargetPolygon::PlanLawnmower()
             {
                 if(D2(intersections[0],lm.back()) < D2(intersections[1],lm.back()))
                 {
-                    //lm->push_back(sn);
-                    //lm->push_back(en);
                     lm.push_back(intersections[0]);
                     lm.push_back(intersections[1]);
                 }
                 else
                 {
-                    //lm->push_back(en);
-                    //lm->push_back(sn);
                     lm.push_back(intersections[1]);
                     lm.push_back(intersections[0]);
                 }
@@ -329,13 +312,16 @@ void TargetPolygon::PlanLawnmower()
 
       }
 
-//    if(!lm->empty() && 2.0*offset0 < interlap_d*0.5)
-//    {
-//        Vector<3> sn_n = lm->back() + interlap_d*sweepDir;
-//        Vector<3> en_n = *(lm->end()-2) + interlap_d*sweepDir;
-//        lm->push_back(sn_n);
-//        lm->push_back(en_n);
-//    }
+    if(lm.size() > 2)
+    {
+        lm.erase(lm.begin());
+        lm.erase(lm.begin());
+    }
+    else
+    {
+        lm[0] -= ((offset0-cellW/2)-height/2) * sweepDir;
+        lm[1] -= ((offset0-cellW/2)-height/2) * sweepDir;
+    }
 
  }
 
@@ -345,6 +331,7 @@ void TargetPolygon::glDraw()
         return;
 
 
+    //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
     glColor3f(1,1,1);
     glLineWidth(4);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -361,7 +348,7 @@ void TargetPolygon::glDraw()
     if(base_idx[0] != base_idx[1])
     {
         glColor3f(1,0,0);
-        glPointSize(15);
+        glPointSize(5);
         glBegin(GL_POINTS);
         TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
         TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
