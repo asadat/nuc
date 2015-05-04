@@ -4,6 +4,9 @@
 #include <math.h>
 #include <vector>
 #include "TargetPolygon.h"
+#include "TSP.h"
+
+#define D2(a,b) (a-b)*(a-b)
 
 using namespace std;
 using namespace TooN;
@@ -75,7 +78,11 @@ CNode* SearchCoverageStrategy::GetNextNode()
 
 void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
-    if(node->depth == (node->maxDepth - NUCParam::lm_height))
+    bool reachedSearchNode = (node->depth == (node->maxDepth - NUCParam::lm_height));
+
+    int last_c = 0;
+
+    if(reachedSearchNode)
     {
         // in the NUC upon reaching a node all the descendants are visited
         // which is not what we want in this specific strategy, hence the
@@ -99,17 +106,136 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
             node->GenerateTargets(cutoff_prob);
         }
 
-        int last_c = targets.size();
-        FindClusters();
+        last_c = targets.size();
+        FindClusters(true);
 
-        ROS_INFO("#clusters: %u", targets.size());
+        //ROS_INFO("#clusters: %u", targets.size());
+    }
 
-        for(size_t i=last_c; i < targets.size(); i++)
+    if(NUCParam::policy == "greedy")
+    {
+        if(reachedSearchNode)
         {
-            targets[i]->GetLawnmowerPlan(target_lms);
-            targets[i]->MarkAsVisited();
+            for(size_t i=last_c; i < targets.size(); i++)
+            {
+                targets[i]->GetLawnmowerPlan(target_lms);
+                targets[i]->MarkAsVisited();
+            }
         }
     }
+    else if(NUCParam::policy == "delayed_greedy")
+    {
+
+    }
+    else if(NUCParam::policy == "delayed")
+    {
+        if(reachedSearchNode)
+        {
+            if(nodeStack.empty())
+            {
+                CleanupTargets();
+                FindClusters(false);
+
+
+                vector<Entity*> t_list;
+                vector<Entity*> tsp_list;
+
+                Entity * sn = new Entity();
+                sn->start = true;
+                sn->end = false;
+                sn->pos = node->GetMAVWaypoint();
+                t_list.push_back(sn);
+
+                Entity * en = new Entity();
+                en->start = false;
+                en->end = true;
+                en->pos = visitedNodes.front()->GetMAVWaypoint();
+                t_list.push_back(en);
+
+                for(size_t i=0; i < targets.size(); i++)
+                {
+                    if(targets[i]->LawnmowerSize() <= 0)
+                        continue;
+
+                    Entity * n = new Entity();
+                    n->start = false;
+                    n->end = false;
+                    n->pos = targets[i]->GetMiddlePos();
+                    n->nodeIdx = i;
+                    t_list.push_back(n);
+                }
+
+                TSP tsp;
+                tsp.GetShortestPath(t_list, tsp_list);
+
+                vector<TargetPolygon*> tsp_target;
+                for(size_t i=0; i < tsp_list.size(); i++)
+                {
+                    if(tsp_list[i]->start || tsp_list[i]->end)
+                        continue;
+                    tsp_target.push_back(targets[tsp_list[i]->nodeIdx]);
+                }
+
+                // optimizing target lawnmower start and end
+                for(int i=0; i < tsp_target.size(); i++)
+                {
+                    bool flag = false;
+
+                    if(i==0)
+                    {
+                        if(D2(node->GetMAVWaypoint(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
+                                D2(node->GetMAVWaypoint(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
+                        {
+                            tsp_target[i]->ReverseLawnmower();
+                            flag = true;
+                        }
+                    }
+                    else if(i == tsp_target.size()-1)
+                    {
+                        if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), en->pos) >
+                                D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), en->pos))
+                        {
+                            tsp_target[i]->ReverseLawnmower();
+                            flag = true;
+                        }
+                    }
+                    else
+                    {
+                        if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
+                                D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
+                        {
+                            tsp_target[i]->ReverseLawnmower();
+                            flag = true;
+                        }
+                    }
+
+                    if(flag)
+                        i++;
+                }
+
+                for(size_t i=0; i < tsp_target.size(); i++)
+                {
+                    tsp_target[i]->GetLawnmowerPlan(target_lms);
+                    tsp_target[i]->MarkAsVisited();
+                }
+
+
+                delete sn;
+                delete en;
+
+                tsp_list.clear();
+                while(t_list.empty())
+                {
+                    Entity* e = t_list.back();
+                    t_list.pop_back();
+                    delete e;
+                }
+
+                reverse(target_lms.begin(), target_lms.end());
+            }
+        }
+    }
+
 }
 
 void SearchCoverageStrategy::glDraw()
@@ -117,8 +243,22 @@ void SearchCoverageStrategy::glDraw()
     for(int j=0; j<cluster_n; j++)
         targets[j]->glDraw();
 
+
+    glColor3f(0.3,0.8,0.9);
+    glLineWidth(2);
+    glBegin(GL_LINES);
+    for(unsigned int i=1; i<target_lms.size();i++)
+    {
+        TooN::Vector<3> p1 = target_lms[i-1];
+        TooN::Vector<3> p2 = target_lms[i];
+
+        glVertex3f(p1[0],p1[1],p1[2]);
+        glVertex3f(p2[0],p2[1],p2[2]);
+    }
+    glEnd();
+
     if(nodeStack.size() < 2)
-        return;
+        return;    
 
     glColor3f(0.5,0.6,0.6);
     glLineWidth(4);
@@ -195,7 +335,7 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
     {
         for(unsigned int i=0; i<visitedNodes.size(); i++)
             visitedNodes[i]->GenerateTargets(cutoff_prob);
-        FindClusters();
+        FindClusters(true);
     }
 
 
@@ -211,9 +351,10 @@ void SearchCoverageStrategy::CleanupTargets()
     }
 
     clusters.clear();
+    cluster_n = 0;
 }
 
-void SearchCoverageStrategy::FindClusters()
+void SearchCoverageStrategy::FindClusters(bool incremental)
 {
     //ROS_INFO("Find Cluster started.");
 
@@ -224,8 +365,11 @@ void SearchCoverageStrategy::FindClusters()
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
        {
-           if(GetNode(i,j)->label==-1)
-            GetNode(i,j)->extra_info = false;
+           if(!incremental || GetNode(i,j)->label==-1)
+           {
+                GetNode(i,j)->extra_info = false;
+                GetNode(i,j)->label = -1;
+           }
        }
 
     for(int i=0; i<s; i++)
@@ -238,7 +382,7 @@ void SearchCoverageStrategy::FindClusters()
             std::vector<CNode*> stack;
             stack.push_back(GetNode(i,j));
             cn++;
-            ROS_INFO("Cluster added.");
+           // ROS_INFO("Cluster added.");
             if(c.size() < cn+1)
             {
                 c.push_back(makeVector(RAND(0,1), RAND(0,1), RAND(0,1)));
@@ -281,7 +425,7 @@ void SearchCoverageStrategy::FindClusters()
             it++;
         }
 
-        TargetPolygon *t = new TargetPolygon(v);
+        TargetPolygon *t = new TargetPolygon(v, visitedNodes.back());
         targets.push_back(t);
     }
 }

@@ -8,12 +8,17 @@ using namespace TooN;
 class TargetPolygon
 {
     public:
-        TargetPolygon(vector<CNode*> &cs);
+        TargetPolygon(vector<CNode*> &cs, CNode* parentNode);
         ~TargetPolygon();
 
         void glDraw();
         void GetLawnmowerPlan(vector<Vector<3> > &v);
         void MarkAsVisited();
+        Vector<3> GetMiddlePos();
+        void ReverseLawnmower();
+        Vector<3> FirstLMPos(){return lm.front();}
+        Vector<3> LastLMPos(){return lm.back();}
+        size_t LawnmowerSize(){return lm.size();}
 
     private:
         void ConvexHull();
@@ -27,10 +32,12 @@ class TargetPolygon
         vector<CNode*> ch;
         vector<CNode*> cells;
         vector<Vector<3> > lm;
+        CNode* parentSearchNode;
         double height;
         double cellW;
 
         int base_idx[2];
+
 };
 
 #endif

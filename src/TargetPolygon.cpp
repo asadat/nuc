@@ -10,8 +10,9 @@
 
 using namespace std;
 
-TargetPolygon::TargetPolygon(vector<CNode *> &cs)
+TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
+    parentSearchNode = parentNode;
     std::copy(cs.begin(), cs.end(), std::back_inserter(cells));
     label = cells[0]->label;
     height = 0;
@@ -42,6 +43,24 @@ void TargetPolygon::MarkAsVisited()
     {
         (*it++)->SetTreeVisited(true);
     }
+}
+
+Vector<3> TargetPolygon::GetMiddlePos()
+{
+    Vector<3> m = makeVector(0,0,0);
+
+    if(ch.empty())
+        return m;
+
+    for(size_t i =0; i < ch.size(); i++)
+        m += ch[i]->GetMAVWaypoint();
+
+    return (1.0/m.size())*m;
+}
+
+void TargetPolygon::ReverseLawnmower()
+{
+    reverse(lm.begin(), lm.end());
 }
 
 void TargetPolygon::ConvexHull()

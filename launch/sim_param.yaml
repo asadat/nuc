@@ -4,6 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 1
 speed: 5
+policy: greedy
 strategy: scs
 area_length: 64.0
 area_rotation: 0.0
@@ -11,7 +12,7 @@ logging: false
 patches: 3
 percent_interesting: 50.0
 auto_exit: false
-bypass_controller: false
+bypass_controller: true
 int_prob_thr: 0.3
 alpha_h0: 0.1
 alpha_hm: 0.3

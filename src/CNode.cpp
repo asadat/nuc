@@ -464,7 +464,7 @@ bool CNode::VisitedInterestingDescendentExists()
     return false;
 }
 
-CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down)
+CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down, int inverse_depth)
 {
     TooN::Vector<3> queryVec;
     TooN::Vector<3> shiftVec;
@@ -493,7 +493,7 @@ CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down)
     while(root->parent)
         root = root->parent;
 
-    CNode *n = root->GetNearestLeaf(queryVec);
+    CNode *n = root->GetNearestLeaf(queryVec,inverse_depth);
 
     if(n)
     {

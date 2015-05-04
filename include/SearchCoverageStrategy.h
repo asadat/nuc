@@ -21,7 +21,7 @@ private:
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
 
-    void FindClusters();
+    void FindClusters(bool incremental);
 
     void CleanupTargets();
 
