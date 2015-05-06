@@ -125,7 +125,33 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
+        if(reachedSearchNode && targets.size()-last_c >= 1)
+        {
+            //join the targets of the current cell
+            if(targets.size()-last_c >= 2)
+            {
+                TargetPolygon *t = targets[last_c];
+                while(targets.size() > last_c + 1)
+                {
+                    TargetPolygon * tmp = targets.back();
+                    targets.pop_back();
+                    t->AddPolygon(tmp);
+                    delete tmp;
+                }
+            }
 
+            // join the target of the current cell with the
+            // targets in the neighbours
+            for(size_t i=0; i < last_c; i++)
+                if(targets[i]->IsNeighbour(targets[last_c]))
+                {
+                    TargetPolygon * tmp = targets.back();
+                    targets.pop_back();
+                    targets[i]->AddPolygon(tmp);
+                    delete tmp;
+                    break;
+                }
+        }
     }
     else if(NUCParam::policy == "delayed")
     {
@@ -239,8 +265,8 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 }
 
 void SearchCoverageStrategy::glDraw()
-{
-    for(int j=0; j<cluster_n; j++)
+{    
+    for(int j=0; j<targets.size(); j++)
         targets[j]->glDraw();
 
 
@@ -356,12 +382,12 @@ void SearchCoverageStrategy::CleanupTargets()
 
 void SearchCoverageStrategy::FindClusters(bool incremental)
 {
-    //ROS_INFO("Find Cluster started.");
+    static int cn = targets.size()-1;
+    if(!incremental)
+        cn = -1;
 
-    //clusters.clear();
-  //  CleanupTargets();
+    size_t old_cluster_n = cn+1;
 
-    int cn = targets.size()-1;
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
        {
@@ -411,7 +437,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental)
     }
 
     cluster_n = cn+1;
-    size_t old_cluster_n = targets.size();
+
     for(size_t i = old_cluster_n; i< cluster_n; i++)
     {
         pair<multimap<int, CNode*>::iterator, multimap<int, CNode*>::iterator> seg_range;

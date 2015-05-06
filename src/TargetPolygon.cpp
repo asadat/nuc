@@ -12,14 +12,23 @@ using namespace std;
 
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
-    parentSearchNode = parentNode;
+    parentSearchNodes.insert(parentNode);
     std::copy(cs.begin(), cs.end(), std::back_inserter(cells));
+    ProcessPolygon();
+}
+
+TargetPolygon::~TargetPolygon()
+{
+}
+
+void TargetPolygon::ProcessPolygon()
+{
     label = cells[0]->label;
     height = 0;
     base_idx[0] = -1;
     base_idx[1] = -1;
 
-    Vector<4> fp = cs.back()->footPrint;
+    Vector<4> fp = cells.back()->footPrint;
     cellW = fp[2]-fp[0];
 
     ConvexHull();
@@ -27,8 +36,27 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
     PlanLawnmower();
 }
 
-TargetPolygon::~TargetPolygon()
+bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
 {
+    for(set<CNode*>::iterator i=parentSearchNodes.begin(); i!=parentSearchNodes.end(); i++)
+        for(set<CNode*>::iterator j=tp->parentSearchNodes.begin(); j!=tp->parentSearchNodes.end(); j++)
+            if((*i)->IsNeighbour(*j))
+                return true;
+
+    return false;
+}
+
+void TargetPolygon::AddPolygon(TargetPolygon *p)
+{
+    parentSearchNodes.insert(p->parentSearchNodes.begin(), p->parentSearchNodes.end());
+
+    for(size_t i=0; i < p->cells.size(); i++)
+    {
+        p->cells[i]->label = label;
+        cells.push_back(p->cells[i]);
+    }
+
+    ProcessPolygon();
 }
 
 void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
@@ -65,6 +93,7 @@ void TargetPolygon::ReverseLawnmower()
 
 void TargetPolygon::ConvexHull()
 {
+    ch.clear();
     // first node is the bottom most node
     unsigned first=0;
     for(unsigned int i=1; i<cells.size(); i++)
@@ -155,6 +184,9 @@ void TargetPolygon::ConvexHull()
 
 void TargetPolygon::FindBaseEdge()
 {
+    base_idx[0] = -1;
+    base_idx[1] = -1;
+
     int sz = ch.size();
     double minHeight = 999999;
     int min_idx = -1;
@@ -240,6 +272,8 @@ bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vecto
 
 void TargetPolygon::PlanLawnmower()
 {
+    lm.clear();
+
     double interlap_d = 3*cellW;
 
     if(base_idx[0] == base_idx[1])
@@ -379,11 +413,11 @@ void TargetPolygon::glDraw()
 
         if(lm.size() > 1)
         {
-            glColor3f(0.5,0.5,1);
-            //glLineWidth(6);
-            //glBegin(GL_LINES);
-            glPointSize(8);
-            glBegin(GL_POINTS);
+            glColor4f(0.5,0.5,1, 0.4);
+            glLineWidth(6);
+            glBegin(GL_LINES);
+            //glPointSize(8);
+            //glBegin(GL_POINTS);
             for(int i=0; i<lm.size()-1; i+=1)
             {
                TooN::Vector<3> p1 = lm[i];

@@ -1,6 +1,7 @@
 #ifndef _TARGETPOLYGON_H
 #define _TARGETPOLYGON_H
 #include "CNode.h"
+#include <set>
 
 using namespace std;
 using namespace TooN;
@@ -19,8 +20,12 @@ class TargetPolygon
         Vector<3> FirstLMPos(){return lm.front();}
         Vector<3> LastLMPos(){return lm.back();}
         size_t LawnmowerSize(){return lm.size();}
+        void AddPolygon(TargetPolygon* p);
+        int GetLabel(){return label;}
+        bool IsNeighbour(TargetPolygon *tp);
 
     private:
+        void ProcessPolygon();
         void ConvexHull();
         void FindBaseEdge();
         double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
@@ -32,7 +37,7 @@ class TargetPolygon
         vector<CNode*> ch;
         vector<CNode*> cells;
         vector<Vector<3> > lm;
-        CNode* parentSearchNode;
+        set<CNode*> parentSearchNodes;
         double height;
         double cellW;
 

@@ -464,6 +464,15 @@ bool CNode::VisitedInterestingDescendentExists()
     return false;
 }
 
+bool CNode::IsNeighbour(CNode *n)
+{
+    for(int i=1; i<=4; i++)
+        if(n == GetNeighbourLeaf(i==1, i==2, i==3, i==4, maxDepth-depth))
+            return true;
+
+    return false;
+}
+
 CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down, int inverse_depth)
 {
     TooN::Vector<3> queryVec;

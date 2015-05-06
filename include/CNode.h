@@ -36,6 +36,7 @@ public:
     void glDraw();
 
 
+    bool IsNeighbour(CNode*n);
     CNode * GetNeighbourLeaf(bool left, bool right, bool up, bool down, int inverse_depth=0);
     CNode* GetNearestNode(TooN::Vector<3> p);
     CNode* GetNearestLeaf(TooN::Vector<3> p, int revDepth=0);
