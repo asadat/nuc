@@ -20,6 +20,14 @@ private:
     CNode * GetNode(int i, int j);
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
+    double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
+    double GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<3> curpospos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
+    double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, bool ignoreFirstSegment, bool ignoreLastSegment);
+
+    void OnReachedNode_GreedyPolicy(CNode * node, bool searchNode, int newTargetIdxBegin);
+    void OnReachedNode_DelayedPolicy(CNode * node, bool searchNode, int newTargetIdxBegin);
+    void OnReachedNode_DelayedGreedyPolicy(CNode * node, bool searchNode, int newTargetIdxBegin);
+    void UpdateRemainingTime(CNode* node);
 
     void FindClusters(bool incremental);
 
@@ -40,6 +48,10 @@ private:
 
     CNode* tree;
     int s;
+    double remaining_time;
+    TooN::Vector<3> startPos;
+    TooN::Vector<3> prevGoal;
+
 };
 
 #endif

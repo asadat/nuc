@@ -12,6 +12,7 @@ using namespace std;
 
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
+    visited = false;
     parentSearchNodes.insert(parentNode);
     std::copy(cs.begin(), cs.end(), std::back_inserter(cells));
     ProcessPolygon();
@@ -413,8 +414,8 @@ void TargetPolygon::glDraw()
 
         if(lm.size() > 1)
         {
-            glColor4f(0.5,0.5,1, 0.4);
-            glLineWidth(6);
+            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
+            glLineWidth(visited?7:4);
             glBegin(GL_LINES);
             //glPointSize(8);
             //glBegin(GL_POINTS);

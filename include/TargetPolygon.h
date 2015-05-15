@@ -23,6 +23,7 @@ class TargetPolygon
         void AddPolygon(TargetPolygon* p);
         int GetLabel(){return label;}
         bool IsNeighbour(TargetPolygon *tp);
+        void SetVisited(bool visited_){visited = visited_;}
 
     private:
         void ProcessPolygon();
@@ -40,7 +41,7 @@ class TargetPolygon
         set<CNode*> parentSearchNodes;
         double height;
         double cellW;
-
+        bool visited;
         int base_idx[2];
 
 };

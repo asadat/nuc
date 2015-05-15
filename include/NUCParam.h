@@ -51,6 +51,9 @@ public:
 
     static int lm_height;
     static std::string policy;
+    static double time_limit;
+    static double average_speed;
+    static double turning_time;
 
 };
 
