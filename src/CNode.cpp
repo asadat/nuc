@@ -20,8 +20,10 @@ int CNode::maxDepth = 0;
 double CNode::int_thr[20];
 
 
-CNode::CNode(Rect target_foot_print):parent(NULL)
+CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
 {
+    mav_wp_cached = false;
+    searchNode = false;
     ancestor_visited = false;
     label = -1;
     extra_info = false;
@@ -45,7 +47,8 @@ CNode::CNode(Rect target_foot_print):parent(NULL)
     if(rootHeight < pos[2])
         rootHeight = pos[2];
 
-    PopulateChildren();
+    if(populateChildren)
+        PopulateChildren();
 }
 
 CNode::~CNode()
@@ -229,13 +232,19 @@ void CNode::PopulateChildren()
 
 TooN::Vector<3> CNode::GetMAVWaypoint()
 {
-    TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
-    TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
-                                     -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
-    TooN::Vector<2> v = TooN::makeVector(pos[0],pos[1]);
-    v = c+rot*(v-c);
+    //if(!mav_wp_cached)
+    {
+        TooN::Vector<2> c = TooN::makeVector(NUCParam::cx, NUCParam::cy);
+        TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
+                                         -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
+        TooN::Vector<2> v = TooN::makeVector(pos[0],pos[1]);
+        v = c+rot*(v-c);
 
-    return TooN::makeVector(v[0], v[1], pos[2]);
+        mav_wp_cached = true;
+        mav_wp = TooN::makeVector(v[0], v[1], pos[2]);
+    }
+
+    return mav_wp;
 }
 
 TooN::Vector<2> CNode::Rotation2D(TooN::Vector<2> v, double deg, TooN::Vector<2> c)
@@ -466,9 +475,17 @@ bool CNode::VisitedInterestingDescendentExists()
 
 bool CNode::IsNeighbour(CNode *n)
 {
-    for(int i=1; i<=4; i++)
-        if(n == GetNeighbourLeaf(i==1, i==2, i==3, i==4, maxDepth-depth))
+    if(searchNode && n->searchNode)
+    {
+        if((GetMAVWaypoint()-n->GetMAVWaypoint())*(GetMAVWaypoint()-n->GetMAVWaypoint()) - (footPrint[0]-footPrint[2])*(footPrint[0]-footPrint[2]) < 0.2 )
             return true;
+    }
+    else
+    {
+        for(int i=1; i<=4; i++)
+            if(n == GetNeighbourLeaf(i==1, i==2, i==3, i==4, maxDepth-depth))
+                return true;
+    }
 
     return false;
 }

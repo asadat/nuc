@@ -9,6 +9,7 @@
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
 #define D2(a,b) (a-b)*(a-b)
 #define COLLINEAR(a,b,c) ((fabs(fabs(ANGLE(a,b,c))-3.14) > 0.1)?1.0:0)
+#define IN(a,r) ((a[0]>= r[0] && a[0] <= r[2]) && (a[1] >= r[1] && a[1] <= r[3]))
 
 using namespace std;
 using namespace TooN;
@@ -38,6 +39,20 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
 {
+    while(!nodeStack.empty())
+    {
+        CNode * n= nodeStack.back();
+        nodeStack.pop_back();
+        delete n;
+    }
+
+    while(!visitedNodes.empty())
+    {
+        CNode * n= visitedNodes.back();
+        visitedNodes.pop_back();
+        delete n;
+    }
+
     delete dummy;
 }
 
@@ -162,28 +177,59 @@ double SearchCoverageStrategy::GetPlanExecutionTime(vector<Vector<3> > &wps, boo
 
 void SearchCoverageStrategy::GenerateLawnmower()
 {
+    int cell_in_lanes = ceil(((double)s)/NUCParam::lm_tracks);
+    ROS_INFO("Track size: %d", cell_in_lanes);
+
+    CNode* leaf = GetNode(0,0);
+    double cellW = fabs(leaf->GetFootPrint()[0] - leaf->GetFootPrint()[2]);
+
     Rect r = tree->GetFootPrint();
-    double l = (r[0]-r[2])*(r[0]-r[2]);
-    l = sqrt(l);
 
-    CNode * startNode = tree->GetNearestLeaf(makeVector(r[0],r[1],0), NUCParam::lm_height);
-    ROS_INFO("lm_height: %d depth: %d maxdepth: %d", NUCParam::lm_height, startNode->depth, CNode::maxDepth);
-    Vector<3> startPos = startNode->GetPos();
-
-    Rect rc = startNode->GetFootPrint();
-    double ld = sqrt((rc[0]-rc[2])*(rc[1]-rc[3]));
-    int n = l/ld;
-
-
-    printf("LM: n:%d l:%f ld:%f \n", n, l, ld);
-
-    for(int i=0; i< n; i++)
-        for(int j=0; j< n; j++)
+    for(int i=0; i< NUCParam::lm_tracks; i++)
+    {
+        vector<CNode*> lanes;
+        for(int j=0; j< NUCParam::lm_tracks; j++)
         {
-            int jj = (i%2 == 0)?j:n-j-1;
-            Vector<3> npos = startPos + makeVector(((double)i)*ld, ((double)jj)*ld, 0);
-            nodeStack.push_back(tree->GetNearestLeaf(npos,  NUCParam::lm_height));
+            Rect nr;
+            nr[0] = r[0] + i*cell_in_lanes*cellW;
+            nr[1] = r[1] + j*cell_in_lanes*cellW;
+            nr[2] = r[0] + (i+1)*cell_in_lanes*cellW;
+            nr[3] = r[1] + (j+1)*cell_in_lanes*cellW;
+
+            CNode * node = new CNode(nr, false);
+            node->searchNode = true;
+            lanes.push_back(node);
+            FindSubCells(node);
+            //Vector<3> p = node->GetMAVWaypoint();
+            //ROS_INFO("Node FP: %f\t%f\t%f\t%f", nr[0], nr[1], nr[2], nr[3]);
+            //ROS_INFO("Node: %f\t%f\t%f", p[0], p[1], p[2]);
+
         }
+
+        if(i%2)
+            reverse(lanes.begin(), lanes.end());
+
+        copy(lanes.begin(), lanes.end(), back_inserter(nodeStack));
+    }
+
+//    CNode * startNode = tree->GetNearestLeaf(makeVector(r[0],r[1],0), NUCParam::lm_height);
+//    ROS_INFO("lm_height: %d depth: %d maxdepth: %d", NUCParam::lm_height, startNode->depth, CNode::maxDepth);
+//    Vector<3> startPos = startNode->GetPos();
+
+//    Rect rc = startNode->GetFootPrint();
+//    double ld = sqrt((rc[0]-rc[2])*(rc[1]-rc[3]));
+//    int n = l/ld;
+
+
+//    printf("LM: n:%d l:%f ld:%f \n", n, l, ld);
+
+//    for(int i=0; i< n; i++)
+//        for(int j=0; j< n; j++)
+//        {
+//            int jj = (i%2 == 0)?j:n-j-1;
+//            Vector<3> npos = startPos + makeVector(((double)i)*ld, ((double)jj)*ld, 0);
+//            nodeStack.push_back(tree->GetNearestLeaf(npos,  NUCParam::lm_height));
+//        }
 }
 
 CNode* SearchCoverageStrategy::GetNextNode()
@@ -247,12 +293,13 @@ void SearchCoverageStrategy::UpdateRemainingTime(CNode *node)
 
 void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
-    bool reachedSearchNode = (node->depth == (node->maxDepth - NUCParam::lm_height));
+    bool reachedSearchNode = node->searchNode;//(node->depth == (node->maxDepth - NUCParam::lm_height));
 
     int last_c = 0;
+    vector<TargetPolygon*> newTargets;
 
     if(reachedSearchNode)
-    {
+    {        
         // in the NUC upon reaching a node all the descendants are visited
         // which is not what we want in this specific strategy, hence the
         // following hack
@@ -276,56 +323,57 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         }
 
         last_c = targets.size();
-        FindClusters(true);
+        FindClusters(true, newTargets);
 
         //ROS_INFO("#clusters: %u", targets.size());
     }
 
     if(NUCParam::policy == "greedy")
     {
-        OnReachedNode_GreedyPolicy(node, reachedSearchNode, last_c);
+        OnReachedNode_GreedyPolicy(node, newTargets, reachedSearchNode, last_c);
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
-        OnReachedNode_DelayedGreedyPolicy(node, reachedSearchNode, last_c);
+        OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode, last_c);
     }
     else if(NUCParam::policy == "delayed")
     {
-        OnReachedNode_DelayedPolicy(node, reachedSearchNode, last_c);
+        OnReachedNode_DelayedPolicy(node, newTargets, reachedSearchNode, last_c);
     }
 
     prevGoal = node->GetMAVWaypoint();
 
 }
 
-void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
 {
     if(searchNode)
     {
 
         //join the targets of the current cell
-        if(targets.size()-newTargetIdxBegin >= 2)
+        SimplifyTargetSet(newTargets);
+
+//        if(targets.size()-newTargetIdxBegin >= 2)
+//        {
+//            TargetPolygon *t = targets[newTargetIdxBegin];
+//            while(targets.size() > newTargetIdxBegin + 1)
+//            {
+//                TargetPolygon * tmp = targets.back();
+//                targets.pop_back();
+//               // ROS_INFO("here1 %u %u",newTargetIdxBegin, targets.size());
+//                t->AddPolygon(tmp);
+//               // ROS_INFO("here1 1.5 %u %u",newTargetIdxBegin, targets.size());
+
+//                delete tmp;
+//            }
+//        }
+
+        for(size_t i=0; i < newTargets.size(); i++)
         {
-            TargetPolygon *t = targets[newTargetIdxBegin];
-            while(targets.size() > newTargetIdxBegin + 1)
-            {
-                TargetPolygon * tmp = targets.back();
-                targets.pop_back();
-               // ROS_INFO("here1 %u %u",newTargetIdxBegin, targets.size());
-                t->AddPolygon(tmp);
-               // ROS_INFO("here1 1.5 %u %u",newTargetIdxBegin, targets.size());
-
-                delete tmp;
-            }
+            newTargets[i]->GetLawnmowerPlan(target_lms);
+            newTargets[i]->MarkAsVisited();
+            targets.push_back(newTargets[i]);
         }
-
-        for(size_t i=newTargetIdxBegin; i < targets.size(); i++)
-        {
-            targets[i]->GetLawnmowerPlan(target_lms);
-            targets[i]->MarkAsVisited();
-        }
-
-        //ROS_INFO("here2");
 
         // generate a plan which visits the current target and the rest of the search pattern
         vector<Vector<3> > tmp_plan;
@@ -354,14 +402,14 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, bool search
     }
 }
 
-void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
 {
     if(searchNode)
     {
         if(nodeStack.empty())
         {
             CleanupTargets();
-            FindClusters(false);
+            FindClusters(false, targets);
 
 
             vector<Entity*> t_list;
@@ -463,7 +511,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, bool searc
     }
 }
 
-void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
 {
     if(searchNode && targets.size()-newTargetIdxBegin >= 1)
     {
@@ -569,30 +617,30 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
 
 void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-    bool flag = false;
-    if(key['\''])
-    {
-        cutoff_prob = (cutoff_prob<1.0)?cutoff_prob+0.05:cutoff_prob;
-        updateKey = true;
-        flag = true;
-    }
-    else if(key[';'])
-    {
-        cutoff_prob = (cutoff_prob>0.0)?cutoff_prob-0.05:cutoff_prob;
-        updateKey = true;
-        flag = true;
-    }
-    else if(key['l'])
-    {
-        updateKey = true;
-    }
+//    bool flag = false;
+//    if(key['\''])
+//    {
+//        cutoff_prob = (cutoff_prob<1.0)?cutoff_prob+0.05:cutoff_prob;
+//        updateKey = true;
+//        flag = true;
+//    }
+//    else if(key[';'])
+//    {
+//        cutoff_prob = (cutoff_prob>0.0)?cutoff_prob-0.05:cutoff_prob;
+//        updateKey = true;
+//        flag = true;
+//    }
+//    else if(key['l'])
+//    {
+//        updateKey = true;
+//    }
 
-    if(flag)
-    {
-        for(unsigned int i=0; i<visitedNodes.size(); i++)
-            visitedNodes[i]->GenerateTargets(cutoff_prob);
-        FindClusters(true);
-    }
+//    if(flag)
+//    {
+//        for(unsigned int i=0; i<visitedNodes.size(); i++)
+//            visitedNodes[i]->GenerateTargets(cutoff_prob);
+//        FindClusters(true);
+//    }
 
 
 }
@@ -610,9 +658,39 @@ void SearchCoverageStrategy::CleanupTargets()
     cluster_n = 0;
 }
 
-void SearchCoverageStrategy::FindClusters(bool incremental)
+void SearchCoverageStrategy::SimplifyTargetSet(vector<TargetPolygon*> &targets)
 {
-    static int cn = targets.size()-1;
+
+}
+
+void SearchCoverageStrategy::FindSubCells(CNode *n)
+{
+    vector<CNode*> stack;
+    Rect r = n->GetFootPrint();
+
+    stack.push_back(tree);
+    while(!stack.empty())
+    {
+        CNode * node = stack.back();
+        stack.pop_back();
+
+        if(node->IsLeaf())
+        {
+            Vector<3> p = node->GetMAVWaypoint();
+            if(IN(p,r))
+                n->children.push_back(node);
+        }
+        else
+        {
+            copy(node->children.begin(), node->children.end(), back_inserter(stack));
+        }
+
+    }
+}
+
+void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon*> &newTargets)
+{
+    static int cn = newTargets.size()-1;
     if(!incremental)
         cn = -1;
 
@@ -682,6 +760,6 @@ void SearchCoverageStrategy::FindClusters(bool incremental)
         }
 
         TargetPolygon *t = new TargetPolygon(v, visitedNodes.back());
-        targets.push_back(t);
+        newTargets.push_back(t);
     }
 }

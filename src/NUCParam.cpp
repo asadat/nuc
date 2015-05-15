@@ -37,6 +37,8 @@ std::string NUCParam::policy = "dfs";
 double NUCParam::average_speed = 2.0;
 double NUCParam::turning_time = 1.0;
 double NUCParam::time_limit = 600.0;
+int NUCParam::lm_tracks = 4;
+
 
 void NUCParam::GetParams(ros::NodeHandle &nh)
 {
@@ -79,6 +81,7 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param<double>("time_limit",time_limit,600.0);
     nh.param<double>("average_speed",average_speed,2.0);
     nh.param<double>("turning_time",turning_time,1.0);
+    nh.param<int>("lm_tracks", lm_tracks, 4);
 
 
 }

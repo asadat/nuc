@@ -19,7 +19,7 @@ class GNode;
 class CNode
 {
 public:
-    CNode(Rect target_foot_print);
+    CNode(Rect target_foot_print, bool populateChildren = true);
     ~CNode();
 
     // coverage related methods
@@ -84,6 +84,9 @@ public:
     double p_X;
     double imgPrior;
 
+    bool mav_wp_cached;
+    TooN::Vector<3> mav_wp;
+
     CNode* GetParent(){return parent;}
 
     GNode * GetGNode(){return gnode;}
@@ -134,6 +137,7 @@ private:
     bool extra_info;
 
     int label;
+    bool searchNode;
 
     friend class TargetPolygon;
     friend class SearchCoverageStrategy;

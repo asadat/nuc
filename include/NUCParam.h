@@ -49,6 +49,7 @@ public:
 
     static std::string prior_file_name;
 
+    static int lm_tracks;
     static int lm_height;
     static std::string policy;
     static double time_limit;
