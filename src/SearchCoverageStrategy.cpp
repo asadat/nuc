@@ -347,11 +347,11 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 
 void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
 {
-    if(searchNode)
+    if(searchNode && !newTargets.empty())
     {
 
         //join the targets of the current cell
-        SimplifyTargetSet(newTargets);
+        //SimplifyTargetSet(newTargets);
 
 //        if(targets.size()-newTargetIdxBegin >= 2)
 //        {
@@ -367,6 +367,9 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
 //                delete tmp;
 //            }
 //        }
+
+        int selector = 1;
+        int maxSlector = 1 << newTargets.size();
 
         for(size_t i=0; i < newTargets.size(); i++)
         {
@@ -658,7 +661,7 @@ void SearchCoverageStrategy::CleanupTargets()
     cluster_n = 0;
 }
 
-void SearchCoverageStrategy::SimplifyTargetSet(vector<TargetPolygon*> &targets)
+void SearchCoverageStrategy::SimplifyTargetSet(vector<TargetPolygon*> & targets)
 {
 
 }
