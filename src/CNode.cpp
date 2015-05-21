@@ -27,7 +27,7 @@ CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
     ancestor_visited = false;
     label = -1;
     extra_info = false;
-    colorBasis = TooN::makeVector(1,1,1);
+    colorBasis = TooN::makeVector(255.0/255.0, 249.0/255.0, 214.0/255.0);
     nextHilbertLeaf = NULL;
     gnode = NULL;
     coverage = 0;
@@ -335,14 +335,23 @@ void CNode::glDraw()
         if(IsLeaf())
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            if(true || !visited)
+            if(!visited)
             {
-                TooN::Vector<3> cl = p_X*colorBasis;
-                glColor4f(cl[0],cl[1],cl[2],1);
+                if(p_X >= 0.5)
+                {
+                    TooN::Vector<3> cl = colorBasis;
+                    glColor4f(cl[0],cl[1],cl[2],1);
+                }
+                else
+                {
+                    TooN::Vector<3> cl = p_X*colorBasis;
+                    glColor4f(cl[0],cl[1],cl[2],1);
+                }
             }
             else
             {
-                glColor3f(.8,.8,.8);
+                TooN::Vector<3> cl = colorBasis;
+                glColor4f(cl[0],cl[1],cl[2],1);
             }
 
             glBegin(GL_POLYGON);

@@ -399,17 +399,22 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         //            }
 
 
-        int selector = 1;
-        int maxSelector = 1 << newTargets.size();
-        int bestSelector = 0;
+        long int selector = 1;
+        long int maxSelector = 1 << newTargets.size();
+        long int bestSelector = 0;
         double bestArea = 0;
-        for(; selector < maxSelector; selector++)
+
+        bool flagAll = false;
+        if(newTargets.size() > 63)
+            flagAll = true;
+
+        for(; selector < maxSelector && !flagAll; selector++)
         {
             double area=0;
             vector<CNode*> unionCells;
             for(size_t i=0; i < newTargets.size(); i++ )
             {
-                int b = 1 << (i);
+                long int b = 1 << (i);
                 if(b & selector)
                 {
                     newTargets[i]->GetCells(unionCells);
@@ -450,10 +455,14 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
 
         // Add the selected polygons to the first selected polygon
         int firstTarget = -1;
+
+        if(flagAll)
+            firstTarget = 0;
+
         for(size_t i=0; i < newTargets.size(); i++ )
         {
-            int b = 1 << (i);
-            if(b & bestSelector)
+            long int b = 1 << (i);
+            if(b & bestSelector || flagAll)
             {
                 if(firstTarget > -1)
                 {
@@ -467,14 +476,19 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         }
 
         if(firstTarget == -1)
+        {
+            ///for(size_t i=0; i < newTargets.size(); i++)
+            //    targets.push_back(newTargets[i]);
             return;
+        }
+
 
         // delete the selected polygons except the first one
         int sze = newTargets.size()-1;
         for(int i=sze; i > 0; i-- )
         {
-            int b = 1 << (i);
-            if(b & bestSelector)
+            long int b = 1 << (i);
+            if(b & bestSelector || flagAll)
             {
                 TargetPolygon * tmp = newTargets[i];
                 newTargets.erase(newTargets.begin()+i);
@@ -489,9 +503,8 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
             {
                 newTargets[i]->GetLawnmowerPlan(target_lms);
                 newTargets[i]->MarkAsVisited();
+                targets.push_back(newTargets[i]);
             }
-
-            targets.push_back(newTargets[i]);
         }
 
     }
