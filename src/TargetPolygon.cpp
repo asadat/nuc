@@ -10,10 +10,17 @@
 
 using namespace std;
 
+TargetPolygon::TargetPolygon()
+{
+    visited = false;
+}
+
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
     visited = false;
-    parentSearchNodes.insert(parentNode);
+    if(parentNode)
+        parentSearchNodes.insert(parentNode);
+
     std::copy(cs.begin(), cs.end(), std::back_inserter(cells));
     ProcessPolygon();
 }
@@ -47,17 +54,29 @@ bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
     return false;
 }
 
-void TargetPolygon::AddPolygon(TargetPolygon *p)
+void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels)
 {
     parentSearchNodes.insert(p->parentSearchNodes.begin(), p->parentSearchNodes.end());
 
     for(size_t i=0; i < p->cells.size(); i++)
     {
-        p->cells[i]->label = label;
+        if(changeLabels)
+            p->cells[i]->label = label;
+
         cells.push_back(p->cells[i]);
     }
 
     ProcessPolygon();
+}
+
+double TargetPolygon::GetTargetRegionsArea()
+{
+    return ((double)cells.size())*cellW*cellW;
+}
+
+void TargetPolygon::GetCells(vector<CNode *> &v)
+{
+    copy(cells.begin(), cells.end(), back_inserter(v));
 }
 
 void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
@@ -180,6 +199,8 @@ void TargetPolygon::ConvexHull()
             i--;
         }
     }
+
+
 
 }
 

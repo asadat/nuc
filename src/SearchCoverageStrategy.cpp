@@ -368,38 +368,130 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
 //            }
 //        }
 
-        int selector = 1;
-        int maxSlector = 1 << newTargets.size();
+        //            for(size_t i=0; i < newTargets.size(); i++)
+        //            {
+        //                newTargets[i]->GetLawnmowerPlan(target_lms);
+        //                newTargets[i]->MarkAsVisited();
+        //                targets.push_back(newTargets[i]);
+        //            }
 
+        //            vector<Vector<3> > tmp_plan;
+        //            tmp_plan.push_back(prevGoal);
+        //            tmp_plan.push_back(node->GetMAVWaypoint());
+        //            copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
+        //            for(size_t i = 0; i < nodeStack.size(); i++)
+        //                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
+        //            tmp_plan.push_back(startPos);
+
+        //            double total_time = GetPlanExecutionTime(tmp_plan, true, false);
+
+        //            if(total_time > remaining_time)
+        //            {
+        //                if(targets.size() > newTargetIdxBegin)
+        //                    targets[newTargetIdxBegin]->SetVisited(false);
+
+        //                target_lms.clear();
+        //            }
+        //            else
+        //            {
+        //                if(targets.size() > newTargetIdxBegin)
+        //                    targets[newTargetIdxBegin]->SetVisited(true);
+        //            }
+
+
+        int selector = 1;
+        int maxSelector = 1 << newTargets.size();
+        int bestSelector = 0;
+        double bestArea = 0;
+        for(; selector < maxSelector; selector++)
+        {
+            double area=0;
+            vector<CNode*> unionCells;
+            for(size_t i=0; i < newTargets.size(); i++ )
+            {
+                int b = 1 << (i);
+                if(b & selector)
+                {
+                    newTargets[i]->GetCells(unionCells);
+                    area += newTargets[i]->GetTargetRegionsArea();
+                }
+            }
+
+            if(unionCells.empty())
+                continue;
+
+            TargetPolygon * tmpPoly = new TargetPolygon(unionCells, NULL);
+            vector<Vector<3> > tmp_target_lm;
+            tmpPoly->GetLawnmowerPlan(tmp_target_lm);
+
+            // generate a plan which visits the current target and the rest of the search pattern
+            vector<Vector<3> > tmp_plan;
+            tmp_plan.push_back(prevGoal);
+            tmp_plan.push_back(node->GetMAVWaypoint());
+            copy(tmp_target_lm.begin(), tmp_target_lm.end(), back_inserter(tmp_plan));
+            for(size_t i = 0; i < nodeStack.size(); i++)
+                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
+            tmp_plan.push_back(startPos);
+
+            double total_time = GetPlanExecutionTime(tmp_plan, true, false);
+
+            if(total_time < remaining_time)
+            {
+                if(bestArea < area)
+                {
+                    bestArea = area;
+                    bestSelector = selector;
+                }
+            }
+
+        }
+
+        ROS_INFO("bestSelector: %d area: %f", bestSelector, bestArea);
+
+        // Add the selected polygons to the first selected polygon
+        int firstTarget = -1;
+        for(size_t i=0; i < newTargets.size(); i++ )
+        {
+            int b = 1 << (i);
+            if(b & bestSelector)
+            {
+                if(firstTarget > -1)
+                {
+                    newTargets[firstTarget]->AddPolygon(newTargets[i]);
+                }
+                else
+                {
+                    firstTarget = i;
+                }
+            }
+        }
+
+        if(firstTarget == -1)
+            return;
+
+        // delete the selected polygons except the first one
+        int sze = newTargets.size()-1;
+        for(int i=sze; i > 0; i-- )
+        {
+            int b = 1 << (i);
+            if(b & bestSelector)
+            {
+                TargetPolygon * tmp = newTargets[i];
+                newTargets.erase(newTargets.begin()+i);
+                delete tmp;
+            }
+        }
+
+        // add the aggregate lawnmower plan to the current plan
         for(size_t i=0; i < newTargets.size(); i++)
         {
-            newTargets[i]->GetLawnmowerPlan(target_lms);
-            newTargets[i]->MarkAsVisited();
+            if(i == firstTarget)
+            {
+                newTargets[i]->GetLawnmowerPlan(target_lms);
+                newTargets[i]->MarkAsVisited();
+            }
+
             targets.push_back(newTargets[i]);
-        }
-
-        // generate a plan which visits the current target and the rest of the search pattern
-        vector<Vector<3> > tmp_plan;
-        tmp_plan.push_back(prevGoal);
-        tmp_plan.push_back(node->GetMAVWaypoint());
-        copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
-        for(size_t i = 0; i < nodeStack.size(); i++)
-            tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-        tmp_plan.push_back(startPos);
-
-        double total_time = GetPlanExecutionTime(tmp_plan, true, false);
-
-        if(total_time > remaining_time)
-        {
-            if(targets.size() > newTargetIdxBegin)
-                targets[newTargetIdxBegin]->SetVisited(false);
-
-            target_lms.clear();
-        }
-        else
-        {
-            if(targets.size() > newTargetIdxBegin)
-                targets[newTargetIdxBegin]->SetVisited(true);
         }
 
     }

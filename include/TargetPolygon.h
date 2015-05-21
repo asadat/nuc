@@ -9,6 +9,7 @@ using namespace TooN;
 class TargetPolygon
 {
     public:
+        TargetPolygon();
         TargetPolygon(vector<CNode*> &cs, CNode* parentNode);
         ~TargetPolygon();
 
@@ -20,10 +21,12 @@ class TargetPolygon
         Vector<3> FirstLMPos(){return lm.front();}
         Vector<3> LastLMPos(){return lm.back();}
         size_t LawnmowerSize(){return lm.size();}
-        void AddPolygon(TargetPolygon* p);
-        int GetLabel(){return label;}
+        void AddPolygon(TargetPolygon* p, bool changeLabels=true);
+        //int GetLabel(){return label;}
         bool IsNeighbour(TargetPolygon *tp);
         void SetVisited(bool visited_){visited = visited_;}
+        double GetTargetRegionsArea();
+        void GetCells(vector<CNode*> &v);
 
     private:
         void ProcessPolygon();
