@@ -7,52 +7,52 @@ set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -Wall") # For G++ <4.7; al
 set(NUC_LIBRARIES GL GLU glut)
 
 set(NUC_SOURCES
-    src/dubins.cpp
+   # src/dubins.cpp
     src/NUC.cpp
     src/NUC_node.cpp
     src/CNode.cpp
-    src/DepthFirstStrategy.cpp
-    src/ShortCutStrategy.cpp
-    src/LawnmowerStrategy.cpp
-    src/BudgetedStrategy.cpp
+    #src/DepthFirstStrategy.cpp
+    #src/ShortCutStrategy.cpp
+    #src/LawnmowerStrategy.cpp
+    #src/BudgetedStrategy.cpp
     src/MAV.cpp
     src/InterestingnessSensor.cpp
-    src/slic.cpp
-    src/SuperPixelFeatures.cpp
+    #src/slic.cpp
+    #src/SuperPixelFeatures.cpp
     src/NUCParam.cpp
-    src/GNode.cpp
-    src/PathOptimization.cpp
+   # src/GNode.cpp
+   # src/PathOptimization.cpp
     #src/HuskyInterface.cpp
-    src/TestStrategy.cpp
-    src/HilbertStrategy.cpp
-    src/HilbertOptimization.cpp
-    src/Trajectory.cpp
+    #src/TestStrategy.cpp
+    #src/HilbertStrategy.cpp
+   # src/HilbertOptimization.cpp
+    #src/Trajectory.cpp
     src/SearchCoverageStrategy.cpp
     src/TSP.cpp
     src/TargetPolygon.cpp
     include/TargetPolygon.h
     include/TSP.h
     include/SearchCoverageStrategy.h
-    include/dubins.h
-    include/HilbertStrategy.h
-    include/TestStrategy.h
-    include/BudgetedStrategy.h
-    include/Trajectory.h
+    #include/dubins.h
+    #include/HilbertStrategy.h
+    #include/TestStrategy.h
+    #include/BudgetedStrategy.h
+    #include/Trajectory.h
     #include/HuskyInterface.h
-    include/SuperPixelFeatures.h
-    include/slic.h
+    #include/SuperPixelFeatures.h
+    #include/slic.h
     include/InterestingnessSensor.h
     include/NUC.h
     include/CNode.h
-    include/DepthFirstStrategy.h
-    include/ShortCutStrategy.h
-    include/LawnmowerStrategy.h
+    #include/DepthFirstStrategy.h
+    #include/ShortCutStrategy.h
+    #include/LawnmowerStrategy.h
     include/TraversalStrategy.h
-    include/HilbertOptimization.h
+    #include/HilbertOptimization.h
     include/MAV.h
     include/NUCParam.h
-    include/GNode.h
-    include/PathOptimization.h
+    #include/GNode.h
+    #include/PathOptimization.h
 )
 
 

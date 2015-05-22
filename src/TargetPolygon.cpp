@@ -81,7 +81,8 @@ void TargetPolygon::GetCells(vector<CNode *> &v)
 
 void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
 {
-    std::copy(lm.begin(), lm.end(), std::back_inserter(v));
+    if(!lm.empty())
+        std::copy(lm.begin(), lm.end(), std::back_inserter(v));
 }
 
 void TargetPolygon::MarkAsVisited()
@@ -152,7 +153,6 @@ void TargetPolygon::ConvexHull()
     while(true)
     {
         //if(n++ > 100) return;
-
         p1 = ch[ch.size()-2]->pos;
         p2 = ch.back()->pos;
         int next = -1;
@@ -170,12 +170,18 @@ void TargetPolygon::ConvexHull()
             }
         }
 
-        if(std::find(ch.begin(), ch.end(), cells[next]) != ch.end())
-            break;
+        if(next > -1)
+        {
+            if(std::find(ch.begin(), ch.end(), cells[next]) != ch.end())
+                break;
+            else
+                ch.push_back(cells[next]);
+        }
         else
-            ch.push_back(cells[next]);
+        {
+            break;
+        }
     }
-
 
     // remove extra nodes (colinear edges)
     int sz = ch.size();

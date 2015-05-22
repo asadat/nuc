@@ -22,6 +22,7 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
 {
+    searchParentNode = NULL;
     mav_wp_cached = false;
     searchNode = false;
     ancestor_visited = false;

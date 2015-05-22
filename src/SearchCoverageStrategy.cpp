@@ -322,7 +322,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
             node->GenerateTargets(cutoff_prob);
         }
 
-        last_c = targets.size();
+        //last_c = targets.size();
         FindClusters(true, newTargets);
 
         //ROS_INFO("#clusters: %u", targets.size());
@@ -330,22 +330,22 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 
     if(NUCParam::policy == "greedy")
     {
-        OnReachedNode_GreedyPolicy(node, newTargets, reachedSearchNode, last_c);
+        OnReachedNode_GreedyPolicy(node, newTargets, reachedSearchNode);
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
-        OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode, last_c);
+        OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode);
     }
     else if(NUCParam::policy == "delayed")
     {
-        OnReachedNode_DelayedPolicy(node, newTargets, reachedSearchNode, last_c);
+        OnReachedNode_DelayedPolicy(node, newTargets, reachedSearchNode);
     }
 
     prevGoal = node->GetMAVWaypoint();
 
 }
 
-void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
     if(searchNode && !newTargets.empty())
     {
@@ -448,10 +448,9 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                     bestSelector = selector;
                 }
             }
-
         }
 
-        ROS_INFO("bestSelector: %d area: %f", bestSelector, bestArea);
+//        ROS_INFO("bestSelector: %d area: %f", bestSelector, bestArea);
 
         // Add the selected polygons to the first selected polygon
         int firstTarget = -1;
@@ -482,7 +481,6 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
             return;
         }
 
-
         // delete the selected polygons except the first one
         int sze = newTargets.size()-1;
         for(int i=sze; i > 0; i-- )
@@ -506,11 +504,10 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                 targets.push_back(newTargets[i]);
             }
         }
-
     }
 }
 
-void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
     if(searchNode)
     {
@@ -619,35 +616,36 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
     }
 }
 
-void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode, int newTargetIdxBegin)
+void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
-    if(searchNode && targets.size()-newTargetIdxBegin >= 1)
-    {
-        //join the targets of the current cell
-        if(targets.size()-newTargetIdxBegin >= 2)
-        {
-            TargetPolygon *t = targets[newTargetIdxBegin];
-            while(targets.size() > newTargetIdxBegin + 1)
-            {
-                TargetPolygon * tmp = targets.back();
-                targets.pop_back();
-                t->AddPolygon(tmp);
-                delete tmp;
-            }
-        }
 
-        // join the target of the current cell with the
-        // targets in the neighbours
-        for(size_t i=0; i < newTargetIdxBegin; i++)
-            if(targets[i]->IsNeighbour(targets[newTargetIdxBegin]))
-            {
-                TargetPolygon * tmp = targets.back();
-                targets.pop_back();
-                targets[i]->AddPolygon(tmp);
-                delete tmp;
-                break;
-            }
-    }
+//    if(searchNode && targets.size()-newTargetIdxBegin >= 1)
+//    {
+//        //join the targets of the current cell
+//        if(targets.size()-newTargetIdxBegin >= 2)
+//        {
+//            TargetPolygon *t = targets[newTargetIdxBegin];
+//            while(targets.size() > newTargetIdxBegin + 1)
+//            {
+//                TargetPolygon * tmp = targets.back();
+//                targets.pop_back();
+//                t->AddPolygon(tmp);
+//                delete tmp;
+//            }
+//        }
+
+//        // join the target of the current cell with the
+//        // targets in the neighbours
+//        for(size_t i=0; i < newTargetIdxBegin; i++)
+//            if(targets[i]->IsNeighbour(targets[newTargetIdxBegin]))
+//            {
+//                TargetPolygon * tmp = targets.back();
+//                targets.pop_back();
+//                targets[i]->AddPolygon(tmp);
+//                delete tmp;
+//                break;
+//            }
+//    }
 }
 
 void SearchCoverageStrategy::glDraw()
@@ -786,7 +784,10 @@ void SearchCoverageStrategy::FindSubCells(CNode *n)
         {
             Vector<3> p = node->GetMAVWaypoint();
             if(IN(p,r))
+            {
                 n->children.push_back(node);
+                node->searchParentNode = n;
+            }
         }
         else
         {

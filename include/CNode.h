@@ -115,6 +115,7 @@ private:
 
     bool VisitedInterestingDescendentExists();
 
+    CNode *searchParentNode;
     CNode *parent;
     CNode *nds[8];
     bool neighbours_populated;

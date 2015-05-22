@@ -4,15 +4,15 @@
 #include "GL/glut.h"
 #include "CNode.h"
 #include "TooN/TooN.h"
-#include "DepthFirstStrategy.h"
-#include "LawnmowerStrategy.h"
-#include "ShortCutStrategy.h"
-#include "BudgetedStrategy.h"
+//#include "DepthFirstStrategy.h"
+//#include "LawnmowerStrategy.h"
+//#include "ShortCutStrategy.h"
+//#include "BudgetedStrategy.h"
 #include "SearchCoverageStrategy.h"
 #include "InterestingnessSensor.h"
 //#include "HilbertStrategy.h"
-#include "TestStrategy.h"
-#include "HilbertOptimization.h"
+//#include "TestStrategy.h"
+//#include "HilbertOptimization.h"
 
 #include "NUCParam.h"
 //#include "HuskyInterface.h"
@@ -148,27 +148,27 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
     if(traversalStrategy == 0)
     {
-        traversal = new DepthFirstStrategy(tree);
+        //traversal = new DepthFirstStrategy(tree);
     }
     else if(traversalStrategy == 1)
     {
-        traversal = new ShortCutStrategy(tree);
+        //traversal = new ShortCutStrategy(tree);
     }
     else if(traversalStrategy == 3)
     {
-        traversal = new TestStrategy(tree);
+        //traversal = new TestStrategy(tree);
     }
     else if(traversalStrategy == 4)
     {
-        traversal = new HilbertStrategy(tree);
+        //traversal = new HilbertStrategy(tree);
     }
     else if(traversalStrategy == 5)
     {
-        traversal = new HilbertOptimization(tree, mav.GetPos(), mav.GetPos());
+        //traversal = new HilbertOptimization(tree, mav.GetPos(), mav.GetPos());
     }
     else if(traversalStrategy == 6)
     {
-        traversal = new BudgetedStrategy(tree);
+        //traversal = new BudgetedStrategy(tree);
     }
     else if(traversalStrategy == 7)
     {
@@ -176,7 +176,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     }
     else
     {
-        traversal = new LawnmowerStrategy(tree);
+        //traversal = new LawnmowerStrategy(tree);
     }
 
     StartTraversing();

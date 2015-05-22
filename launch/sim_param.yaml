@@ -13,13 +13,7 @@ patches: 3
 percent_interesting: 50.0
 auto_exit: false
 bypass_controller: false
-int_prob_thr: 0.3
-alpha_h0: 0.1
-alpha_hm: 0.3
-beta_h0: 0.1
-beta_hm: 0.3
 prob_r: 0.5
-path_cost: 700.0
 prior_file_name: prior2.jpg
 lm_height: 3
 time_limit: 500

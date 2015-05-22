@@ -1,11 +1,12 @@
 
 #include "InterestingnessSensor.h"
-#include "SuperPixelFeatures.h"
+//#include "SuperPixelFeatures.h"
 #include "ros/ros.h"
 //#include "interestingness/ROIs.h"
 #include "NUCParam.h"
 
 //#include "opencv2/opencv.hpp"
+using namespace cv;
 
 InterestingnessSensor * InterestingnessSensor::instance;
 int iLowH = 60;
@@ -400,128 +401,128 @@ void InterestingnessSensor::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 void InterestingnessSensor::TrainDTree()
 {
-    //system("pwd");
-    bool loadedTree = false;
-    vector<int> train_size;
-    vector<vector<cv::Mat> > features;
+//    //system("pwd");
+//    bool loadedTree = false;
+//    vector<int> train_size;
+//    vector<vector<cv::Mat> > features;
 
-    char label[32];
-    FILE* f = fopen((trainingSetDir+"/labels.txt").c_str(), "r");
-    if(!f)
-    {
-        ROS_INFO("ERROR reading the %s",(trainingSetDir+"/labels.txt").c_str());
-    }
-
-    int train_n = 0;
-    //printf("Reading ....");
-
-    while(fscanf(f, "%s %d\n", label, &train_n ) != EOF)
-    {
-        char* str = new char(strlen(label)+1);
-        strcpy(str,label);
-        labels.push_back(str);
-        train_size.push_back(train_n);
-        ROS_INFO("Sample: %s %d \n", label, train_n);
-    }
-    fclose(f);
-
-    if(this->exists_test((trainingSetDir+"/decision_tree").c_str()))
-    {
-        dtree.load((trainingSetDir+"/decision_tree").c_str());
-        loadedTree = true;
-    }
-    else
-    {
-        int nrows = 0;
-
-        for(unsigned int i=0; i<labels.size(); i++)
-        {
-            for( int j=0; j<train_size[i]; j++)
-            {
-                char num[256];
-                sprintf(num, "%s/%s%d.jpg",trainingSetDir.c_str(),labels[i],j);
-
-                ROS_INFO("reading: %s %d\n", num, j);
-                cv::Mat img = cv::imread(num);
-
-                SuperPixelFeatures sp(img);
-                vector<cv::Mat> ftv;
-                sp.GetSuperPixelFeatures(ftv);
-                features.push_back(ftv);
-                nrows += ftv.size();
-            }
-        }
-
-        cv::Mat trainMat(nrows, 4, CV_32F);
-        cv::Mat trainRe(nrows, 1, CV_32F);
-
-        int it=0;
-        int imgn = 0;
-        for(unsigned int i=0; i<labels.size(); i++)
-        {
-            for( int j=0; j<train_size[i]; j++)
-            {
-                for(unsigned int k=0; k<features[imgn].size(); k++)
-                {
-                    trainRe.at<float>(it) = i;
-                    trainMat.at<float>(it,0) = features[imgn][k].at<float>(0,0);
-                    trainMat.at<float>(it,1) = features[imgn][k].at<float>(0,1);
-                    trainMat.at<float>(it,2) = features[imgn][k].at<float>(0,2);
-                    trainMat.at<float>(it,3) = features[imgn][k].at<float>(0,3);
-
-                    it++;
-                }
-                imgn++;
-            }
-        }
-
-        dtree.train(trainMat, CV_ROW_SAMPLE, trainRe);
-    }
-
-
-//    ros::Time t1 = ros::Time::now();
-//    TestDTree("test9.jpg");
-//    ROS_INFO("dt: %f", (ros::Time::now()-t1).toSec());
-//    t1 = ros::Time::now();
-//    TestDTree("test8.jpg");
-//    ROS_INFO("dt: %f", (ros::Time::now()-t1).toSec());
-
-    if(!loadedTree)
-    {
-        dtree.save((trainingSetDir+"/decision_tree").c_str());
-    }
-
-//    int n=0;
-//    for(int i=0; i<nrows; i++)
+//    char label[32];
+//    FILE* f = fopen((trainingSetDir+"/labels.txt").c_str(), "r");
+//    if(!f)
 //    {
-//        n+= ((dtree.predict(trainMat.row(i))->value - trainRe.at<float>(i))<0.001)?1:0;
+//        ROS_INFO("ERROR reading the %s",(trainingSetDir+"/labels.txt").c_str());
 //    }
-//    printf("Test Data: %d out of %d\n",n,nrows);
+
+//    int train_n = 0;
+//    //printf("Reading ....");
+
+//    while(fscanf(f, "%s %d\n", label, &train_n ) != EOF)
+//    {
+//        char* str = new char(strlen(label)+1);
+//        strcpy(str,label);
+//        labels.push_back(str);
+//        train_size.push_back(train_n);
+//        ROS_INFO("Sample: %s %d \n", label, train_n);
+//    }
+//    fclose(f);
+
+//    if(this->exists_test((trainingSetDir+"/decision_tree").c_str()))
+//    {
+//        dtree.load((trainingSetDir+"/decision_tree").c_str());
+//        loadedTree = true;
+//    }
+//    else
+//    {
+//        int nrows = 0;
+
+//        for(unsigned int i=0; i<labels.size(); i++)
+//        {
+//            for( int j=0; j<train_size[i]; j++)
+//            {
+//                char num[256];
+//                sprintf(num, "%s/%s%d.jpg",trainingSetDir.c_str(),labels[i],j);
+
+//                ROS_INFO("reading: %s %d\n", num, j);
+//                cv::Mat img = cv::imread(num);
+
+//                SuperPixelFeatures sp(img);
+//                vector<cv::Mat> ftv;
+//                sp.GetSuperPixelFeatures(ftv);
+//                features.push_back(ftv);
+//                nrows += ftv.size();
+//            }
+//        }
+
+//        cv::Mat trainMat(nrows, 4, CV_32F);
+//        cv::Mat trainRe(nrows, 1, CV_32F);
+
+//        int it=0;
+//        int imgn = 0;
+//        for(unsigned int i=0; i<labels.size(); i++)
+//        {
+//            for( int j=0; j<train_size[i]; j++)
+//            {
+//                for(unsigned int k=0; k<features[imgn].size(); k++)
+//                {
+//                    trainRe.at<float>(it) = i;
+//                    trainMat.at<float>(it,0) = features[imgn][k].at<float>(0,0);
+//                    trainMat.at<float>(it,1) = features[imgn][k].at<float>(0,1);
+//                    trainMat.at<float>(it,2) = features[imgn][k].at<float>(0,2);
+//                    trainMat.at<float>(it,3) = features[imgn][k].at<float>(0,3);
+
+//                    it++;
+//                }
+//                imgn++;
+//            }
+//        }
+
+//        dtree.train(trainMat, CV_ROW_SAMPLE, trainRe);
+//    }
+
+
+////    ros::Time t1 = ros::Time::now();
+////    TestDTree("test9.jpg");
+////    ROS_INFO("dt: %f", (ros::Time::now()-t1).toSec());
+////    t1 = ros::Time::now();
+////    TestDTree("test8.jpg");
+////    ROS_INFO("dt: %f", (ros::Time::now()-t1).toSec());
+
+//    if(!loadedTree)
+//    {
+//        dtree.save((trainingSetDir+"/decision_tree").c_str());
+//    }
+
+////    int n=0;
+////    for(int i=0; i<nrows; i++)
+////    {
+////        n+= ((dtree.predict(trainMat.row(i))->value - trainRe.at<float>(i))<0.001)?1:0;
+////    }
+////    printf("Test Data: %d out of %d\n",n,nrows);
 }
 
 void InterestingnessSensor::TestDTree(char *filename)
 {
-    CvScalar cl[3];
-    cl[0].val[0] = 100;cl[0].val[1] = 250;cl[0].val[2] = 100; // grass
-    cl[1].val[0] = 200;cl[1].val[1] = 150;cl[1].val[2] = 100; // sand
-    cl[2].val[0] = 0;cl[2].val[1] = 100;cl[2].val[2] = 0; // tree
+//    CvScalar cl[3];
+//    cl[0].val[0] = 100;cl[0].val[1] = 250;cl[0].val[2] = 100; // grass
+//    cl[1].val[0] = 200;cl[1].val[1] = 150;cl[1].val[2] = 100; // sand
+//    cl[2].val[0] = 0;cl[2].val[1] = 100;cl[2].val[2] = 0; // tree
 
-    cv::Mat testMat= cv::imread(filename);
-    SuperPixelFeatures sptest(testMat);
-    vector<cv::Mat> fs;
-    sptest.GetSuperPixelFeatures(fs);
-    vector<CvScalar> labelcolor;
-    for(unsigned int i=0; i<fs.size(); i++)
-    {
+//    cv::Mat testMat= cv::imread(filename);
+//    SuperPixelFeatures sptest(testMat);
+//    vector<cv::Mat> fs;
+//    sptest.GetSuperPixelFeatures(fs);
+//    vector<CvScalar> labelcolor;
+//    for(unsigned int i=0; i<fs.size(); i++)
+//    {
 
-        double c = dtree.predict(fs[i].row(0))->value;
-        labelcolor.push_back(cl[(int)c]);
-    }
+//        double c = dtree.predict(fs[i].row(0))->value;
+//        labelcolor.push_back(cl[(int)c]);
+//    }
 
-    cv::Mat labelmap(testMat.rows, testMat.cols, CV_8UC3);
-    sptest.SuperPixelLabelMap(labelmap, labelcolor);
-    char outputf[128];
-    sprintf(outputf, "%s%s","output-",filename);
-    cv::imwrite(outputf, labelmap);
+//    cv::Mat labelmap(testMat.rows, testMat.cols, CV_8UC3);
+//    sptest.SuperPixelLabelMap(labelmap, labelcolor);
+//    char outputf[128];
+//    sprintf(outputf, "%s%s","output-",filename);
+//    cv::imwrite(outputf, labelmap);
 
 }
