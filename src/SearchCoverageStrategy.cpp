@@ -295,7 +295,6 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
     bool reachedSearchNode = node->searchNode;//(node->depth == (node->maxDepth - NUCParam::lm_height));
 
-    int last_c = 0;
     vector<TargetPolygon*> newTargets;
 
     if(reachedSearchNode)
@@ -404,6 +403,11 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         long int bestSelector = 0;
         double bestArea = 0;
 
+        // keep track of the min cost plan
+        // in case cannot make complete coverage
+        double minCost = 99999999;
+        long int minCostSelector = 0;
+
         bool flagAll = false;
         if(newTargets.size() > 63)
             flagAll = true;
@@ -448,16 +452,26 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                     bestSelector = selector;
                 }
             }
+
+            if(total_time < minCost)
+            {
+                minCost = total_time;
+                minCostSelector = selector;
+            }
         }
 
-//        ROS_INFO("bestSelector: %d area: %f", bestSelector, bestArea);
 
-        // Add the selected polygons to the first selected polygon
+        // if complete coverage was impossible
+        // create partial coverage
+        if(bestSelector == 0)
+            bestSelector = minCostSelector;
+
         int firstTarget = -1;
 
         if(flagAll)
             firstTarget = 0;
 
+        // Add the selected polygons to the first selected polygon
         for(size_t i=0; i < newTargets.size(); i++ )
         {
             long int b = 1 << (i);
@@ -473,6 +487,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                 }
             }
         }
+
 
         if(firstTarget == -1)
         {
@@ -501,6 +516,26 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
             {
                 newTargets[i]->GetLawnmowerPlan(target_lms);
                 newTargets[i]->MarkAsVisited();
+
+                while(!target_lms.empty())
+                {
+                    //check if we should create partial plan
+                    vector<Vector<3> > tmp_plan;
+                    tmp_plan.push_back(prevGoal);
+                    tmp_plan.push_back(node->GetMAVWaypoint());
+                    copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
+                    for(size_t i = 0; i < nodeStack.size(); i++)
+                        tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
+                    tmp_plan.push_back(startPos);
+
+                    double total_time = GetPlanExecutionTime(tmp_plan, true, false);
+
+                    if(total_time < remaining_time)
+                        break;
+                    else
+                       target_lms.pop_back();
+                }
+
                 targets.push_back(newTargets[i]);
             }
         }
@@ -762,11 +797,6 @@ void SearchCoverageStrategy::CleanupTargets()
 
     clusters.clear();
     cluster_n = 0;
-}
-
-void SearchCoverageStrategy::SimplifyTargetSet(vector<TargetPolygon*> & targets)
-{
-
 }
 
 void SearchCoverageStrategy::FindSubCells(CNode *n)
