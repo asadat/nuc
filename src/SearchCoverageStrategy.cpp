@@ -531,12 +531,14 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                     double total_time = GetPlanExecutionTime(tmp_plan, true, false);
 
                     if(total_time < remaining_time)
+                    {
+                        targets.push_back(newTargets[i]);
                         break;
+                    }
                     else
                        target_lms.pop_back();
                 }
 
-                targets.push_back(newTargets[i]);
             }
         }
     }
