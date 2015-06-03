@@ -18,6 +18,7 @@ public:
 
 private:    
     CNode * GetNode(int i, int j);
+    CNode * GetSearchNode(int i, int j);
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
     double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
@@ -38,7 +39,9 @@ private:
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
     std::vector<CNode*> grid;
+    std::vector<CNode*> search_grid;
     std::vector<TooN::Vector<3> > target_lms;
+
 
     double cutoff_prob;
     int cluster_n;

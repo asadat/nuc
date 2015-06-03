@@ -197,14 +197,14 @@ void SearchCoverageStrategy::GenerateLawnmower()
             nr[3] = r[1] + (j+1)*cell_in_lanes*cellW;
 
             CNode * node = new CNode(nr, false);
+            node->grd_x = i;
+            node->grd_y = j;
             node->searchNode = true;
             lanes.push_back(node);
             FindSubCells(node);
-            //Vector<3> p = node->GetMAVWaypoint();
-            //ROS_INFO("Node FP: %f\t%f\t%f\t%f", nr[0], nr[1], nr[2], nr[3]);
-            //ROS_INFO("Node: %f\t%f\t%f", p[0], p[1], p[2]);
-
         }
+
+        copy(lanes.begin(), lanes.end(), back_inserter(search_grid));
 
         if(i%2)
             reverse(lanes.begin(), lanes.end());
@@ -754,6 +754,18 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
     else
     {
         ROS_WARN("GetNode: out of boundary access ...");
+        return NULL;
+    }
+}
+
+CNode * SearchCoverageStrategy::GetSearchNode(int i, int j)
+{
+    size_t n = i*NUCParam::lm_tracks + j;
+    if(n < search_grid.size())
+        return search_grid[n];
+    else
+    {
+        ROS_WARN("GetSearchNode: out of boundary access ...");
         return NULL;
     }
 }
