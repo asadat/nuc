@@ -27,6 +27,7 @@ class TargetPolygon
         void SetVisited(bool visited_){visited = visited_;}
         double GetTargetRegionsArea();
         void GetCells(vector<CNode*> &v);
+        void SetPolygonColor(Vector<3> color){pc=color;}
 
     private:
         void ProcessPolygon();
@@ -46,6 +47,7 @@ class TargetPolygon
         double cellW;
         bool visited;
         int base_idx[2];
+        Vector<3> pc;
 
 };
 

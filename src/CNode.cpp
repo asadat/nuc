@@ -1,6 +1,7 @@
 #include "CNode.h"
 #include <math.h>
 #include <GL/glut.h>
+#include <algorithm>
 #include "NUCParam.h"
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
@@ -416,6 +417,22 @@ void CNode::SetAncestorVisited(bool av)
     }
 }
 
+void CNode::AddDependentPolygon(TargetPolygon *tp)
+{
+    if(std::find(dependents.begin(), dependents.end(), tp) == dependents.end())
+    {
+        dependents.push_back(tp);
+    }
+}
+
+void CNode::RemoveDependentPolygon(TargetPolygon *tp)
+{
+    std::vector<TargetPolygon*>::iterator it = std::find(dependents.begin(), dependents.end(), tp);
+    if( it != dependents.end())
+    {
+        dependents.erase(it);
+    }
+}
 
 bool CNode::PropagateInterestingness(Rect r)
 {

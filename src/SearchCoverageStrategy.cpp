@@ -20,6 +20,8 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
     dummy->visited = false;
     dummy->depth = dummy->maxDepth;
 
+    search_cell_size = 0;
+
     //cellW = 1;
     cluster_n=0;
     cutoff_prob = 0.60;
@@ -178,6 +180,8 @@ double SearchCoverageStrategy::GetPlanExecutionTime(vector<Vector<3> > &wps, boo
 void SearchCoverageStrategy::GenerateLawnmower()
 {
     int cell_in_lanes = ceil(((double)s)/NUCParam::lm_tracks);
+    search_cell_size = cell_in_lanes;
+
     ROS_INFO("Track size: %d", cell_in_lanes);
 
     CNode* leaf = GetNode(0,0);
@@ -655,6 +659,77 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
 
 void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
+
+    if(searchNode)
+    {
+        for(size_t i=0; i < newTargets.size(); i++)
+        {
+            if(node->grd_x == NUCParam::lm_tracks-1)
+                continue;
+
+            //right space checking
+            int minDist = 9999;
+            vector<CNode*> right_space;
+            vector<CNode*> target_cells;
+            newTargets[i]->GetCells(target_cells);
+            for(size_t j=0; j<target_cells.size(); j++)
+            {
+                int ii = (node->grd_x+1)*search_cell_size-1;
+                int jj = target_cells[j]->grd_y;
+
+                vector<CNode*> tmp;
+                bool onTheBoundary = true;
+                for(; ii > (node->grd_x)*search_cell_size-1; ii--)
+                {
+                    CNode * nc = GetNode(ii,jj);
+                    if(nc->label == -1)
+                    {
+                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
+
+                        if(d < 0.00001)
+                        {
+                            tmp.push_back(nc);
+                        }
+                        else
+                        {
+                            onTheBoundary = false;
+                            break;
+                        }
+
+                        nc->colorBasis = makeVector(1,1,1);
+                        nc->SetPrior(1);
+                    }
+                    else if(nc->label == target_cells[j]->label)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        tmp.clear();
+                        onTheBoundary = false;
+                        break;
+                    }
+                }
+
+                if(onTheBoundary)
+                {
+                    if(minDist > tmp.size())
+                        minDist = tmp.size();
+
+                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(right_space));
+                }
+            }
+
+            if(minDist < 3)
+            {
+                newTargets[i]->SetPolygonColor(makeVector(1,0,0));
+            }
+
+        }
+
+        std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
+    }
+
 
 //    if(searchNode && targets.size()-newTargetIdxBegin >= 1)
 //    {

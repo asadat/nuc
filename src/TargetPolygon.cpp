@@ -12,11 +12,14 @@ using namespace std;
 
 TargetPolygon::TargetPolygon()
 {
+    pc = makeVector(1,1,1);
     visited = false;
 }
 
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
+    pc = makeVector(1,1,1);
+
     visited = false;
     if(parentNode)
         parentSearchNodes.insert(parentNode);
@@ -413,7 +416,7 @@ void TargetPolygon::glDraw()
 
 
     //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
-    glColor3f(1,1,1);
+    glColor3f(pc[0], pc[1], pc[2]);
     glLineWidth(4);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_POLYGON);

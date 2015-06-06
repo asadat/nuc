@@ -12,6 +12,7 @@ class ShortCutStrategy;
 class TestStrategy;
 class NUC;
 class GNode;
+class TargetPolygon;
 
 #define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
 
@@ -95,7 +96,8 @@ public:
     void GenerateTargets(double prob_cutoff);
     void SetTreeVisited(bool visited);
     void SetAncestorVisited(bool av);
-
+    void AddDependentPolygon(TargetPolygon* tp);
+    void RemoveDependentPolygon(TargetPolygon *tp);
 
 private:
 
@@ -136,6 +138,8 @@ private:
     double coverage;
 
     bool extra_info;
+
+    std::vector<TargetPolygon*> dependents;
 
     int label;
     bool searchNode;

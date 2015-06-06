@@ -53,6 +53,7 @@ private:
 
     CNode* tree;
     int s;
+    int search_cell_size;
     double remaining_time;
     TooN::Vector<3> startPos;
     TooN::Vector<3> prevGoal;
