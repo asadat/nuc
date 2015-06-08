@@ -9,6 +9,7 @@ using namespace TooN;
 class TargetPolygon
 {
     public:
+        enum SIDE {L=0,R,U,D, ALL};
         TargetPolygon();
         TargetPolygon(vector<CNode*> &cs, CNode* parentNode);
         ~TargetPolygon();
@@ -29,6 +30,9 @@ class TargetPolygon
         void GetCells(vector<CNode*> &v);
         void SetPolygonColor(Vector<3> color){pc=color;}
 
+        void SetBoundaryFlag(SIDE side, bool val);
+        bool GetBoundaryFlag(SIDE side);
+
     private:
         void ProcessPolygon();
         void ConvexHull();
@@ -37,6 +41,8 @@ class TargetPolygon
         double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
         bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3, TooN::Vector<3> p4, TooN::Vector<3> &intersection_p);
         void PlanLawnmower();
+
+        bool boundaryFLags[5];
 
         int label;
         vector<CNode*> ch;
@@ -48,6 +54,7 @@ class TargetPolygon
         bool visited;
         int base_idx[2];
         Vector<3> pc;
+        Vector<3> center;
 
 };
 

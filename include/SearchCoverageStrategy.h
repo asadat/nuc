@@ -30,6 +30,8 @@ private:
     void OnReachedNode_DelayedGreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void UpdateRemainingTime(CNode* node);
 
+    void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node);
+
     void FindSubCells(CNode* n);
 
     void FindClusters(bool incremental, std::vector<TargetPolygon*> & newTargets);

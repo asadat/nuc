@@ -297,7 +297,7 @@ void MAV::AsctecFCU::Update()
 
             fcuMag_pub.publish(m_msg);
 
-            ROS_INFO("vel: %f %f %f", vel[0], vel[1], vel[2]);
+            //ROS_INFO("vel: %f %f %f", vel[0], vel[1], vel[2]);
             pose += dt * NUCParam::speed * vel;
             poseQ.insert(poseQ.begin(), std::pair<double,Vector<4> >(t.toSec()+delay,pose));
 

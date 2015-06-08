@@ -291,7 +291,7 @@ void SearchCoverageStrategy::UpdateRemainingTime(CNode *node)
     p2 = p1;
     p1 = node->GetMAVWaypoint();
 
-    ROS_INFO("Remaining_tim: %.2f", remaining_time);
+    ROS_INFO("Remaining_time: %.2f", remaining_time);
 
 }
 
@@ -337,7 +337,9 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
+        //ROS_INFO("Calling delayed_greedy .. ");
         OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode);
+        //ROS_INFO("Returning from delayed_greedy .. ");
     }
     else if(NUCParam::policy == "delayed")
     {
@@ -345,6 +347,8 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     }
 
     prevGoal = node->GetMAVWaypoint();
+
+    //ROS_INFO("returning from on_reached_goal ...");
 
 }
 
@@ -664,67 +668,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     {
         for(size_t i=0; i < newTargets.size(); i++)
         {
-            if(node->grd_x == NUCParam::lm_tracks-1)
-                continue;
-
-            //right space checking
-            int minDist = 9999;
-            vector<CNode*> right_space;
-            vector<CNode*> target_cells;
-            newTargets[i]->GetCells(target_cells);
-            for(size_t j=0; j<target_cells.size(); j++)
-            {
-                int ii = (node->grd_x+1)*search_cell_size-1;
-                int jj = target_cells[j]->grd_y;
-
-                vector<CNode*> tmp;
-                bool onTheBoundary = true;
-                for(; ii > (node->grd_x)*search_cell_size-1; ii--)
-                {
-                    CNode * nc = GetNode(ii,jj);
-                    if(nc->label == -1)
-                    {
-                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
-
-                        if(d < 0.00001)
-                        {
-                            tmp.push_back(nc);
-                        }
-                        else
-                        {
-                            onTheBoundary = false;
-                            break;
-                        }
-
-                        nc->colorBasis = makeVector(1,1,1);
-                        nc->SetPrior(1);
-                    }
-                    else if(nc->label == target_cells[j]->label)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        tmp.clear();
-                        onTheBoundary = false;
-                        break;
-                    }
-                }
-
-                if(onTheBoundary)
-                {
-                    if(minDist > tmp.size())
-                        minDist = tmp.size();
-
-                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(right_space));
-                }
-            }
-
-            if(minDist < 3)
-            {
-                newTargets[i]->SetPolygonColor(makeVector(1,0,0));
-            }
-
+           SetPolygonBoundaryFlags(newTargets[i], node);
         }
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
@@ -759,6 +703,290 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 //            }
 //    }
 }
+
+void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node)
+{
+    int distThresh = 3;
+
+    for(TargetPolygon::SIDE side = (TargetPolygon::SIDE)0; side < TargetPolygon::ALL; side = (TargetPolygon::SIDE)((int)side+1))
+    {
+        if(side == TargetPolygon::R)
+        {
+            int minDist = 9999;
+            vector<CNode*> side_space;
+            vector<CNode*> target_cells;
+            plg->GetCells(target_cells);
+            for(size_t j=0; j<target_cells.size(); j++)
+            {
+                int ii = (node->grd_x+1)*search_cell_size-1;
+                int jj = target_cells[j]->grd_y;
+
+                vector<CNode*> tmp;
+                bool onTheBoundary = true;
+                for(; ii > (node->grd_x)*search_cell_size-1; ii--)
+                {
+                    CNode * nc = GetNode(ii,jj);
+                    if(nc->label == -1)
+                    {
+                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
+
+                        if(d < 0.00001)
+                        {
+                            tmp.push_back(nc);
+                        }
+                        else
+                        {
+                            onTheBoundary = false;
+                            break;
+                        }
+
+                        nc->colorBasis = makeVector(1,1,1);
+                        nc->SetPrior(1);
+                    }
+                    else if(nc->label == target_cells[j]->label)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        while(!tmp.empty())
+                        {
+                            tmp.back()->colorBasis = makeVector(0,0,0);
+                            tmp.pop_back();
+                        }
+
+                        onTheBoundary = false;
+                        break;
+                    }
+                }
+
+                if(onTheBoundary)
+                {
+                    if(minDist > tmp.size())
+                        minDist = tmp.size();
+
+                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(side_space));
+                }
+            }
+
+            if(minDist < distThresh)
+            {
+                plg->SetBoundaryFlag(side, 1);
+                //newTargets[i]->SetPolygonColor(makeVector(1,0,0));
+            }
+            else
+            {
+                plg->SetBoundaryFlag(side, 0);
+            }
+        }
+        else if(side == TargetPolygon::L)
+        {
+            int minDist = 9999;
+            vector<CNode*> side_space;
+            vector<CNode*> target_cells;
+            plg->GetCells(target_cells);
+            for(size_t j=0; j<target_cells.size(); j++)
+            {
+                int ii = (node->grd_x)*search_cell_size;
+                int jj = target_cells[j]->grd_y;
+
+                vector<CNode*> tmp;
+                bool onTheBoundary = true;
+                for(; ii < (node->grd_x+1)*search_cell_size; ii++)
+                {
+                    CNode * nc = GetNode(ii,jj);
+                    if(nc->label == -1)
+                    {
+                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
+
+                        if(d < 0.00001)
+                        {
+                            tmp.push_back(nc);
+                        }
+                        else
+                        {
+                            onTheBoundary = false;
+                            break;
+                        }
+
+                        nc->colorBasis = makeVector(1,1,1);
+                        nc->SetPrior(1);
+                    }
+                    else if(nc->label == target_cells[j]->label)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        while(!tmp.empty())
+                        {
+                            tmp.back()->colorBasis = makeVector(0,0,0);
+                            tmp.pop_back();
+                        }
+
+                        onTheBoundary = false;
+                        break;
+                    }
+                }
+
+                if(onTheBoundary)
+                {
+                    if(minDist > tmp.size())
+                        minDist = tmp.size();
+
+                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(side_space));
+                }
+            }
+
+            if(minDist < distThresh)
+            {
+                plg->SetBoundaryFlag(side, 1);
+                //newTargets[i]->SetPolygonColor(makeVector(1,0,0));
+            }
+            else
+            {
+                plg->SetBoundaryFlag(side, 0);
+            }
+        }
+        else if(side == TargetPolygon::U)
+        {
+            int minDist = 9999;
+            vector<CNode*> side_space;
+            vector<CNode*> target_cells;
+            plg->GetCells(target_cells);
+            for(size_t j=0; j<target_cells.size(); j++)
+            {
+                int ii = target_cells[j]->grd_x;
+                int jj = (node->grd_y+1)*search_cell_size-1;
+
+                vector<CNode*> tmp;
+                bool onTheBoundary = true;
+                for(; jj > (node->grd_y)*search_cell_size-1; jj--)
+                {
+                    CNode * nc = GetNode(ii,jj);
+                    if(nc->label == -1)
+                    {
+                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
+
+                        if(d < 0.00001)
+                        {
+                            tmp.push_back(nc);
+                        }
+                        else
+                        {
+                            onTheBoundary = false;
+                            break;
+                        }
+
+                        nc->colorBasis = makeVector(1,1,1);
+                        nc->SetPrior(1);
+                    }
+                    else if(nc->label == target_cells[j]->label)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        while(!tmp.empty())
+                        {
+                            tmp.back()->colorBasis = makeVector(0,0,0);
+                            tmp.pop_back();
+                        }
+                        onTheBoundary = false;
+                        break;
+                    }
+                }
+
+                if(onTheBoundary)
+                {
+                    if(minDist > tmp.size())
+                        minDist = tmp.size();
+
+                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(side_space));
+                }
+            }
+
+            if(minDist < distThresh)
+            {
+                plg->SetBoundaryFlag(side, 1);
+                //newTargets[i]->SetPolygonColor(makeVector(1,0,0));
+            }
+            else
+            {
+                plg->SetBoundaryFlag(side, 0);
+            }
+        }
+        else if(side == TargetPolygon::D)
+        {
+            int minDist = 9999;
+            vector<CNode*> side_space;
+            vector<CNode*> target_cells;
+            plg->GetCells(target_cells);
+            for(size_t j=0; j<target_cells.size(); j++)
+            {
+                int ii = target_cells[j]->grd_x;
+                int jj = (node->grd_y)*search_cell_size;
+
+                vector<CNode*> tmp;
+                bool onTheBoundary = true;
+                for(; jj < (node->grd_y+1)*search_cell_size; jj++)
+                {
+                    CNode * nc = GetNode(ii,jj);
+                    if(nc->label == -1)
+                    {
+                        double d = (nc->colorBasis-makeVector(1,1,1))*(nc->colorBasis-makeVector(1,1,1));
+
+                        if(d < 0.00001)
+                        {
+                            tmp.push_back(nc);
+                        }
+                        else
+                        {
+                            onTheBoundary = false;
+                            break;
+                        }
+
+                        nc->colorBasis = makeVector(1,1,1);
+                        nc->SetPrior(1);
+                    }
+                    else if(nc->label == target_cells[j]->label)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        while(!tmp.empty())
+                        {
+                            tmp.back()->colorBasis = makeVector(0,0,0);
+                            tmp.pop_back();
+                        }
+                        onTheBoundary = false;
+                        break;
+                    }
+                }
+
+                if(onTheBoundary)
+                {
+                    if(minDist > tmp.size())
+                        minDist = tmp.size();
+
+                    std::copy(tmp.begin(), tmp.end(), std::back_inserter(side_space));
+                }
+            }
+
+            if(minDist < distThresh)
+            {
+                plg->SetBoundaryFlag(side, 1);
+                //newTargets[i]->SetPolygonColor(makeVector(1,0,0));
+            }
+            else
+            {
+                plg->SetBoundaryFlag(side, 0);
+            }
+        }
+    }
+}
+
 
 void SearchCoverageStrategy::glDraw()
 {    

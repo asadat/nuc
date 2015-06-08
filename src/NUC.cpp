@@ -612,7 +612,10 @@ void NUC::StartTraversing()
 
 void NUC::SetNextGoal()
 {    
+    //ROS_INFO("calling GetNextNode()");
     curGoal = traversal->GetNextNode();
+    //ROS_INFO("returning from GetNextNode()");
+
     if(curGoal != NULL)
     {
         pathHistory.push_back(curGoal->GetMAVWaypoint());

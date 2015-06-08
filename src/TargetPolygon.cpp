@@ -12,12 +12,16 @@ using namespace std;
 
 TargetPolygon::TargetPolygon()
 {
+ //   boundaryFlags = 0;
+    SetBoundaryFlag(ALL, false);
+
     pc = makeVector(1,1,1);
     visited = false;
 }
 
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 {
+    SetBoundaryFlag(ALL, false);
     pc = makeVector(1,1,1);
 
     visited = false;
@@ -30,6 +34,38 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 
 TargetPolygon::~TargetPolygon()
 {
+}
+
+void TargetPolygon::SetBoundaryFlag(SIDE side, bool val)
+{
+
+    if(side != ALL)
+    {
+//        if(val)
+//            ROS_INFO("Setting Side %d true", (int)side);
+
+//        char clear = ~(1 << side);
+//        boundaryFlags = boundaryFlags & clear;
+
+//        val = (val << side);
+//        boundaryFlags = boundaryFlags & val;
+        boundaryFLags[(int)side] = val;
+    }
+    else if(side == ALL)
+    {
+        boundaryFLags[0] = val;
+        boundaryFLags[1] = val;
+        boundaryFLags[2] = val;
+        boundaryFLags[3] = val;
+
+    }
+}
+
+bool TargetPolygon::GetBoundaryFlag(SIDE side)
+{
+//    char selector = (1 << side);
+//    return (boundaryFlags & selector);
+    return boundaryFLags[(int)side];
 }
 
 void TargetPolygon::ProcessPolygon()
@@ -130,6 +166,8 @@ void TargetPolygon::ConvexHull()
     if(cells.size()<=1)
         return;
 
+    center = cells[0]->pos;
+
     //second node
     unsigned second=1;
     Vector<3> p1 = ch[0]->pos - makeVector(-1, 0, 0);
@@ -210,6 +248,14 @@ void TargetPolygon::ConvexHull()
     }
 
 
+    center = makeVector(0,0,0);
+    for(int i=0; i < ch.size(); i++)
+    {
+        center += ch[i]->pos;
+    }
+
+    center = (1.0/(float)ch.size())*center;
+    //ROS_INFO("Polygon center: %f %f %f", center[0], center[1], center[2]);
 
 }
 
@@ -456,6 +502,22 @@ void TargetPolygon::glDraw()
                glVertex3f(p1[0], p1[1], p1[2]+0.5);
                glVertex3f(p2[0], p2[1], p2[2]+0.5);
             }
+            glEnd();
+        }
+    }
+
+
+    for(int i=0; i <4; i++)
+    {
+        if(boundaryFLags[i])
+        {
+            double dx = (i==0)?-3:((i==1)?3:0);
+            double dy = (i==2)? 3:((i==3)?-3:0);
+            glColor3f(1,1,0);
+            glLineWidth(5);
+            glBegin(GL_LINES);
+            glVertex3f(center[0], center[1], center[2]);
+            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
             glEnd();
         }
     }
