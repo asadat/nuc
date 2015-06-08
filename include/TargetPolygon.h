@@ -33,6 +33,7 @@ class TargetPolygon
         void SetBoundaryFlag(SIDE side, bool val);
         bool GetBoundaryFlag(SIDE side);
 
+        Vector<3> GetCenter(){return center;}
     private:
         void ProcessPolygon();
         void ConvexHull();

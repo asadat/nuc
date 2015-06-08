@@ -26,7 +26,10 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
 
     visited = false;
     if(parentNode)
+    {
         parentSearchNodes.insert(parentNode);
+        parentNode->targets.push_back(this);
+    }
 
     std::copy(cs.begin(), cs.end(), std::back_inserter(cells));
     ProcessPolygon();

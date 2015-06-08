@@ -671,6 +671,87 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
            SetPolygonBoundaryFlags(newTargets[i], node);
         }
 
+        //gc.Clear();
+
+        for(size_t i=0; i < newTargets.size(); i++)
+        {
+            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
+            {
+                int gx = node->grd_x-1;
+                int gy = node->grd_y;
+                CNode* ln = GetSearchNode(gx, gy);
+
+                if(ln && ln->visited)
+                {
+                    for(size_t j = 0; j < ln->targets.size(); j++)
+                    {
+                        if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
+                        {
+                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                        }
+                    }
+                }
+            }
+
+            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::R))
+            {
+                int gx = node->grd_x+1;
+                int gy = node->grd_y;
+                CNode* ln = GetSearchNode(gx, gy);
+
+                if(ln && ln->visited)
+                {
+                    for(size_t j = 0; j < ln->targets.size(); j++)
+                    {
+                        if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
+                        {
+                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                        }
+                    }
+                }
+            }
+
+            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::U))
+            {
+                int gx = node->grd_x;
+                int gy = node->grd_y+1;
+                CNode* ln = GetSearchNode(gx, gy);
+
+                if(ln && ln->visited)
+                {
+                    for(size_t j = 0; j < ln->targets.size(); j++)
+                    {
+                        if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
+                        {
+                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                        }
+                    }
+                }
+            }
+
+            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::D))
+            {
+                int gx = node->grd_x;
+                int gy = node->grd_y-1;
+                CNode* ln = GetSearchNode(gx, gy);
+
+                if(ln && ln->visited)
+                {
+                    for(size_t j = 0; j < ln->targets.size(); j++)
+                    {
+                        if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
+                        {
+                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                        }
+                    }
+                }
+            }
+
+        }
+
+        //vector<vector<TargetPolygon*> *> components;
+        //gc.GetConnectedComponents(components);
+
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
     }
 
@@ -1007,22 +1088,23 @@ void SearchCoverageStrategy::glDraw()
     }
     glEnd();
 
-    if(nodeStack.size() < 2)
-        return;    
-
-    glColor3f(0.5,0.6,0.6);
-    glLineWidth(4);
-    glBegin(GL_LINES);
-    for(unsigned int i=0; i<nodeStack.size()-1;i++)
+    if(nodeStack.size() > 2)
     {
-        TooN::Vector<3> p1 = nodeStack[i+1]->GetMAVWaypoint();
-        TooN::Vector<3> p2 = nodeStack[i]->GetMAVWaypoint();
+        glColor3f(0.5,0.6,0.6);
+        glLineWidth(4);
+        glBegin(GL_LINES);
+        for(unsigned int i=0; i<nodeStack.size()-1;i++)
+        {
+            TooN::Vector<3> p1 = nodeStack[i+1]->GetMAVWaypoint();
+            TooN::Vector<3> p2 = nodeStack[i]->GetMAVWaypoint();
 
-        glVertex3f(p1[0],p1[1],p1[2]);
-        glVertex3f(p2[0],p2[1],p2[2]);
+            glVertex3f(p1[0],p1[1],p1[2]);
+            glVertex3f(p2[0],p2[1],p2[2]);
+        }
+        glEnd();
     }
-    glEnd();
 
+    gc.glDraw();
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)
@@ -1063,6 +1145,13 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
 
 CNode * SearchCoverageStrategy::GetSearchNode(int i, int j)
 {
+    if(i < 0 || j < 0 || i >= NUCParam::lm_tracks || j >= NUCParam::lm_tracks)
+    {
+        ROS_WARN("GetSearchNode: out of boundary access ...");
+
+        return NULL;
+    }
+
     size_t n = i*NUCParam::lm_tracks + j;
     if(n < search_grid.size())
         return search_grid[n];

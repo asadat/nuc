@@ -2,6 +2,7 @@
 #define _SEARCHCOVERAGE_STRATEGY_H
 #include "TraversalStrategy.h"
 #include "CNode.h"
+#include "GraphComponents.h"
 
 class TargetPolygon;
 
@@ -44,6 +45,7 @@ private:
     std::vector<CNode*> search_grid;
     std::vector<TooN::Vector<3> > target_lms;
 
+    GraphComponents gc;
 
     double cutoff_prob;
     int cluster_n;

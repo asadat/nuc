@@ -30,6 +30,8 @@ set(NUC_SOURCES
     src/SearchCoverageStrategy.cpp
     src/TSP.cpp
     src/TargetPolygon.cpp
+    src/GraphComponents.cpp
+    include/GraphComponents.h
     include/TargetPolygon.h
     include/TSP.h
     include/SearchCoverageStrategy.h

@@ -140,6 +140,7 @@ private:
     bool extra_info;
 
     std::vector<TargetPolygon*> dependents;
+    std::vector<TargetPolygon*> targets;
 
     int label;
     bool searchNode;
