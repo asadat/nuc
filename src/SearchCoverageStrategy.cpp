@@ -671,10 +671,25 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
            SetPolygonBoundaryFlags(newTargets[i], node);
         }
 
-        //gc.Clear();
 
         for(size_t i=0; i < newTargets.size(); i++)
         {
+            for(size_t j=i; j < newTargets.size(); j++)
+            {
+                if( (!newTargets[j]->GetBoundaryFlag(TargetPolygon::L) &&
+                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::R) &&
+                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::D) &&
+                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::U)) ||
+                    (!newTargets[i]->GetBoundaryFlag(TargetPolygon::L) &&
+                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::R) &&
+                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::D) &&
+                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::U)))
+                {
+                    //ROS_INFO("Adding virtual edge...");
+                    gc.AddEdge(newTargets[i], newTargets[j], true);
+                }
+            }
+
             if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
             {
                 int gx = node->grd_x-1;
@@ -687,7 +702,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     {
                         if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
                         {
-                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                            gc.AddEdge(newTargets[i], ln->targets[j], false);
                         }
                     }
                 }
@@ -705,7 +720,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     {
                         if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
                         {
-                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                            gc.AddEdge(newTargets[i], ln->targets[j], false);
                         }
                     }
                 }
@@ -723,7 +738,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     {
                         if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
                         {
-                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                            gc.AddEdge(newTargets[i], ln->targets[j], false);
                         }
                     }
                 }
@@ -741,7 +756,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     {
                         if(ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
                         {
-                            gc.AddEdge(newTargets[i], ln->targets[j]);
+                            gc.AddEdge(newTargets[i], ln->targets[j], false);
                         }
                     }
                 }
@@ -799,6 +814,9 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             plg->GetCells(target_cells);
             for(size_t j=0; j<target_cells.size(); j++)
             {
+                if(!InSearchGridBoundary(node->grd_x+1,node->grd_y))
+                    break;
+
                 int ii = (node->grd_x+1)*search_cell_size-1;
                 int jj = target_cells[j]->grd_y;
 
@@ -868,6 +886,9 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             plg->GetCells(target_cells);
             for(size_t j=0; j<target_cells.size(); j++)
             {
+                if(!InSearchGridBoundary(node->grd_x-1,node->grd_y))
+                    break;
+
                 int ii = (node->grd_x)*search_cell_size;
                 int jj = target_cells[j]->grd_y;
 
@@ -937,6 +958,9 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             plg->GetCells(target_cells);
             for(size_t j=0; j<target_cells.size(); j++)
             {
+                if(!InSearchGridBoundary(node->grd_x,node->grd_y+1))
+                    break;
+
                 int ii = target_cells[j]->grd_x;
                 int jj = (node->grd_y+1)*search_cell_size-1;
 
@@ -1005,6 +1029,9 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             plg->GetCells(target_cells);
             for(size_t j=0; j<target_cells.size(); j++)
             {
+                if(!InSearchGridBoundary(node->grd_x,node->grd_y-1))
+                    break;
+
                 int ii = target_cells[j]->grd_x;
                 int jj = (node->grd_y)*search_cell_size;
 
@@ -1141,6 +1168,16 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
         ROS_WARN("GetNode: out of boundary access ...");
         return NULL;
     }
+}
+
+bool SearchCoverageStrategy::InSearchGridBoundary(int i, int j)
+{
+    if(i < 0 || j < 0 || i >= NUCParam::lm_tracks || j >= NUCParam::lm_tracks)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 CNode * SearchCoverageStrategy::GetSearchNode(int i, int j)

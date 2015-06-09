@@ -81,9 +81,13 @@ void TargetPolygon::ProcessPolygon()
     Vector<4> fp = cells.back()->footPrint;
     cellW = fp[2]-fp[0];
 
+    //ROS_INFO("***** 1");
     ConvexHull();
+    //ROS_INFO("***** 2");
     FindBaseEdge();
+    //ROS_INFO("***** 3");
     PlanLawnmower();
+    //ROS_INFO("***** 4");
 }
 
 bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
@@ -166,10 +170,10 @@ void TargetPolygon::ConvexHull()
     ch.push_back(cells[first]);
     //v.erase(v.begin()+first);
 
+    center = cells[0]->pos;
+
     if(cells.size()<=1)
         return;
-
-    center = cells[0]->pos;
 
     //second node
     unsigned second=1;
@@ -271,9 +275,20 @@ void TargetPolygon::FindBaseEdge()
     double minHeight = 999999;
     int min_idx = -1;
 
-    if(sz <= 2)
+    if(sz == 0)
     {
-        base_idx[0] = base_idx[1] = 0;
+        return;
+    }
+    else if(sz == 1)
+    {
+        base_idx[0] = 0;
+        base_idx[1] = 0;
+        return;
+    }
+    else if(sz == 2)
+    {
+        base_idx[0] = 0;
+        base_idx[1] = 1;
         return;
     }
 
@@ -356,8 +371,27 @@ void TargetPolygon::PlanLawnmower()
 
     double interlap_d = 3*cellW;
 
-    if(base_idx[0] == base_idx[1])
+    if(ch.size() == 0)
+    {
+        return;
+    }
+    else if(ch.size()==1 && base_idx[0] ==0 && base_idx[1]==0)
+    {
+        Vector<3> p_tmp = ch[0]->GetMAVWaypoint();
+        lm.push_back(p_tmp + (cellW/2)*makeVector(-1,0,0));
+        lm.push_back(p_tmp + (cellW/2)*makeVector(1,0,0));
         return ;
+    }
+    else if(ch.size()==2 && base_idx[0] ==0 && base_idx[1]==1)
+    {
+        Vector<3> p1_tmp = ch[0]->GetMAVWaypoint();
+        Vector<3> p2_tmp = ch[1]->GetMAVWaypoint();
+
+        lm.push_back(p1_tmp);
+        lm.push_back(p2_tmp);
+        return ;
+    }
+
 
     Vector<3> baseDir  = ch[base_idx[1]]->GetMAVWaypoint() - ch[base_idx[0]]->GetMAVWaypoint();
     Vector<3> baseDirNorm = baseDir;
@@ -460,8 +494,8 @@ void TargetPolygon::PlanLawnmower()
 
 void TargetPolygon::glDraw()
 {
-    if(ch.size()<=1)
-        return;
+    //if(ch.size()<=1)
+    //    return;
 
 
     //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
@@ -478,7 +512,7 @@ void TargetPolygon::glDraw()
     }
     glEnd();
 
-    if(base_idx[0] != base_idx[1])
+    if(base_idx[0] != -1 && base_idx[1]!=-1)
     {
         glColor3f(1,0,0);
         glPointSize(5);
@@ -510,18 +544,18 @@ void TargetPolygon::glDraw()
     }
 
 
-    for(int i=0; i <4; i++)
-    {
-        if(boundaryFLags[i])
-        {
-            double dx = (i==0)?-3:((i==1)?3:0);
-            double dy = (i==2)? 3:((i==3)?-3:0);
-            glColor3f(1,1,0);
-            glLineWidth(5);
-            glBegin(GL_LINES);
-            glVertex3f(center[0], center[1], center[2]);
-            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
-            glEnd();
-        }
-    }
+//    for(int i=0; i <4; i++)
+//    {
+//        if(boundaryFLags[i])
+//        {
+//            double dx = (i==0)?-3:((i==1)?3:0);
+//            double dy = (i==2)? 3:((i==3)?-3:0);
+//            glColor3f(1,1,0);
+//            glLineWidth(5);
+//            glBegin(GL_LINES);
+//            glVertex3f(center[0], center[1], center[2]);
+//            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
+//            glEnd();
+//        }
+//    }
 }
