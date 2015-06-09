@@ -764,40 +764,18 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         }
 
-        //vector<vector<TargetPolygon*> *> components;
-        //gc.GetConnectedComponents(components);
+        while(!components.empty())
+        {
+            vector<TargetPolygon*> * v = components.back();
+            components.pop_back();
+            v->clear();
+            delete v;
+        }
+
+        gc.GetConnectedComponents(components);
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
     }
-
-
-//    if(searchNode && targets.size()-newTargetIdxBegin >= 1)
-//    {
-//        //join the targets of the current cell
-//        if(targets.size()-newTargetIdxBegin >= 2)
-//        {
-//            TargetPolygon *t = targets[newTargetIdxBegin];
-//            while(targets.size() > newTargetIdxBegin + 1)
-//            {
-//                TargetPolygon * tmp = targets.back();
-//                targets.pop_back();
-//                t->AddPolygon(tmp);
-//                delete tmp;
-//            }
-//        }
-
-//        // join the target of the current cell with the
-//        // targets in the neighbours
-//        for(size_t i=0; i < newTargetIdxBegin; i++)
-//            if(targets[i]->IsNeighbour(targets[newTargetIdxBegin]))
-//            {
-//                TargetPolygon * tmp = targets.back();
-//                targets.pop_back();
-//                targets[i]->AddPolygon(tmp);
-//                delete tmp;
-//                break;
-//            }
-//    }
 }
 
 void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node)
@@ -1132,6 +1110,19 @@ void SearchCoverageStrategy::glDraw()
     }
 
     gc.glDraw();
+
+    for(size_t i=0; i < components.size(); i++)
+        for(size_t j=0; j < components[i]->size(); j++)
+        {
+            char c = i%8;
+            glPointSize(20);
+            glColor3f(c&1, c&2, c&4);
+            glBegin(GL_POINTS);
+            Vector<3> cn =components[i]->at(j)->GetCenter();
+            glVertex3f(cn[0],cn[1],cn[2]+1);
+            glEnd();
+        }
+
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)

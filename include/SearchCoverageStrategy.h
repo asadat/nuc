@@ -47,6 +47,8 @@ private:
     std::vector<TooN::Vector<3> > target_lms;
 
     GraphComponents gc;
+    vector<vector<TargetPolygon*> *> components;
+
 
     double cutoff_prob;
     int cluster_n;
