@@ -202,7 +202,7 @@ void NUC::Cleanup()
 
 void NUC::LoadPriorFromFile()
 {
-    std::string fn = "/home/abbas/hydro_workspace/src/nuc/";
+    std::string fn = NUCParam::nuc_dir+"/";
     fn += NUCParam::prior_file_name;
     cv::Mat img = cv::imread(fn.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat priorImg;

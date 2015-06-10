@@ -47,6 +47,7 @@ public:
     static double prob_r;
     static double pathCost;
 
+    static std::string nuc_dir;
     static std::string prior_file_name;
 
     static int lm_tracks;

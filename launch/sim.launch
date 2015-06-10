@@ -1,17 +1,12 @@
 <launch>
-<node name="pelican_ctrl" pkg="pelican_ctrl" type="PelicanCtrl" clear_params="true" output="log" >
-	      
-	      <rosparam file="$(find pelican_ctrl)/launch/sim_param.yaml" />
-              <remap from="pose" to="/fcu/gps_pose" />
-          
- 
+    <node name="pelican_ctrl" pkg="pelican_ctrl" type="PelicanCtrl" clear_params="true" output="log" >      
+      <rosparam file="$(find pelican_ctrl)/launch/sim_param.yaml" />
+      <remap from="pose" to="/fcu/gps_pose" /> 
     </node>
 
     <node name="nuc" pkg="nuc" type="NUC" clear_params="true" output="screen">
-                <rosparam command="load" file="$(find nuc)/launch/sim_param.yaml" />
-	      <!--  <remap to="at_goal" from="/PelicanCtrl/at_goal" /> -->
-          <!--  <remap from="fixedPose" to="/PelicanCtrl/fixedPose" /> -->
- 
+        <rosparam command="load" file="$(find nuc)/launch/sim_param.yaml" />
+	<param name="nuc_dir" type="string" value="$(find nuc)" />    
     </node>
 </launch>
 
