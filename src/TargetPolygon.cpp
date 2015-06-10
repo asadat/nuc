@@ -234,7 +234,7 @@ void TargetPolygon::ConvexHull()
     // remove extra nodes (colinear edges)
     int sz = ch.size();
 
-    for(int i=0; i < ch.size(); i++)
+    for(int i=0; i < (int)ch.size(); i++)
     {
         sz = ch.size();
 
@@ -256,7 +256,7 @@ void TargetPolygon::ConvexHull()
 
 
     center = makeVector(0,0,0);
-    for(int i=0; i < ch.size(); i++)
+    for(size_t i=0; i < ch.size(); i++)
     {
         center += ch[i]->pos;
     }
@@ -431,7 +431,7 @@ void TargetPolygon::PlanLawnmower()
 
         vector<Vector<3> > intersections;
 
-        for(int i=0; i< ch.size(); i++)
+        for(size_t i=0; i< ch.size(); i++)
         {
             Vector<3> ise =makeVector(0,0, sn0[2]);
             if(GetLineSegmentIntersection(sn, en, ch[i]->GetMAVWaypoint(), ch[(i+1)%(ch.size())]->GetMAVWaypoint(), ise))
@@ -449,9 +449,9 @@ void TargetPolygon::PlanLawnmower()
         {
             if(intersections.size() > 2)
             {
-                for(int i=0; i<intersections.size(); i++)
+                for(size_t i=0; i<intersections.size(); i++)
                 {
-                    for(int j=i+1; j<intersections.size(); j++)
+                    for(size_t j=i+1; j<intersections.size(); j++)
                     {
                         if(D2(intersections[i],intersections[j]) < 0.1)
                         {
@@ -532,7 +532,7 @@ void TargetPolygon::glDraw()
             glBegin(GL_LINES);
             //glPointSize(8);
             //glBegin(GL_POINTS);
-            for(int i=0; i<lm.size()-1; i+=1)
+            for(size_t i=0; i+1<lm.size(); i+=1)
             {
                TooN::Vector<3> p1 = lm[i];
                TooN::Vector<3> p2 = lm[i+1];

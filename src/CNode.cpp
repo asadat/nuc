@@ -63,7 +63,7 @@ CNode::~CNode()
         delete n;
     }
 
-    delete gnode;
+    //delete gnode;
 }
 
 CNode * CNode::CreateChildNode(Rect fp)

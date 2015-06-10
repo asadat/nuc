@@ -520,7 +520,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         // add the aggregate lawnmower plan to the current plan
         for(size_t i=0; i < newTargets.size(); i++)
         {
-            if(i == firstTarget)
+            if((int)i == firstTarget)
             {
                 newTargets[i]->GetLawnmowerPlan(target_lms);
                 newTargets[i]->MarkAsVisited();
@@ -602,7 +602,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
             }
 
             // optimizing target lawnmower start and end
-            for(int i=0; i < tsp_target.size(); i++)
+            for(size_t i=0; i < tsp_target.size(); i++)
             {
                 bool flag = false;
 
@@ -615,7 +615,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
                         flag = true;
                     }
                 }
-                else if(i == tsp_target.size()-1)
+                else if(i+1 == tsp_target.size())
                 {
                     if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), en->pos) >
                             D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), en->pos))
@@ -780,13 +780,13 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
 void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node)
 {
-    int distThresh = 3;
+    size_t distThresh = 3;
 
     for(TargetPolygon::SIDE side = (TargetPolygon::SIDE)0; side < TargetPolygon::ALL; side = (TargetPolygon::SIDE)((int)side+1))
     {
         if(side == TargetPolygon::R)
         {
-            int minDist = 9999;
+            size_t minDist = 9999;
             vector<CNode*> side_space;
             vector<CNode*> target_cells;
             plg->GetCells(target_cells);
@@ -858,7 +858,7 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
         }
         else if(side == TargetPolygon::L)
         {
-            int minDist = 9999;
+            size_t minDist = 9999;
             vector<CNode*> side_space;
             vector<CNode*> target_cells;
             plg->GetCells(target_cells);
@@ -930,7 +930,7 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
         }
         else if(side == TargetPolygon::U)
         {
-            int minDist = 9999;
+            size_t minDist = 9999;
             vector<CNode*> side_space;
             vector<CNode*> target_cells;
             plg->GetCells(target_cells);
@@ -1001,7 +1001,7 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
         }
         else if(side == TargetPolygon::D)
         {
-            int minDist = 9999;
+            size_t minDist = 9999;
             vector<CNode*> side_space;
             vector<CNode*> target_cells;
             plg->GetCells(target_cells);
@@ -1290,7 +1290,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
             stack.push_back(GetNode(i,j));
             cn++;
            // ROS_INFO("Cluster added.");
-            if(c.size() < cn+1)
+            if((int)c.size() < cn+1)
             {
                 c.push_back(makeVector(RAND(0,1), RAND(0,1), RAND(0,1)));
             }
@@ -1319,7 +1319,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
 
     cluster_n = cn+1;
 
-    for(size_t i = old_cluster_n; i< cluster_n; i++)
+    for(size_t i = old_cluster_n; i< (size_t)cluster_n; i++)
     {
         pair<multimap<int, CNode*>::iterator, multimap<int, CNode*>::iterator> seg_range;
         seg_range = clusters.equal_range(i);

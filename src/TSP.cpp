@@ -40,7 +40,7 @@ void TSP::GetShortestPath(vector<Entity* > &to_visit, vector<Entity* >& tsplist)
 
 void TSP::TwoOptOptimization(vector<Entity *> &path)
 {
-    for(int i=0; i+3<path.size(); i++)
+    for(size_t i=0; i+3<path.size(); i++)
     {
         if(d(path[i]->pos,path[i+2]->pos) + d(path[i+2]->pos,path[i+1]->pos) + d(path[i+1]->pos,path[i+3]->pos) <
                 d(path[i]->pos,path[i+1]->pos) + d(path[i+1]->pos,path[i+2]->pos) + d(path[i+2]->pos,path[i+3]->pos))
