@@ -13,6 +13,11 @@ GraphComponents::~GraphComponents()
     Clear();
 }
 
+void GraphComponents::AddNode(TargetPolygon *tp)
+{
+    GetNode(tp);
+}
+
 node* GraphComponents::GetNode(TargetPolygon *tp)
 {
     node* n = NULL;

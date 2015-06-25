@@ -19,6 +19,7 @@ class GraphComponents
         ~GraphComponents();
 
         void AddEdge(TargetPolygon * tp1, TargetPolygon *tp2, bool virtual_edge);
+        void AddNode(TargetPolygon * tp);
         void GetConnectedComponents(vector<vector<TargetPolygon*> *> &components);
         void Clear();
         void glDraw();

@@ -674,16 +674,21 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         for(size_t i=0; i < newTargets.size(); i++)
         {
+            if(newTargets.size()==1)
+            {
+                gc.AddNode(newTargets[0]);
+            }
+
             for(size_t j=i; j < newTargets.size(); j++)
             {
                 if( (!newTargets[j]->GetBoundaryFlag(TargetPolygon::L) &&
-                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::R) &&
-                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::D) &&
-                    !newTargets[j]->GetBoundaryFlag(TargetPolygon::U)) ||
+                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::R) &&
+                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::D) &&
+                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::U)) ||
                     (!newTargets[i]->GetBoundaryFlag(TargetPolygon::L) &&
-                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::R) &&
-                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::D) &&
-                    !newTargets[i]->GetBoundaryFlag(TargetPolygon::U)))
+                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::R) &&
+                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::D) &&
+                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::U)))
                 {
                     //ROS_INFO("Adding virtual edge...");
                     gc.AddEdge(newTargets[i], newTargets[j], true);
