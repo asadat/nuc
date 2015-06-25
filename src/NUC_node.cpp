@@ -10,7 +10,6 @@
 #include "TooN/TooN.h"
 #include <ros/ros.h>
 
-
 using namespace TooN;
 
 NUC *nucObj;
@@ -281,9 +280,6 @@ void mainLoop()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFunc(GL_ONE_MINUS_DST_ALPHA,GL_DST_ALPHA);
-    // define global state
-    //glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
 
 
@@ -292,17 +288,9 @@ void mainLoop()
     translateCamera(0, 0, 60);
     rotateCamera(0,-1.57,0);
 
-    // run glut
-    //ros::spin();
     glutMainLoop();
 
-//    while(true)
-//    {
-//        idle();
-//        sleep(0.01);
-//    }
 }
-
 
 int main(int argc, char ** argv)
 {

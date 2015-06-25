@@ -15,7 +15,7 @@ using namespace std;
 using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
-{
+{    
     dummy = new CNode(makeVector(0,0,0,0));
     dummy->visited = false;
     dummy->depth = dummy->maxDepth;
