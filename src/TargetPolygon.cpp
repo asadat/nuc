@@ -14,7 +14,7 @@ TargetPolygon::TargetPolygon()
 {
  //   boundaryFlags = 0;
     SetBoundaryFlag(ALL, false);
-
+    isLine = false;
     pc = makeVector(1,1,1);
     visited = false;
 }
@@ -24,6 +24,7 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
     SetBoundaryFlag(ALL, false);
     pc = makeVector(1,1,1);
 
+    isLine = false;
     visited = false;
     if(parentNode)
     {
@@ -196,61 +197,82 @@ void TargetPolygon::ConvexHull()
     if(cells.size() <=2)
         return;
 
-    //int n=0;
-    // the rest of the nodes
-    while(true)
+    //check if the cells form a line a line
+    isLine = true;
+    Vector<3> p_0 = cells[0]->pos;
+    Vector<3> p_1 = cells[1]->pos;
+
+    for(size_t i=2; i < cells.size() && isLine; i++)
     {
-        //if(n++ > 100) return;
-        p1 = ch[ch.size()-2]->pos;
-        p2 = ch.back()->pos;
-        int next = -1;
-        ang = -1;
-        for(unsigned int i=0; i<cells.size(); i++)
+        Vector<3> p_n = cells[i]->pos;
+        if(fabs((p_0[1]-p_1[1])*(p_0[0]-p_n[0]) - (p_0[1]-p_n[1])*(p_0[0]-p_1[0])) > 0.01)
         {
-            if(cells[i] == ch.back())
-                continue;
-
-            double a = ANGLE(p1, p2, cells[i]->pos);
-            if(a> ang)
-            {
-                ang = a;
-                next = i;
-            }
-        }
-
-        if(next > -1)
-        {
-            if(std::find(ch.begin(), ch.end(), cells[next]) != ch.end())
-                break;
-            else
-                ch.push_back(cells[next]);
-        }
-        else
-        {
-            break;
+            isLine = false;
         }
     }
 
-    // remove extra nodes (colinear edges)
-    int sz = ch.size();
-
-    for(int i=0; i < (int)ch.size(); i++)
+    if(isLine)
     {
-        sz = ch.size();
-
-        int i1 = ((i-1)+sz)%sz;
-        int i2 = i;
-        int i3 = (i+1)%sz;
-
-        Vector<3> v = ch[i2]->pos - ch[i1]->pos;
-        Vector<3> u = ch[i3]->pos - ch[i2]->pos;
-
-        Vector<3> r = u^v;
-
-        if(sqrt(r*r) < 0.1)
+        ch.clear();
+        std::copy(cells.begin(), cells.end(), std::back_inserter(ch));
+    }
+    else
+    {
+        // the rest of the nodes
+        while(true)
         {
-            ch.erase(ch.begin()+i);
-            i--;
+            //if(n++ > 100) return;
+            p1 = ch[ch.size()-2]->pos;
+            p2 = ch.back()->pos;
+            int next = -1;
+            ang = -1;
+            for(unsigned int i=0; i<cells.size(); i++)
+            {
+                if(cells[i] == ch.back())
+                    continue;
+
+                double a = ANGLE(p1, p2, cells[i]->pos);
+                if(a> ang)
+                {
+                    ang = a;
+                    next = i;
+                }
+            }
+
+            if(next > -1)
+            {
+                if(std::find(ch.begin(), ch.end(), cells[next]) != ch.end())
+                    break;
+                else
+                    ch.push_back(cells[next]);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // remove extra nodes (colinear edges)
+        int sz = ch.size();
+
+        for(int i=0; i < (int)ch.size(); i++)
+        {
+            sz = ch.size();
+
+            int i1 = ((i-1)+sz)%sz;
+            int i2 = i;
+            int i3 = (i+1)%sz;
+
+            Vector<3> v = ch[i2]->pos - ch[i1]->pos;
+            Vector<3> u = ch[i3]->pos - ch[i2]->pos;
+
+            Vector<3> r = u^v;
+
+            if(sqrt(r*r) < 0.1)
+            {
+                ch.erase(ch.begin()+i);
+                i--;
+            }
         }
     }
 
@@ -262,14 +284,31 @@ void TargetPolygon::ConvexHull()
     }
 
     center = (1.0/(float)ch.size())*center;
-    //ROS_INFO("Polygon center: %f %f %f", center[0], center[1], center[2]);
-
 }
 
 void TargetPolygon::FindBaseEdge()
 {
     base_idx[0] = -1;
     base_idx[1] = -1;
+
+    if(isLine)
+    {
+        double maxDist = 0;
+        for(size_t i=0; i< ch.size(); i++)
+            for(size_t j=0; j< ch.size(); j++)
+            {
+                if(i==j) continue;
+                double dist = (ch[i]->pos - ch[j]->pos)*(ch[i]->pos - ch[j]->pos);
+                if(dist > maxDist)
+                {
+                    maxDist = dist;
+                    base_idx[0] = i;
+                    base_idx[1] = j;
+                }
+            }
+
+        return;
+    }
 
     int sz = ch.size();
     double minHeight = 999999;
@@ -392,6 +431,15 @@ void TargetPolygon::PlanLawnmower()
         return ;
     }
 
+    if(isLine)
+    {
+        Vector<3> p1_tmp = ch[base_idx[0]]->GetMAVWaypoint();
+        Vector<3> p2_tmp = ch[base_idx[1]]->GetMAVWaypoint();
+
+        lm.push_back(p1_tmp);
+        lm.push_back(p2_tmp);
+        return ;
+    }
 
     Vector<3> baseDir  = ch[base_idx[1]]->GetMAVWaypoint() - ch[base_idx[0]]->GetMAVWaypoint();
     Vector<3> baseDirNorm = baseDir;

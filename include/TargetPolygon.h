@@ -56,6 +56,7 @@ class TargetPolygon
         int base_idx[2];
         Vector<3> pc;
         Vector<3> center;
+        bool isLine;
 
 };
 
