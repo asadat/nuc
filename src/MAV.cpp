@@ -284,25 +284,28 @@ void MAV::AsctecFCU::Update()
         double dt = (t-last_mag).toSec();
         last_mag = t;
 
-        if(NUCParam::sim_running)
+        if(!NUCParam::sim_running)
         {
-            m_seq++;
-            geometry_msgs::Vector3Stamped m_msg;
-
-            m_msg.vector.x = cos(p[3]+1.57/2);
-            m_msg.vector.y = sin(p[3]+1.57/2);
-
-            m_msg.header.stamp = t;
-            m_msg.header.seq = m_seq;
-
-            fcuMag_pub.publish(m_msg);
-
-            //ROS_INFO("vel: %f %f %f", vel[0], vel[1], vel[2]);
-            pose += dt * NUCParam::speed * vel;
-            poseQ.insert(poseQ.begin(), std::pair<double,Vector<4> >(t.toSec()+delay,pose));
-
-
+            dt = 0;
         }
+
+        m_seq++;
+        geometry_msgs::Vector3Stamped m_msg;
+
+        m_msg.vector.x = cos(p[3]+1.57/2);
+        m_msg.vector.y = sin(p[3]+1.57/2);
+
+        m_msg.header.stamp = t;
+        m_msg.header.seq = m_seq;
+
+        fcuMag_pub.publish(m_msg);
+
+        //ROS_INFO("vel: %f %f %f", vel[0], vel[1], vel[2]);
+        pose += dt * NUCParam::speed * vel;
+        poseQ.insert(poseQ.begin(), std::pair<double,Vector<4> >(t.toSec()+delay,pose));
+
+
+
     }
 }
 

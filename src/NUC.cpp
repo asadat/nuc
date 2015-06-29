@@ -847,7 +847,7 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
     else if(key['0'])
     {
         NUCParam::sim_running = !NUCParam::sim_running;
-        //updateKey = false;
+        updateKey = false;
     }
     else if(key['1'])
     {

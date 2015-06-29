@@ -126,6 +126,8 @@ void update_event(int ms)
 void idle_event()
 {
     NUC::Instance()->Update();
+    glutPostRedisplay();
+
 }
 
 
