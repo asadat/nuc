@@ -3,6 +3,7 @@
 #include "TraversalStrategy.h"
 #include "CNode.h"
 #include "GraphComponents.h"
+#include "Knapsack.h"
 
 class TargetPolygon;
 
@@ -16,7 +17,6 @@ public:
     CNode* GetNextNode();
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
     void ReachedNode(CNode *node);
-
 private:    
     CNode * GetNode(int i, int j);
     CNode * GetSearchNode(int i, int j);

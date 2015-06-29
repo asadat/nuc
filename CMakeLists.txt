@@ -31,6 +31,8 @@ set(NUC_SOURCES
     src/TSP.cpp
     src/TargetPolygon.cpp
     src/GraphComponents.cpp
+    #src/Knapsack.cpp
+    include/Knapsack.h
     include/GraphComponents.h
     include/TargetPolygon.h
     include/TSP.h

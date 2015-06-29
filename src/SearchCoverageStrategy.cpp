@@ -6,6 +6,7 @@
 #include "TargetPolygon.h"
 #include "TSP.h"
 
+
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
 #define D2(a,b) (a-b)*(a-b)
 #define COLLINEAR(a,b,c) ((fabs(fabs(ANGLE(a,b,c))-3.14) > 0.1)?1.0:0)
@@ -15,7 +16,7 @@ using namespace std;
 using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
-{    
+{
     dummy = new CNode(makeVector(0,0,0,0));
     dummy->visited = false;
     dummy->depth = dummy->maxDepth;
