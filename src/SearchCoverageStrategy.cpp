@@ -5,12 +5,7 @@
 #include <vector>
 #include "TargetPolygon.h"
 #include "TSP.h"
-
-
-#define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
-#define D2(a,b) (a-b)*(a-b)
-#define COLLINEAR(a,b,c) ((fabs(fabs(ANGLE(a,b,c))-3.14) > 0.1)?1.0:0)
-#define IN(a,r) ((a[0]>= r[0] && a[0] <= r[2]) && (a[1] >= r[1] && a[1] <= r[3]))
+#include "TargetTour.h"
 
 using namespace std;
 using namespace TooN;
@@ -34,10 +29,6 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
     GenerateLawnmower();
     startPos = makeVector(0,0,0);
     prevGoal = startPos;
-
-    //vector<Vector<3> > tmp = {makeVector(0,0,0), makeVector(0,1,0), makeVector(0,1,1)};
-    //ROS_INFO("********** EXEC TIME: %f", GetPlanExecutionTime(tmp,makeVector(-1,0,0)));
-
 }
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
@@ -57,125 +48,6 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     }
 
     delete dummy;
-}
-
-double SearchCoverageStrategy::GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initialTurn, bool endTurn)
-{
-    if(wps.empty())
-        return 0;
-
-    double t=0;
-    double dist = 0;
-
-    dist += sqrt(D2(curpos, wps.front()));
-    dist += sqrt(D2(wps.back(), endpos));
-
-    for(size_t i=0; i+1 < wps.size(); i++)
-    {
-        dist += sqrt(D2(wps[i], wps[i+1]));
-    }
-
-    t = dist/NUCParam::average_speed;
-
-    if(wps.size() >=2)
-    {
-        t += COLLINEAR(curpos, wps[0], wps[1]) * NUCParam::turning_time;
-        for(size_t i=1; i+1 < wps.size(); i++)
-        {
-            t += COLLINEAR(wps[i-1], wps[i], wps[i+1]) * NUCParam::turning_time;
-        }
-
-        t += COLLINEAR(wps[wps.size()-2], wps.back(), endpos) * NUCParam::turning_time;
-    }
-
-    if(wps.size() == 1)
-    {
-        t += COLLINEAR(curpos, wps[0], endpos) * NUCParam::turning_time;
-    }
-
-    if(initialTurn)
-        t += NUCParam::turning_time;
-
-    if(endTurn)
-        t += NUCParam::turning_time;
-
-    return t;
-}
-
-double SearchCoverageStrategy::GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initialTurn, bool endTurn)
-{
-    if(wps.empty())
-    {
-        return sqrt(D2(curpos, endpos))/NUCParam::average_speed + NUCParam::turning_time;
-    }
-
-    double t=0;
-    double dist = 0;
-
-    //dist += sqrt(D2(curpos, wps.front()->GetMAVWaypoint()));
-    dist += sqrt(D2(wps.back()->GetMAVWaypoint(), endpos));
-
-    for(size_t i=0; i+1 < wps.size(); i++)
-    {
-        dist += sqrt(D2(wps[i]->GetMAVWaypoint(), wps[i+1]->GetMAVWaypoint()));
-    }
-
-    t = dist/NUCParam::average_speed;
-
-    if(wps.size() >=2)
-    {
-        for(size_t i=1; i+1 < wps.size(); i++)
-        {
-            t += COLLINEAR(wps[i-1]->GetMAVWaypoint(), wps[i]->GetMAVWaypoint(), wps[i+1]->GetMAVWaypoint()) * NUCParam::turning_time;
-        }
-
-        t += COLLINEAR(wps[wps.size()-1]->GetMAVWaypoint(), wps.back()->GetMAVWaypoint(), endpos) * NUCParam::turning_time;
-    }
-
-    if(wps.size() == 1)
-    {
-        t += /*COLLINEAR(curpos, wps[0]->GetMAVWaypoint(), endpos) */ NUCParam::turning_time;
-    }
-
-    if(initialTurn)
-        t += NUCParam::turning_time;
-
-    if(endTurn)
-        t += NUCParam::turning_time;
-
-    return t;
-}
-
-double SearchCoverageStrategy::GetPlanExecutionTime(vector<Vector<3> > &wps, bool ignoreFirstSegment, bool ignoreLastSegment)
-{
-    if(wps.empty())
-        return 0;
-
-    double t=0;
-    double dist = 0;
-
-    for(size_t i=0; i+1 < wps.size(); i++)
-    {
-        if(ignoreFirstSegment && i==0)
-            continue;
-
-        if(ignoreLastSegment && i+2==wps.size())
-            continue;
-
-        dist += sqrt(D2(wps[i], wps[i+1]));
-    }
-
-    t = dist/NUCParam::average_speed;
-
-    if(wps.size() >=3)
-    {
-        for(size_t i=0; i+2 < wps.size(); i++)
-        {
-            t += COLLINEAR(wps[i], wps[i+1], wps[i+2]) * NUCParam::turning_time;
-        }
-    }
-
-    return t;
 }
 
 void SearchCoverageStrategy::GenerateLawnmower()
@@ -451,7 +323,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                 tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
             tmp_plan.push_back(startPos);
 
-            double total_time = GetPlanExecutionTime(tmp_plan, true, false);
+            double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
 
             if(total_time < remaining_time)
             {
@@ -537,7 +409,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                         tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
                     tmp_plan.push_back(startPos);
 
-                    double total_time = GetPlanExecutionTime(tmp_plan, true, false);
+                    double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
 
                     if(total_time < remaining_time)
                     {
@@ -767,7 +639,6 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     }
                 }
             }
-
         }
 
         while(!components.empty())
@@ -781,6 +652,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         gc.GetConnectedComponents(components);
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
+
     }
 }
 

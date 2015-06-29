@@ -23,9 +23,6 @@ private:
     bool InSearchGridBoundary(int i, int j);
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
-    double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
-    double GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<3> curpospos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
-    double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, bool ignoreFirstSegment, bool ignoreLastSegment);
 
     void OnReachedNode_GreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void OnReachedNode_DelayedPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);

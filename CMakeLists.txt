@@ -32,6 +32,8 @@ set(NUC_SOURCES
     src/TargetPolygon.cpp
     src/GraphComponents.cpp
     #src/Knapsack.cpp
+    src/TargetTour.cpp
+    include/TargetTour.h
     include/Knapsack.h
     include/GraphComponents.h
     include/TargetPolygon.h
