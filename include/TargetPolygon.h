@@ -59,6 +59,7 @@ class TargetPolygon
         Vector<3> center;
         bool isLine;
 
+        friend class SearchCoverageStrategy;
 };
 
 #endif

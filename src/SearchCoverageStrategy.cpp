@@ -536,14 +536,12 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
 
 void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
-
     if(searchNode)
     {
         for(size_t i=0; i < newTargets.size(); i++)
         {
            SetPolygonBoundaryFlags(newTargets[i], node);
         }
-
 
         for(size_t i=0; i < newTargets.size(); i++)
         {
@@ -563,7 +561,6 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                      !newTargets[i]->GetBoundaryFlag(TargetPolygon::D) &&
                      !newTargets[i]->GetBoundaryFlag(TargetPolygon::U)))
                 {
-                    //ROS_INFO("Adding virtual edge...");
                     gc.AddEdge(newTargets[i], newTargets[j], true);
                 }
             }
@@ -667,15 +664,84 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
             delete v;
         }
 
+        // get the targets
         gc.GetIntegratedComponents(integrated_components);
 
-        // gc.GetComposedTargets(vector<vector<Targets>> v);
-        // solve target tour on each v[i]
-        // solve napsack on v
+        //for each target, find the unvisited nearest start search node
+        start_nodes.clear();
+        target_costs.clear();
+        target_values.clear();
+
+        GetNearestStartCellAndCost(integrated_components, start_nodes, target_costs, target_values);
+
+        double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
+        double time_budget = remaining_time - coverage_time;
+
+        Knapsack<vector<TargetPolygon*> > ns;
+        for(size_t i=0; i<integrated_components.size(); i++)
+            ns.AddItem(integrated_components[i],target_values[i], target_costs[i]);
+
+        targets2visit.clear();
+        ns.Solve(time_budget, targets2visit);
+
+        ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
 
     }
+}
+
+void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<std::vector<TargetPolygon*> *> &cmpn,
+                            std::vector<CNode*> &startnode, std::vector<double> &costs, std::vector<double> &values)
+{
+    TargetTour tt;
+    vector<CNode*> nds;
+    nds.push_back(visitedNodes.back());
+    copy(nodeStack.begin(), nodeStack.end(), back_inserter(nds));
+
+    for(size_t i=0; i < cmpn.size(); i++)
+    {
+        double val = 0;
+        vector<CNode*> parents;
+        vector<TargetPolygon*> &v = *cmpn[i];
+        for(size_t j=0; j<v.size(); j++)
+        {
+            val += v[j]->GetTargetRegionsArea();
+            copy(v[j]->parentSearchNodes.begin(),v[j]->parentSearchNodes.end(), back_inserter(parents));
+        }
+
+        double minCost = 99999999;
+        CNode* minNode = NULL;
+        for(size_t k=0; k<parents.size(); k++)
+        {
+            for(size_t j=0; j<nds.size(); j++)
+            {
+                if(!NeighboursNode(nds[j],parents[k]))
+                    continue;
+
+                double c = tt.GetTargetTour(v, nds[j]->GetMAVWaypoint(), nds[j]->GetMAVWaypoint());
+                if(minCost > c)
+                {
+                    minCost = c;
+                    minNode = nds[j];
+                }
+            }
+        }
+
+        startnode.push_back(minNode);
+        costs.push_back(minCost);
+        values.push_back(val);
+    }
+
+    assert(costs.size() == cmpn.size());
+}
+
+bool SearchCoverageStrategy::NeighboursNode(CNode *n1, CNode *n2)
+{
+    if(abs(n1->grd_x-n2->grd_x)+abs(n1->grd_y-n2->grd_y) == 1)
+        return true;
+
+    return false;
 }
 
 void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node)
@@ -1023,19 +1089,37 @@ void SearchCoverageStrategy::glDraw()
 //            glEnd();
 //        }
 
-    for(size_t i=0; i < integrated_components.size(); i++)
-        for(size_t j=0; j < integrated_components[i]->size(); j++)
-        {
-            integrated_components[i]->at(j)->glDraw();
-            char c = i%8;
-            glPointSize(20);
-            glColor3f(c&1, c&2, c&4);
-            glBegin(GL_POINTS);
-            Vector<3> cn =integrated_components[i]->at(j)->GetCenter();
-            glVertex3f(cn[0],cn[1],cn[2]+1);
-            glEnd();
-        }
+//    for(size_t i=0; i < integrated_components.size(); i++)
+//        for(size_t j=0; j < integrated_components[i]->size(); j++)
+//        {
+//            integrated_components[i]->at(j)->glDraw();
+//            char c = i%8;
+//            glPointSize(20);
+//            glColor3f(c&1, c&2, c&4);
+//            glBegin(GL_POINTS);
+//            Vector<3> cn =integrated_components[i]->at(j)->GetCenter();
+//            glVertex3f(cn[0],cn[1],cn[2]+1);
+//            glEnd();
+//        }
 
+//    glPointSize(20);
+//    glBegin(GL_POINTS);
+//    for(size_t i =0; i<start_nodes.size(); i++)
+//    {
+//        char c = i%8;
+//        glColor3f(c&1, c&2, c&4);
+//        Vector<3> cn = start_nodes[i]->GetPos();
+//        glVertex3f(cn[0],cn[1],cn[2]);
+//    }
+//    glEnd();
+
+    for(set<vector<TargetPolygon*> *>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
+    {
+        for(size_t j=0; j<(*it)->size(); j++)
+        {
+            (*it)->at(j)->glDraw();
+        }
+    }
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)

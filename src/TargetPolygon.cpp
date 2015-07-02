@@ -543,7 +543,20 @@ void TargetPolygon::PlanLawnmower()
  }
 
 void TargetPolygon::glDraw()
-{
+{    
+    glLineWidth(4);
+    glColor3f(0,0,1);
+    glBegin(GL_LINES);
+    for(set<CNode*>::iterator i=parentSearchNodes.begin(); i!=parentSearchNodes.end(); i++)
+    {
+        Vector<3> c = GetCenter();
+        Vector<3> pc = (*i)->GetMAVWaypoint();
+        glVertex3f(c[0], c[1], c[2]);
+        glVertex3f(pc[0], pc[1], pc[2]);
+
+    }
+    glEnd();
+
     //if(ch.size()<=1)
     //    return;
 

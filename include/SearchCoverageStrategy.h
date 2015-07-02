@@ -37,6 +37,10 @@ private:
 
     void CleanupTargets();
 
+    void GetNearestStartCellAndCost(std::vector<std::vector<TargetPolygon*> *> &cmpn, std::vector<CNode*> &startnodes,
+                                    std::vector<double> &cost, std::vector<double> &values);
+    bool NeighboursNode(CNode* n1, CNode* n2);
+
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
     std::vector<CNode*> grid;
@@ -63,6 +67,11 @@ private:
     TooN::Vector<3> startPos;
     TooN::Vector<3> prevGoal;
 
+    // delayed_greedy
+    vector<CNode*> start_nodes;
+    vector<double> target_costs;
+    vector<double> target_values;
+    set<vector<TargetPolygon*> *> targets2visit;
 };
 
 #endif
