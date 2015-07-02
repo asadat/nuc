@@ -77,6 +77,50 @@ void GraphComponents::AddEdge(TargetPolygon *tp1, TargetPolygon *tp2, bool virtu
 
 }
 
+void GraphComponents::GetIntegratedComponents(vector<vector<TargetPolygon *> *> &components)
+{
+    vector<vector<TargetPolygon* > *> ccm;
+    GetConnectedComponents(ccm);
+
+    for(size_t i=0; i<nodes.size(); i++)
+        nodes[i]->visited = false;
+
+    for(size_t j=0; j < ccm.size(); j++)
+    {
+        vector<TargetPolygon*> * integrated_comp = new vector<TargetPolygon*>();
+        vector<TargetPolygon*> &v = *ccm[j];
+        for(size_t i=0; i < v.size(); i++)
+        {
+            node* nd = GetNode(v[i]);
+            if(!nd->visited)
+            {
+                TargetPolygon * t = new TargetPolygon();
+                Integrating_DFS(nd, t);
+                t->ProcessPolygon();
+                integrated_comp->push_back(t);
+            }
+        }
+
+
+        components.push_back(integrated_comp);
+    }
+}
+
+void GraphComponents::Integrating_DFS(node *root, TargetPolygon *target)
+{
+    root->visited = true;
+    target->AddPolygon(root->tp, false, false);
+
+    pair<multimap<node*,node*>::iterator, multimap<node*,node*>::iterator> r_it = edges.equal_range(root);
+    for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)
+    {
+        if(!it->second->visited)
+        {
+            Integrating_DFS(it->second, target);
+        }
+    }
+}
+
 void GraphComponents::GetConnectedComponents(vector<vector<TargetPolygon *> *> &components)
 {
     for(size_t i=0; i<nodes.size(); i++)

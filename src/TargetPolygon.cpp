@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <GL/glut.h>
 #include "ros/ros.h"
+#include "NUCParam.h"
 
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
 #define MIN(a,b) ((a<b)?a:b)
@@ -101,7 +102,7 @@ bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
     return false;
 }
 
-void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels)
+void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels, bool process)
 {
     parentSearchNodes.insert(p->parentSearchNodes.begin(), p->parentSearchNodes.end());
 
@@ -113,7 +114,8 @@ void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels)
         cells.push_back(p->cells[i]);
     }
 
-    ProcessPolygon();
+    if(process)
+        ProcessPolygon();
 }
 
 double TargetPolygon::GetTargetRegionsArea()
@@ -462,10 +464,10 @@ void TargetPolygon::PlanLawnmower()
     lm.push_back(en0);
 
     double n =-1;
-    while(true)
+    while(height / interlap_d > n)
     {
-        if(n > 30)
-            break;
+//        if(n > 300)
+//            break;
 
         n+=1.0;
 
@@ -474,8 +476,8 @@ void TargetPolygon::PlanLawnmower()
         sn += n * interlap_d * sweepDir;
         en += n * interlap_d * sweepDir;
 
-        sn -= 50.0 * baseDirNorm;
-        en += 50.0 * baseDirNorm;
+        sn -=  2 * NUCParam::area_length * baseDirNorm;
+        en +=  2 * NUCParam::area_length * baseDirNorm;
 
         vector<Vector<3> > intersections;
 
@@ -512,15 +514,15 @@ void TargetPolygon::PlanLawnmower()
 
             if(intersections.size()>=2)
             {
-                if(D2(intersections[0],lm.back()) < D2(intersections[1],lm.back()))
+                if(D2(intersections[0],lm[lm.size()-2]) < D2(intersections[1],lm[lm.size()-2]))
                 {
-                    lm.push_back(intersections[0]);
                     lm.push_back(intersections[1]);
+                    lm.push_back(intersections[0]);
                 }
                 else
                 {
-                    lm.push_back(intersections[1]);
                     lm.push_back(intersections[0]);
+                    lm.push_back(intersections[1]);
                 }
             }
         }
@@ -545,13 +547,11 @@ void TargetPolygon::glDraw()
     //if(ch.size()<=1)
     //    return;
 
-
     //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
     glColor3f(pc[0], pc[1], pc[2]);
     glLineWidth(4);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_POLYGON);
-
     for(unsigned int i=0; i<ch.size();i++)
     {
         //glColor3f(RAND((i%5)/0.5,(i%5)/0.5+0.2),RAND(0,1),RAND(0,1));
@@ -563,7 +563,7 @@ void TargetPolygon::glDraw()
     if(base_idx[0] != -1 && base_idx[1]!=-1)
     {
         glColor3f(1,0,0);
-        glPointSize(5);
+        glPointSize(15);
         glBegin(GL_POINTS);
         TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
         TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();

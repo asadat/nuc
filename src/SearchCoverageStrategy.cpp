@@ -649,7 +649,29 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
             delete v;
         }
 
-        gc.GetConnectedComponents(components);
+        //gc.GetConnectedComponents(components);
+
+        while(!integrated_components.empty())
+        {
+            vector<TargetPolygon*> * v = integrated_components.back();
+            integrated_components.pop_back();
+
+            while(!v->empty())
+            {
+                TargetPolygon * t = v->back();
+                v->pop_back();
+                delete t;
+            }
+
+            v->clear();
+            delete v;
+        }
+
+        gc.GetIntegratedComponents(integrated_components);
+
+        // gc.GetComposedTargets(vector<vector<Targets>> v);
+        // solve target tour on each v[i]
+        // solve napsack on v
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
 
@@ -954,8 +976,8 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
 
 void SearchCoverageStrategy::glDraw()
 {    
-    for(size_t j=0; j<targets.size(); j++)
-        targets[j]->glDraw();
+//    for(size_t j=0; j<targets.size(); j++)
+//        targets[j]->glDraw();
 
 
     glColor3f(0.3,0.8,0.9);
@@ -987,16 +1009,29 @@ void SearchCoverageStrategy::glDraw()
         glEnd();
     }
 
-    gc.glDraw();
+    //gc.glDraw();
 
-    for(size_t i=0; i < components.size(); i++)
-        for(size_t j=0; j < components[i]->size(); j++)
+//    for(size_t i=0; i < components.size(); i++)
+//        for(size_t j=0; j < components[i]->size(); j++)
+//        {
+//            char c = i%8;
+//            glPointSize(20);
+//            glColor3f(c&1, c&2, c&4);
+//            glBegin(GL_POINTS);
+//            Vector<3> cn =components[i]->at(j)->GetCenter();
+//            glVertex3f(cn[0],cn[1],cn[2]+1);
+//            glEnd();
+//        }
+
+    for(size_t i=0; i < integrated_components.size(); i++)
+        for(size_t j=0; j < integrated_components[i]->size(); j++)
         {
+            integrated_components[i]->at(j)->glDraw();
             char c = i%8;
             glPointSize(20);
             glColor3f(c&1, c&2, c&4);
             glBegin(GL_POINTS);
-            Vector<3> cn =components[i]->at(j)->GetCenter();
+            Vector<3> cn =integrated_components[i]->at(j)->GetCenter();
             glVertex3f(cn[0],cn[1],cn[2]+1);
             glEnd();
         }
@@ -1005,7 +1040,6 @@ void SearchCoverageStrategy::glDraw()
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)
 {
-
     Vector<4> fp = root->GetNearestLeaf(makeVector(0,0,0))->footPrint;
     double dx = fp[2]-fp[0];
     double dy = fp[3]-fp[1];

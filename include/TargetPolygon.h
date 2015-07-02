@@ -22,7 +22,7 @@ class TargetPolygon
         Vector<3> FirstLMPos(){return lm.front();}
         Vector<3> LastLMPos(){return lm.back();}
         size_t LawnmowerSize(){return lm.size();}
-        void AddPolygon(TargetPolygon* p, bool changeLabels=true);
+        void AddPolygon(TargetPolygon* p, bool changeLabels=true, bool process=true);
         //int GetLabel(){return label;}
         bool IsNeighbour(TargetPolygon *tp);
         void SetVisited(bool visited_){visited = visited_;}
@@ -33,9 +33,10 @@ class TargetPolygon
         void SetBoundaryFlag(SIDE side, bool val);
         bool GetBoundaryFlag(SIDE side);
 
+        void ProcessPolygon();
+
         Vector<3> GetCenter(){return center;}
     private:
-        void ProcessPolygon();
         void ConvexHull();
         void FindBaseEdge();
         double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);

@@ -21,11 +21,13 @@ class GraphComponents
         void AddEdge(TargetPolygon * tp1, TargetPolygon *tp2, bool virtual_edge);
         void AddNode(TargetPolygon * tp);
         void GetConnectedComponents(vector<vector<TargetPolygon*> *> &components);
+        void GetIntegratedComponents(vector<vector<TargetPolygon*> *> &components);
         void Clear();
         void glDraw();
 
     private:
         void DFS(node* root, vector<TargetPolygon*> * cmp);
+        void Integrating_DFS(node* root, TargetPolygon* target);
         node* GetNode(TargetPolygon* tp);
         map<TargetPolygon*, node*> target2node;
         multimap<node*, node*> edges;

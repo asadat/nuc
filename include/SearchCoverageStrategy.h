@@ -45,6 +45,7 @@ private:
 
     GraphComponents gc;
     vector<vector<TargetPolygon*> *> components;
+    vector<vector<TargetPolygon*> *> integrated_components;
 
 
     double cutoff_prob;
