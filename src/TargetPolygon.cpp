@@ -73,6 +73,11 @@ bool TargetPolygon::GetBoundaryFlag(SIDE side)
     return boundaryFLags[(int)side];
 }
 
+bool TargetPolygon::IsNonBoundaryTarget()
+{
+    return !(boundaryFLags[0]||boundaryFLags[1]||boundaryFLags[2]||boundaryFLags[3]);
+}
+
 void TargetPolygon::ProcessPolygon()
 {
     label = cells[0]->label;
@@ -106,6 +111,9 @@ void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels, bool process
 {
     parentSearchNodes.insert(p->parentSearchNodes.begin(), p->parentSearchNodes.end());
 
+    for(int i=0; i<ALL; i++)
+        boundaryFLags[i] = boundaryFLags[i] || p->boundaryFLags[i];
+
     for(size_t i=0; i < p->cells.size(); i++)
     {
         if(changeLabels)
@@ -123,9 +131,18 @@ double TargetPolygon::GetTargetRegionsArea()
     return ((double)cells.size())*cellW*cellW;
 }
 
-void TargetPolygon::GetCells(vector<CNode *> &v)
+void TargetPolygon::GetCells(vector<CNode *> &v, CNode* ofParent)
 {
-    copy(cells.begin(), cells.end(), back_inserter(v));
+    if(!ofParent)
+        copy(cells.begin(), cells.end(), back_inserter(v));
+    else
+    {
+        for(size_t i=0; i<cells.size(); i++)
+            if(cells[i]->searchParentNode == ofParent)
+            {
+                v.push_back(cells[i]);
+            }
+    }
 }
 
 void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
@@ -544,18 +561,18 @@ void TargetPolygon::PlanLawnmower()
 
 void TargetPolygon::glDraw()
 {    
-    glLineWidth(4);
-    glColor3f(0,0,1);
-    glBegin(GL_LINES);
-    for(set<CNode*>::iterator i=parentSearchNodes.begin(); i!=parentSearchNodes.end(); i++)
-    {
-        Vector<3> c = GetCenter();
-        Vector<3> pc = (*i)->GetMAVWaypoint();
-        glVertex3f(c[0], c[1], c[2]);
-        glVertex3f(pc[0], pc[1], pc[2]);
+//    glLineWidth(4);
+//    glColor3f(0,0,1);
+//    glBegin(GL_LINES);
+//    for(set<CNode*>::iterator i=parentSearchNodes.begin(); i!=parentSearchNodes.end(); i++)
+//    {
+//        Vector<3> c = GetCenter();
+//        Vector<3> pcn = (*i)->GetMAVWaypoint();
+//        glVertex3f(c[0], c[1], c[2]);
+//        glVertex3f(pcn[0], pcn[1], pcn[2]);
 
-    }
-    glEnd();
+//    }
+//    glEnd();
 
     //if(ch.size()<=1)
     //    return;

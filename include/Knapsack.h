@@ -5,6 +5,7 @@
 #include <vector>
 #include <bitset>
 #include <iostream>
+#include "ros/ros.h"
 
 #define SET_MAX_SIZE    256
 
@@ -60,6 +61,11 @@ void Knapsack<ITEM>::AddItem(ITEM *item, const double value, const double weight
 template <class ITEM>
 double Knapsack<ITEM>::Solve(const double weight, set<ITEM *> &solution)
 {
+    for(size_t i = 0; i < items.size(); i++)
+    {
+        ROS_INFO("Item #%d value: %f  weight: %f", (int)i, items[i].value, items[i].weight);
+    }
+
     bitset<SET_MAX_SIZE> bs;
     bs.reset();
 

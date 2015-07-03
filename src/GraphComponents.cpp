@@ -103,6 +103,7 @@ void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &component
             }
         }
 
+        //ROS_INFO("INTCOMP: %d %", integrated_comp->size(), integrated_comp->IsNonBoundary());
         components.push_back(integrated_comp);
     }
 }

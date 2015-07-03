@@ -27,12 +27,12 @@ class TargetPolygon
         bool IsNeighbour(TargetPolygon *tp);
         void SetVisited(bool visited_){visited = visited_;}
         double GetTargetRegionsArea();
-        void GetCells(vector<CNode*> &v);
+        void GetCells(vector<CNode*> &v, CNode* ofParent);
         void SetPolygonColor(Vector<3> color){pc=color;}
 
         void SetBoundaryFlag(SIDE side, bool val);
         bool GetBoundaryFlag(SIDE side);
-
+        bool IsNonBoundaryTarget();
         void ProcessPolygon();
 
         Vector<3> GetCenter(){return center;}

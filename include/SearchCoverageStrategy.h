@@ -36,12 +36,14 @@ private:
     void FindClusters(bool incremental, std::vector<TargetPolygon*> & newTargets);
 
     void CleanupTargets();
+    void CleanupComponents();
 
     void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, std::vector<CNode*> &startnodes,
                                     std::vector<double> &cost, std::vector<double> &values, CNode* cur_node);
 
     bool NeighboursNode(CNode* n1, CNode* n2);
     void ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node);
+    bool IsCompoundTargetExtensible(CompoundTarget* ct, std::set<CNode*> boundarySearchNodes);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
