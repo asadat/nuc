@@ -91,9 +91,9 @@ void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &component
     {
         CompoundTarget * integrated_comp = new CompoundTarget();
         CompoundTarget &v = *ccm[j];
-        for(size_t i=0; i < v.targets.size(); i++)
+        for(size_t i=0; i < v.size(); i++)
         {
-            node* nd = GetNode(v.targets[i]);
+            node* nd = GetNode(v.GetTarget(i));
             if(!nd->visited)
             {
                 TargetPolygon * t = new TargetPolygon();
@@ -143,7 +143,7 @@ void GraphComponents::GetConnectedComponents(vector<CompoundTarget*> &components
 void GraphComponents::DFS(node *root, CompoundTarget *cmp)
 {
     root->visited = true;
-    cmp->targets.push_back(root->tp);
+    cmp->AddTarget(root->tp);
 
     pair<multimap<node*,node*>::iterator, multimap<node*,node*>::iterator> r_it = edges.equal_range(root);
     for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)
