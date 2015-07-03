@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <GL/glut.h>
 #include "ros/ros.h"
+#include "TargetPolygon.h"
+#include "CompoundTarget.h"
 
 GraphComponents::GraphComponents()
 {
@@ -77,9 +79,9 @@ void GraphComponents::AddEdge(TargetPolygon *tp1, TargetPolygon *tp2, bool virtu
 
 }
 
-void GraphComponents::GetIntegratedComponents(vector<vector<TargetPolygon *> *> &components)
+void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &components)
 {
-    vector<vector<TargetPolygon* > *> ccm;
+    vector<CompoundTarget*> ccm;
     GetConnectedComponents(ccm);
 
     for(size_t i=0; i<nodes.size(); i++)
@@ -87,20 +89,19 @@ void GraphComponents::GetIntegratedComponents(vector<vector<TargetPolygon *> *> 
 
     for(size_t j=0; j < ccm.size(); j++)
     {
-        vector<TargetPolygon*> * integrated_comp = new vector<TargetPolygon*>();
-        vector<TargetPolygon*> &v = *ccm[j];
-        for(size_t i=0; i < v.size(); i++)
+        CompoundTarget * integrated_comp = new CompoundTarget();
+        CompoundTarget &v = *ccm[j];
+        for(size_t i=0; i < v.targets.size(); i++)
         {
-            node* nd = GetNode(v[i]);
+            node* nd = GetNode(v.targets[i]);
             if(!nd->visited)
             {
                 TargetPolygon * t = new TargetPolygon();
                 Integrating_DFS(nd, t);
                 t->ProcessPolygon();
-                integrated_comp->push_back(t);
+                integrated_comp->AddTarget(t);
             }
         }
-
 
         components.push_back(integrated_comp);
     }
@@ -121,7 +122,7 @@ void GraphComponents::Integrating_DFS(node *root, TargetPolygon *target)
     }
 }
 
-void GraphComponents::GetConnectedComponents(vector<vector<TargetPolygon *> *> &components)
+void GraphComponents::GetConnectedComponents(vector<CompoundTarget*> &components)
 {
     for(size_t i=0; i<nodes.size(); i++)
         nodes[i]->visited = false;
@@ -130,7 +131,7 @@ void GraphComponents::GetConnectedComponents(vector<vector<TargetPolygon *> *> &
     {
         if(!nodes[i]->visited)
         {
-            vector<TargetPolygon*> * cmp = new vector<TargetPolygon*>();
+            CompoundTarget * cmp = new CompoundTarget();
             DFS(nodes[i], cmp);
             components.push_back(cmp);
         }
@@ -139,10 +140,10 @@ void GraphComponents::GetConnectedComponents(vector<vector<TargetPolygon *> *> &
     //ROS_INFO("#nodes: %d", nodes.size());
 }
 
-void GraphComponents::DFS(node *root, vector<TargetPolygon *> *cmp)
+void GraphComponents::DFS(node *root, CompoundTarget *cmp)
 {
     root->visited = true;
-    cmp->push_back(root->tp);
+    cmp->targets.push_back(root->tp);
 
     pair<multimap<node*,node*>::iterator, multimap<node*,node*>::iterator> r_it = edges.equal_range(root);
     for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)

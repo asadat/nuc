@@ -37,11 +37,11 @@ private:
 
     void CleanupTargets();
 
-    void GetNearestStartCellAndCost(std::vector<std::vector<TargetPolygon*> *> &cmpn, std::vector<CNode*> &startnodes,
+    void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, std::vector<CNode*> &startnodes,
                                     std::vector<double> &cost, std::vector<double> &values, CNode* cur_node);
 
     bool NeighboursNode(CNode* n1, CNode* n2);
-    void ExtractPlanFromTargets(set<vector<TargetPolygon*> *> final_targets, CNode* cur_node);
+    void ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
@@ -50,8 +50,8 @@ private:
     std::vector<TooN::Vector<3> > target_lms;
 
     GraphComponents gc;
-    vector<vector<TargetPolygon*> *> components;
-    vector<vector<TargetPolygon*> *> integrated_components;
+    vector<CompoundTarget*> components;
+    vector<CompoundTarget*> integrated_components;
 
 
     double cutoff_prob;
@@ -73,7 +73,7 @@ private:
     vector<CNode*> start_nodes;
     vector<double> target_costs;
     vector<double> target_values;
-    set<vector<TargetPolygon*> *> targets2visit;
+    set<CompoundTarget*> targets2visit;
 };
 
 #endif

@@ -3,9 +3,12 @@
 
 #include <map>
 #include <vector>
-#include "TargetPolygon.h"
 
 using namespace std;
+
+class TargetPolygon;
+class CompoundTarget;
+
 struct node
 {
     TargetPolygon* tp;
@@ -20,13 +23,13 @@ class GraphComponents
 
         void AddEdge(TargetPolygon * tp1, TargetPolygon *tp2, bool virtual_edge);
         void AddNode(TargetPolygon * tp);
-        void GetConnectedComponents(vector<vector<TargetPolygon*> *> &components);
-        void GetIntegratedComponents(vector<vector<TargetPolygon*> *> &components);
+        void GetConnectedComponents(vector<CompoundTarget*> &components);
+        void GetIntegratedComponents(vector<CompoundTarget*> &components);
         void Clear();
         void glDraw();
 
     private:
-        void DFS(node* root, vector<TargetPolygon*> * cmp);
+        void DFS(node* root, CompoundTarget * cmp);
         void Integrating_DFS(node* root, TargetPolygon* target);
         node* GetNode(TargetPolygon* tp);
         map<TargetPolygon*, node*> target2node;

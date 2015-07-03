@@ -6,6 +6,7 @@
 #include "TargetPolygon.h"
 #include "TSP.h"
 #include "TargetTour.h"
+#include "CompoundTarget.h"
 
 using namespace std;
 using namespace TooN;
@@ -645,13 +646,10 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         }
 
 
-
-
         while(!components.empty())
         {
-            vector<TargetPolygon*> * v = components.back();
+            CompoundTarget * v = components.back();
             components.pop_back();
-            v->clear();
             delete v;
         }
 
@@ -659,17 +657,16 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         while(!integrated_components.empty())
         {
-            vector<TargetPolygon*> * v = integrated_components.back();
+            CompoundTarget * v = integrated_components.back();
             integrated_components.pop_back();
 
-            while(!v->empty())
+            while(!v->targets.empty())
             {
-                TargetPolygon * t = v->back();
-                v->pop_back();
+                TargetPolygon * t = v->targets.back();
+                v->targets.pop_back();
                 delete t;
             }
 
-            v->clear();
             delete v;
         }
 
@@ -686,7 +683,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
 
-        Knapsack<vector<TargetPolygon*> > ns;
+        Knapsack<CompoundTarget> ns;
         for(size_t i=0; i<integrated_components.size(); i++)
             ns.AddItem(integrated_components[i],target_values[i], target_costs[i]);
 
@@ -700,12 +697,12 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     }
 }
 
-void SearchCoverageStrategy::ExtractPlanFromTargets(set<vector<TargetPolygon*> *> final_targets, CNode* cur_node)
+void SearchCoverageStrategy::ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node)
 {
 
 }
 
-void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<std::vector<TargetPolygon*> *> &cmpn,
+void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarget *> &cmpn,
                             std::vector<CNode*> &startnode, std::vector<double> &costs, std::vector<double> &values, CNode* cur_node)
 {
     TargetTour tt;
@@ -722,11 +719,11 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<std::vector<
     {
         double val = 0;
         vector<CNode*> parents;
-        vector<TargetPolygon*> &v = *cmpn[i];
-        for(size_t j=0; j<v.size(); j++)
+        CompoundTarget &v = *cmpn[i];
+        for(size_t j=0; j<v.targets.size(); j++)
         {
-            val += v[j]->GetTargetRegionsArea();
-            copy(v[j]->parentSearchNodes.begin(),v[j]->parentSearchNodes.end(), back_inserter(parents));
+            val += v.targets[j]->GetTargetRegionsArea();
+            copy(v.targets[j]->parentSearchNodes.begin(),v.targets[j]->parentSearchNodes.end(), back_inserter(parents));
         }
 
         double minCost = 99999999;
@@ -738,7 +735,7 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<std::vector<
                 if(!NeighboursNode(nds[j],parents[k]))
                     continue;
 
-                double c = tt.GetTargetTour(v, nds[j]->GetMAVWaypoint(), nds[j]->GetMAVWaypoint());
+                double c = tt.GetTargetTour(v.targets, nds[j]->GetMAVWaypoint(), nds[j]->GetMAVWaypoint());
                 if(minCost > c)
                 {
                     minCost = c;
@@ -1132,11 +1129,11 @@ void SearchCoverageStrategy::glDraw()
 //    }
 //    glEnd();
 
-    for(set<vector<TargetPolygon*> *>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
+    for(set<CompoundTarget*>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
     {
-        for(size_t j=0; j<(*it)->size(); j++)
+        for(size_t j=0; j<(*it)->targets.size(); j++)
         {
-            (*it)->at(j)->glDraw();
+            (*it)->targets[j]->glDraw();
         }
     }
 }

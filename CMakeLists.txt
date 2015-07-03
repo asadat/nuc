@@ -33,6 +33,8 @@ set(NUC_SOURCES
     src/GraphComponents.cpp
     #src/Knapsack.cpp
     src/TargetTour.cpp
+    src/CompoundTarget.cpp
+    include/CompoundTarget.h
     include/TargetTour.h
     include/Knapsack.h
     include/GraphComponents.h
