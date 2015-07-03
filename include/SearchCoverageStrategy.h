@@ -38,8 +38,10 @@ private:
     void CleanupTargets();
 
     void GetNearestStartCellAndCost(std::vector<std::vector<TargetPolygon*> *> &cmpn, std::vector<CNode*> &startnodes,
-                                    std::vector<double> &cost, std::vector<double> &values);
+                                    std::vector<double> &cost, std::vector<double> &values, CNode* cur_node);
+
     bool NeighboursNode(CNode* n1, CNode* n2);
+    void ExtractPlanFromTargets(set<vector<TargetPolygon*> *> final_targets, CNode* cur_node);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
