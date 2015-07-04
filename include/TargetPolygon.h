@@ -30,6 +30,7 @@ class TargetPolygon
         void GetCells(vector<CNode*> &v, CNode* ofParent);
         void SetPolygonColor(Vector<3> color){pc=color;}
 
+        void OrBoundaryFlag(SIDE side, bool val);
         void SetBoundaryFlag(SIDE side, bool val);
         bool GetBoundaryFlag(SIDE side);
         bool IsNonBoundaryTarget();

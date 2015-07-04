@@ -30,6 +30,7 @@ private:
     void UpdateRemainingTime(CNode* node);
 
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node);
+    void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
 
     void FindSubCells(CNode* n);
 

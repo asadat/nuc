@@ -65,6 +65,22 @@ void TargetPolygon::SetBoundaryFlag(SIDE side, bool val)
 
     }
 }
+void TargetPolygon::OrBoundaryFlag(SIDE side, bool val)
+{
+
+    if(side != ALL)
+    {
+       boundaryFLags[(int)side] |= val;
+    }
+    else if(side == ALL)
+    {
+        boundaryFLags[0] |= val;
+        boundaryFLags[1] |= val;
+        boundaryFLags[2] |= val;
+        boundaryFLags[3] |= val;
+
+    }
+}
 
 bool TargetPolygon::GetBoundaryFlag(SIDE side)
 {
@@ -621,19 +637,20 @@ void TargetPolygon::glDraw()
         }
     }
 
+    for(int i=0; i <4; i++)
+    {
+        if(boundaryFLags[i])
+        {
+            double dx = (i==0)?-3:((i==1)?3:0);
+            double dy = (i==2)? 3:((i==3)?-3:0);
 
-//    for(int i=0; i <4; i++)
-//    {
-//        if(boundaryFLags[i])
-//        {
-//            double dx = (i==0)?-3:((i==1)?3:0);
-//            double dy = (i==2)? 3:((i==3)?-3:0);
-//            glColor3f(1,1,0);
-//            glLineWidth(5);
-//            glBegin(GL_LINES);
-//            glVertex3f(center[0], center[1], center[2]);
-//            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
-//            glEnd();
-//        }
-//    }
+            glLineWidth(5);
+            glBegin(GL_LINES);
+            glColor3f(1,1,0);
+            glVertex3f(center[0], center[1], center[2]);
+            glColor3f(0,1,1);
+            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
+            glEnd();
+        }
+    }
 }
