@@ -17,11 +17,21 @@ class CompoundTarget
         void glDraw();
 
         size_t size() const {return targets.size();}
-
         bool IsNonBoundary(){return nonBoundary;}
+        void ResetBoundaries();
+        bool IsExtensible();
+
+
     private:
         vector<TargetPolygon*> targets;
         bool nonBoundary;
+
+        vector<CNode*> boundaryNodes[TargetPolygon::ALL];
+
+        CNode* startNode;
+        double value;
+        double cost;
+
         friend class SearchCoverageStrategy;
 };
 

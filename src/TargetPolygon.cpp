@@ -18,6 +18,7 @@ TargetPolygon::TargetPolygon()
     isLine = false;
     pc = makeVector(1,1,1);
     visited = false;
+    ignored = false;
 }
 
 TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
@@ -25,6 +26,7 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
     SetBoundaryFlag(ALL, false);
     pc = makeVector(1,1,1);
 
+    ignored = false;
     isLine = false;
     visited = false;
     if(parentNode)
@@ -175,6 +177,12 @@ void TargetPolygon::MarkAsVisited()
         (*it++)->SetTreeVisited(true);
     }
 }
+
+void TargetPolygon::MarkIgnored()
+{
+    ignored = true;
+}
+
 
 Vector<3> TargetPolygon::GetMiddlePos()
 {
@@ -577,6 +585,9 @@ void TargetPolygon::PlanLawnmower()
 
 void TargetPolygon::glDraw()
 {    
+    if(ignored)
+        return;
+
 //    glLineWidth(4);
 //    glColor3f(0,0,1);
 //    glBegin(GL_LINES);

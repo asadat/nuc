@@ -29,7 +29,7 @@ private:
     void OnReachedNode_DelayedGreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void UpdateRemainingTime(CNode* node);
 
-    void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary);
+    void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
     void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
 
     void FindSubCells(CNode* n);
@@ -39,12 +39,10 @@ private:
     void CleanupTargets();
     void CleanupComponents();
 
-    void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, std::vector<CNode*> &startnodes,
-                                    std::vector<double> &cost, std::vector<double> &values, CNode* cur_node);
+    void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, CNode* cur_node);
 
     bool NeighboursNode(CNode* n1, CNode* n2);
     void ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node);
-    bool IsCompoundTargetExtensible(CompoundTarget* ct, std::set<CNode*> boundarySearchNodes);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
@@ -73,9 +71,9 @@ private:
     TooN::Vector<3> prevGoal;
 
     // delayed_greedy
-    vector<CNode*> start_nodes;
-    vector<double> target_costs;
-    vector<double> target_values;
+    //vector<CNode*> start_nodes;
+    //vector<double> target_costs;
+    //vector<double> target_values;
     set<CompoundTarget*> targets2visit;
 };
 

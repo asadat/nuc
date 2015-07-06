@@ -17,6 +17,8 @@ class TargetPolygon
         void glDraw();
         void GetLawnmowerPlan(vector<Vector<3> > &v);
         void MarkAsVisited();
+        void MarkIgnored();
+        bool IsIgnored(){return ignored;}
         Vector<3> GetMiddlePos();
         void ReverseLawnmower();
         Vector<3> FirstLMPos(){return lm.front();}
@@ -47,6 +49,7 @@ class TargetPolygon
 
         bool boundaryFLags[5];
 
+        bool ignored;
         int label;
         vector<CNode*> ch;
         vector<CNode*> cells;
