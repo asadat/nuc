@@ -546,7 +546,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         for(size_t i=0; i < newTargets.size(); i++)
         {
-           SetPolygonBoundaryFlags(newTargets[i], node);
+           SetPolygonBoundaryFlags(newTargets[i], node, false);
            non_boundary_targets &= newTargets[i]->IsNonBoundaryTarget();
         }
 
@@ -653,11 +653,11 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         for(size_t i=0; i<integrated_components.size(); i++)
             SetCompoundTargetBoundaryFlags(integrated_components[i]);
 
-        //for each target, find the unvisited nearest start search node
         start_nodes.clear();
         target_costs.clear();
         target_values.clear();
 
+        //for each target, find the unvisited nearest start search node
         GetNearestStartCellAndCost(integrated_components, start_nodes, target_costs, target_values, node);
 
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
@@ -688,6 +688,11 @@ bool SearchCoverageStrategy::IsCompoundTargetExtensible(CompoundTarget *ct, set<
 //    for(size_t i=0; i < ct->size(); i++)
 //    {
 //        TargetPolygon * tp = ct->GetTarget(i);
+//        for(set<CNode*>::iterator it = tp->parentSearchNodes.begin(); it != tp->parentSearchNodes.end(); it++)
+//        {
+
+//        }
+
 //        if(tp->GetBoundaryFlag(TargetPolygon::L) && GetSearchNode(tp->pa))
 
 //    }
@@ -707,6 +712,7 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarg
      */
 
     copy(nodeStack.begin(), nodeStack.end(), back_inserter(nds));
+    nds.insert(nds.begin(), cur_node);
 
     for(size_t i=0; i < cmpn.size(); i++)
     {
@@ -719,11 +725,23 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarg
             copy(v.targets[j]->parentSearchNodes.begin(),v.targets[j]->parentSearchNodes.end(), back_inserter(parents));
         }
 
+        // check if the cur_node is a parent of a sub-patch of the compound target
+        // if yes, consider it as a waypoint to start coverage of the compound;
+        bool consider_cur_node = false;
+        for(size_t w=0; w<parents.size(); w++)
+        {
+            if(parents[w] == cur_node)
+            {
+                consider_cur_node = true;
+                break;
+            }
+        }
+
         double minCost = 99999999;
         CNode* minNode = NULL;
         for(size_t k=0; k<parents.size(); k++)
         {
-            for(size_t j=0; j<nds.size(); j++)
+            for(size_t j=(consider_cur_node?0:1); j<nds.size(); j++)
             {
                 if(!NeighboursNode(nds[j],parents[k]))
                     continue;
@@ -748,7 +766,7 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarg
 
 bool SearchCoverageStrategy::NeighboursNode(CNode *n1, CNode *n2)
 {
-    if(abs(n1->grd_x-n2->grd_x)+abs(n1->grd_y-n2->grd_y) == 1)
+    if(abs(n1->grd_x-n2->grd_x)+abs(n1->grd_y-n2->grd_y) <= 1)
         return true;
 
     return false;
@@ -758,15 +776,16 @@ void SearchCoverageStrategy::SetCompoundTargetBoundaryFlags(CompoundTarget *ct)
 {
     for(size_t i=0; i<ct->targets.size(); i++)
     {
+        ct->targets[i]->SetBoundaryFlag(TargetPolygon::ALL, false);
         for(set<CNode*>::iterator it=ct->targets[i]->parentSearchNodes.begin();
             it !=ct->targets[i]->parentSearchNodes.end(); it++)
         {
-            this->SetPolygonBoundaryFlags(ct->targets[i], *it);
+            this->SetPolygonBoundaryFlags(ct->targets[i], *it, true);
         }
     }
 }
 
-void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node)
+void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary)
 {
     size_t distThresh = 3;
 
@@ -780,10 +799,14 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             size_t minDist = 9999;
             vector<CNode*> side_space;
 
+            if(!InSearchGridBoundary(node->grd_x+1,node->grd_y))
+                continue;
+
+            if(unvisitedBoundary && GetSearchNode(node->grd_x+1,node->grd_y)->visited)
+                continue;
+
             for(size_t j=0; j<target_cells.size(); j++)
             {
-                if(!InSearchGridBoundary(node->grd_x+1,node->grd_y))
-                    break;
 
                 int ii = (node->grd_x+1)*search_cell_size-1;
                 int jj = target_cells[j]->grd_y;
@@ -852,11 +875,14 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             vector<CNode*> side_space;
             //vector<CNode*> target_cells;
             //plg->GetCells(target_cells, node);
+            if(!InSearchGridBoundary(node->grd_x-1,node->grd_y))
+                continue;
+
+            if(unvisitedBoundary && GetSearchNode(node->grd_x-1,node->grd_y)->visited)
+                continue;
+
             for(size_t j=0; j<target_cells.size(); j++)
             {
-                if(!InSearchGridBoundary(node->grd_x-1,node->grd_y))
-                    break;
-
                 int ii = (node->grd_x)*search_cell_size;
                 int jj = target_cells[j]->grd_y;
 
@@ -922,13 +948,15 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
         {
             size_t minDist = 9999;
             vector<CNode*> side_space;
-            //vector<CNode*> target_cells;
-            //plg->GetCells(target_cells, node);
+
+            if(!InSearchGridBoundary(node->grd_x,node->grd_y+1))
+                continue;
+
+            if(unvisitedBoundary && GetSearchNode(node->grd_x,node->grd_y+1)->visited)
+                continue;
+
             for(size_t j=0; j<target_cells.size(); j++)
             {
-                if(!InSearchGridBoundary(node->grd_x,node->grd_y+1))
-                    break;
-
                 int ii = target_cells[j]->grd_x;
                 int jj = (node->grd_y+1)*search_cell_size-1;
 
@@ -995,11 +1023,14 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
             vector<CNode*> side_space;
             //vector<CNode*> target_cells;
             //plg->GetCells(target_cells, node);
+            if(!InSearchGridBoundary(node->grd_x,node->grd_y-1))
+                continue;
+
+            if(unvisitedBoundary && GetSearchNode(node->grd_x,node->grd_y-1)->visited)
+                continue;
+
             for(size_t j=0; j<target_cells.size(); j++)
             {
-                if(!InSearchGridBoundary(node->grd_x,node->grd_y-1))
-                    break;
-
                 int ii = target_cells[j]->grd_x;
                 int jj = (node->grd_y)*search_cell_size;
 
@@ -1140,6 +1171,7 @@ void SearchCoverageStrategy::glDraw()
     for(set<CompoundTarget*>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
     {
         (*it)->glDraw();
+        //if(start_nodes)
     }
 }
 

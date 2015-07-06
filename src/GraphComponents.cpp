@@ -74,9 +74,7 @@ void GraphComponents::AddEdge(TargetPolygon *tp1, TargetPolygon *tp2, bool virtu
 
         virtual_edges.insert(pair<node*,node*>(n1,n2));
         virtual_edges.insert(pair<node*,node*>(n2,n1));
-
     }
-
 }
 
 void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &components)

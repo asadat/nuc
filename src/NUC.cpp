@@ -613,7 +613,11 @@ void NUC::StartTraversing()
 void NUC::SetNextGoal()
 {    
     //ROS_INFO("calling GetNextNode()");
+    ros::Time t0 = ros::Time::now();
     curGoal = traversal->GetNextNode();
+    double dt = (ros::Time::now() - t0).toSec();
+
+    ROS_WARN("Planning Time: %f", dt);
     //ROS_INFO("returning from GetNextNode()");
 
     if(curGoal != NULL)

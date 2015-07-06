@@ -3,7 +3,7 @@ visualization: True
 branching_sqrt: 2
 FOV: 1.57
 min_footprint: 1.9
-speed: 5
+speed: 3
 policy: delayed_greedy
 strategy: scs
 area_length: 64.0

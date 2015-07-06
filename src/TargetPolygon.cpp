@@ -609,7 +609,7 @@ void TargetPolygon::glDraw()
     if(base_idx[0] != -1 && base_idx[1]!=-1)
     {
         glColor3f(1,0,0);
-        glPointSize(15);
+        glPointSize(10);
         glBegin(GL_POINTS);
         TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
         TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();

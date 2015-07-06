@@ -29,7 +29,7 @@ private:
     void OnReachedNode_DelayedGreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void UpdateRemainingTime(CNode* node);
 
-    void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node);
+    void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary);
     void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
 
     void FindSubCells(CNode* n);
