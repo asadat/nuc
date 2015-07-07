@@ -557,18 +557,39 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 gc.AddNode(newTargets[0]);
             }
 
-            for(size_t j=i; j < newTargets.size(); j++)
+            if(newTargets[i]->IsNonBoundaryTarget())
             {
-                if( (!newTargets[j]->GetBoundaryFlag(TargetPolygon::L) &&
-                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::R) &&
-                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::D) &&
-                     !newTargets[j]->GetBoundaryFlag(TargetPolygon::U)) ||
-                    (!newTargets[i]->GetBoundaryFlag(TargetPolygon::L) &&
-                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::R) &&
-                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::D) &&
-                     !newTargets[i]->GetBoundaryFlag(TargetPolygon::U)))
+                double bminDist = 99999999;
+                TargetPolygon* nearestBoundaryTarget = NULL;
+
+                for(size_t j=0; j<newTargets.size(); j++)
                 {
-                    gc.AddEdge(newTargets[i], newTargets[j], true);
+                    if(i==j)
+                        continue;
+
+                    if(!newTargets[j]->IsNonBoundaryTarget())
+                    {
+                        Vector<3> v = newTargets[i]->GetCenter()-newTargets[j]->GetCenter();
+                        double dist = v*v;
+                        if(bminDist > dist)
+                        {
+                            bminDist = dist;
+                            nearestBoundaryTarget = newTargets[j];
+                        }
+                    }
+                }
+
+                if(nearestBoundaryTarget != NULL)
+                {
+                    gc.AddEdge(newTargets[i], nearestBoundaryTarget, true);
+                }
+                else
+                {
+                    for(size_t j=0; j<newTargets.size(); j++)
+                    {
+                        if(newTargets[j]->IsNonBoundaryTarget())
+                            gc.AddEdge(newTargets[i], newTargets[j], true);
+                    }
                 }
             }
 
@@ -1119,7 +1140,7 @@ void SearchCoverageStrategy::glDraw()
         glEnd();
     }
 
-    //gc.glDraw();
+    gc.glDraw();
 
 //    for(size_t i=0; i < components.size(); i++)
 //        for(size_t j=0; j < components[i]->size(); j++)
