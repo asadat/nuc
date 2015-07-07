@@ -1,5 +1,6 @@
 #include "CompoundTarget.h"
 #include <GL/glut.h>
+#include "ros/ros.h"
 
 CompoundTarget::CompoundTarget()
 {
@@ -35,10 +36,13 @@ void CompoundTarget::glDraw()
     {
         for(size_t j=0; j<boundaryNodes[i].size(); j++)
         {
-            Vector<3> p1 = targets.front()->GetCenter();
-            Vector<3> p2 = boundaryNodes[i][j]->GetMAVWaypoint();
-            glVertex3f(p1[0], p1[1], p1[2]);
-            glVertex3f(p2[0], p2[1], p2[2]);
+            if(!targets.empty())
+            {
+                Vector<3> p1 = targets.front()->GetCenter();
+                Vector<3> p2 = boundaryNodes[i][j]->GetMAVWaypoint();
+                glVertex3f(p1[0], p1[1], p1[2]);
+                glVertex3f(p2[0], p2[1], p2[2]);
+            }
         }
     }
     glEnd();
@@ -77,4 +81,45 @@ bool CompoundTarget::IsExtensible()
     }
 
     return false;
+}
+
+void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> bnodes)
+{
+    for(size_t j=0; j<TargetPolygon::ALL; j++)
+    {
+        copy(boundaryNodes[j].begin(), boundaryNodes[j].end(), back_inserter(bnodes));
+    }
+}
+
+
+void CompoundTarget::CalculateValue()
+{
+    value = 0;
+    for(size_t i=0; i<targets.size(); i++)
+    {
+        value = targets[i]->GetTargetRegionsArea();
+    }
+}
+
+void CompoundTarget::SetIgnored()
+{
+    for(size_t i=0; i<targets.size(); i++)
+    {
+        targets[i]->MarkIgnored();
+    }
+}
+void CompoundTarget::SetVisited()
+{
+    for(size_t i=0; i<targets.size(); i++)
+    {
+        targets[i]->MarkAsVisited();
+    }
+}
+
+void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan)
+{
+    for(size_t i=0; i<targets.size(); i++)
+    {
+        targets[i]->GetLawnmowerPlan(lm_plan);
+    }
 }

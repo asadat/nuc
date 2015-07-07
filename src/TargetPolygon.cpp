@@ -178,6 +178,21 @@ void TargetPolygon::MarkAsVisited()
     }
 }
 
+void TargetPolygon::UpdateIsVisited()
+{
+    vector<CNode*>::iterator it = cells.begin();
+    while(it != cells.end())
+    {
+        if((*it)->visited)
+        {
+            SetVisited(true);
+            MarkIgnored();
+            break;
+        }
+        ++it;
+    }
+}
+
 void TargetPolygon::MarkIgnored()
 {
     ignored = true;

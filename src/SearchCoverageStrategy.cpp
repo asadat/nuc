@@ -214,9 +214,9 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
-        //ROS_INFO("Calling delayed_greedy .. ");
+        ROS_INFO("Calling delayed_greedy .. ");
         OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode);
-        //ROS_INFO("Returning from delayed_greedy .. ");
+        ROS_INFO("Returning from delayed_greedy .. ");
     }
     else if(NUCParam::policy == "delayed")
     {
@@ -542,6 +542,9 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 {
     if(searchNode)
     {
+        for(size_t i=0; i<targets.size(); i++)
+            targets[i]->UpdateIsVisited();
+
         bool non_boundary_targets = true;
 
         for(size_t i=0; i < newTargets.size(); i++)
@@ -666,17 +669,19 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
             }
         }
 
+        targets2visit.clear();
         CleanupComponents();
 
         // get the targets
+        ROS_INFO("1");
         gc.GetIntegratedComponents(integrated_components);
-
+        ROS_INFO("2");
         for(size_t i=0; i<integrated_components.size(); i++)
         {
             SetCompoundTargetBoundaryFlags(integrated_components[i]);
             integrated_components[i]->SetIsCurChildFlag(node);
         }
-
+        ROS_INFO("3");
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
 
@@ -684,13 +689,13 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         vector<CompoundTarget*> extensible_compound_targets;
 
         SeparateCompoundTargets(integrated_components, node, cur_compound_targets, extensible_compound_targets);
-
+        ROS_INFO("4");
         bool case_1 = true;
         for(size_t i=0; i<extensible_compound_targets.size() && case_1; i++)
             if(extensible_compound_targets[i]->cur_child)
                 case_1 = false;
 
-        /* case (1): No extensible componend on the current search node
+        /* case (1): No extensible compound on the current search node
          *         => Calculate costs, solve knapsack, mark unselected
          *            non-extensible targets as ignored, if cur_targets
          *            are selected cover them and then continue the high
@@ -699,12 +704,28 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         if(case_1)
         {
+            ROS_INFO("****** Case 1");
+            SetupCostsValuesCase_1(cur_compound_targets, extensible_compound_targets, node);
+            ROS_INFO("5");
+            Knapsack<CompoundTarget> ns;
+            for(size_t i=0; i<integrated_components.size(); i++)
+                ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
 
+            ns.Solve(time_budget, targets2visit);
+            ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
 
+            for(size_t i=0; i<cur_compound_targets.size(); i++)
+            {
+                cur_compound_targets[i]->SetVisited();
 
+                if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
+                {
+                    cur_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                }
+            }
         }
         else
-            /* case (2): there is an extensible componend on the current search node
+            /* case (2): there is an extensible compound on the current search node
              *         => consider 2 options and select the one that has more reward
              *              option 1: delay current target
              *              option 2: do not delay current target
@@ -715,8 +736,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
              */
 
         {
-
-
+            ROS_INFO("****** Case 2");
         }
 
 //        //for each target, find the unvisited nearest start search node
@@ -739,6 +759,52 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 void SearchCoverageStrategy::ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node)
 {
 
+}
+
+void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *> &cur_targets,
+                                              std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node)
+{
+    TargetTour tt;
+    vector<CNode*> nds;
+
+    /* We will consider covering the current target from the current node
+     * as well as from the unvisited neighbours. For the rest of the targets
+     * it only suffices to consider unvisited neighbours.
+     */
+
+    for(size_t i=0; i < extensible_targets.size(); i++)
+    {
+        CompoundTarget &v = *extensible_targets[i];
+
+        nds.clear();
+        v.GetBoundarySeachNodes(nds);
+        v.CalculateValue();
+
+
+        double minCost = 99999999;
+        CNode* minNode = NULL;
+        for(size_t k=0; k<nds.size(); k++)
+        {
+            double c = tt.GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
+            if(minCost > c)
+            {
+                minCost = c;
+                minNode = nds[k];
+            }
+        }
+
+        v.startNode = minNode;
+        v.cost = minCost;
+    }
+
+    for(size_t i=0; i < cur_targets.size(); i++)
+    {
+        CompoundTarget &v = *cur_targets[i];
+
+        v.CalculateValue();
+        v.startNode = cur_node;
+        v.cost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+    }
 }
 
 void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarget *> &cmpn, CNode* cur_node)
@@ -1206,18 +1272,8 @@ void SearchCoverageStrategy::glDraw()
 //            glEnd();
 //        }
 
-//    for(size_t i=0; i < integrated_components.size(); i++)
-//        for(size_t j=0; j < integrated_components[i]->size(); j++)
-//        {
-//            integrated_components[i]->at(j)->glDraw();
-//            char c = i%8;
-//            glPointSize(20);
-//            glColor3f(c&1, c&2, c&4);
-//            glBegin(GL_POINTS);
-//            Vector<3> cn =integrated_components[i]->at(j)->GetCenter();
-//            glVertex3f(cn[0],cn[1],cn[2]+1);
-//            glEnd();
-//        }
+    for(size_t i=0; i < integrated_components.size(); i++)
+        integrated_components[i]->glDraw();
 
 //    glPointSize(20);
 //    glBegin(GL_POINTS);
@@ -1230,11 +1286,11 @@ void SearchCoverageStrategy::glDraw()
 //    }
 //    glEnd();
 
-    for(set<CompoundTarget*>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
-    {
-        (*it)->glDraw();
-        //if(start_nodes)
-    }
+//    for(set<CompoundTarget*>::iterator it = targets2visit.begin(); it!=targets2visit.end(); it++)
+//    {
+//        (*it)->glDraw();
+//        //if(start_nodes)
+//    }
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)

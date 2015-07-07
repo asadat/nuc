@@ -21,9 +21,15 @@ class CompoundTarget
         void ResetBoundaries();
         bool IsExtensible();
         void SetIsCurChildFlag(CNode* cur_search_node);
+        void GetBoundarySeachNodes(vector<CNode*> bnodes);
+        void CalculateValue();
+        void SetIgnored();
+        void SetVisited();
+        void GetLawnmowerPlan(vector<Vector<3> > &lm_plan);
 
     private:
         vector<TargetPolygon*> targets;
+
         bool nonBoundary;
 
         vector<CNode*> boundaryNodes[TargetPolygon::ALL];

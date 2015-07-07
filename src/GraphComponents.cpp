@@ -123,6 +123,7 @@ void GraphComponents::Integrating_DFS(node *root, TargetPolygon *target)
 
 void GraphComponents::GetConnectedComponents(vector<CompoundTarget*> &components)
 {
+
     for(size_t i=0; i<nodes.size(); i++)
         nodes[i]->visited = false;
 
@@ -159,6 +160,77 @@ void GraphComponents::DFS(node *root, CompoundTarget *cmp)
         if(!it->second->visited && !it->second->tp->IsIgnored())
         {
             DFS(it->second, cmp);
+        }
+    }
+}
+
+void GraphComponents::RemoveIgnoredTargets()
+{
+    for(auto it = target2node.begin(); it!=target2node.end();)
+    {
+        if(it->first->IsIgnored())
+        {
+            node* n = it->second;
+
+            auto e_rit = edges.equal_range(n);
+            for(auto e_it = e_rit.first; e_it!=e_rit.second; )
+            {
+                auto re_rit = edges.equal_range(e_it->second);
+                for(auto re_it = re_rit.first; re_it != re_rit.second;)
+                {
+                    if(re_it->second == n)
+                    {
+                        edges.erase(re_it++);
+                    }
+                    else
+                    {
+                        ++re_it;
+                    }
+                }
+
+                edges.erase(e_it++);
+            }
+
+            target2node.erase(it++);
+            delete n;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    for(auto it = target2node.begin(); it!=target2node.end();)
+    {
+        if(it->first->IsIgnored())
+        {
+            node* n = it->second;
+
+            auto e_rit = virtual_edges.equal_range(n);
+            for(auto e_it = e_rit.first; e_it!=e_rit.second; )
+            {
+                auto re_rit = virtual_edges.equal_range(e_it->second);
+                for(auto re_it = re_rit.first; re_it != re_rit.second;)
+                {
+                    if(re_it->second == n)
+                    {
+                        virtual_edges.erase(re_it++);
+                    }
+                    else
+                    {
+                        ++re_it;
+                    }
+                }
+
+                virtual_edges.erase(e_it++);
+            }
+
+            target2node.erase(it++);
+            delete n;
+        }
+        else
+        {
+            ++it;
         }
     }
 }

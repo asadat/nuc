@@ -29,6 +29,7 @@ class GraphComponents
         void glDraw();
 
     private:
+        void RemoveIgnoredTargets();
         void DFS(node* root, CompoundTarget * cmp);
         void Integrating_DFS(node* root, TargetPolygon* target);
         node* GetNode(TargetPolygon* tp);
