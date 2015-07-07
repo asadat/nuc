@@ -18,27 +18,27 @@ class TargetPolygon
         void GetLawnmowerPlan(vector<Vector<3> > &v);
         void MarkAsVisited();
         void MarkIgnored();
-        bool IsIgnored(){return ignored;}
+        inline bool IsIgnored(){return ignored;}
         Vector<3> GetMiddlePos();
         void ReverseLawnmower();
-        Vector<3> FirstLMPos(){return lm.front();}
-        Vector<3> LastLMPos(){return lm.back();}
-        size_t LawnmowerSize(){return lm.size();}
+        inline Vector<3> FirstLMPos(){return lm.front();}
+        inline Vector<3> LastLMPos(){return lm.back();}
+        inline size_t LawnmowerSize(){return lm.size();}
         void AddPolygon(TargetPolygon* p, bool changeLabels=true, bool process=true);
         //int GetLabel(){return label;}
         bool IsNeighbour(TargetPolygon *tp);
-        void SetVisited(bool visited_){visited = visited_;}
+        inline void SetVisited(bool visited_){visited = visited_;}
         double GetTargetRegionsArea();
         void GetCells(vector<CNode*> &v, CNode* ofParent);
-        void SetPolygonColor(Vector<3> color){pc=color;}
+        inline void SetPolygonColor(Vector<3> color){pc=color;}
 
         void OrBoundaryFlag(SIDE side, bool val);
         void SetBoundaryFlag(SIDE side, bool val);
         bool GetBoundaryFlag(SIDE side);
         bool IsNonBoundaryTarget();
         void ProcessPolygon();
-
-        Vector<3> GetCenter(){return center;}
+        inline bool HasParent(CNode* par){return parentSearchNodes.find(par)!=parentSearchNodes.end();}
+        inline Vector<3> GetCenter(){return center;}
     private:
         void ConvexHull();
         void FindBaseEdge();

@@ -672,23 +672,65 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         gc.GetIntegratedComponents(integrated_components);
 
         for(size_t i=0; i<integrated_components.size(); i++)
+        {
             SetCompoundTargetBoundaryFlags(integrated_components[i]);
+            integrated_components[i]->SetIsCurChildFlag(node);
+        }
 
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
 
-        //for each target, find the unvisited nearest start search node
-        GetNearestStartCellAndCost(integrated_components, node);
+        vector<CompoundTarget*> cur_compound_targets;
+        vector<CompoundTarget*> extensible_compound_targets;
 
-        Knapsack<CompoundTarget> ns;
-        for(size_t i=0; i<integrated_components.size(); i++)
-            ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->value);
+        SeparateCompoundTargets(integrated_components, node, cur_compound_targets, extensible_compound_targets);
 
-        targets2visit.clear();
-        ns.Solve(time_budget, targets2visit);
-        ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
+        bool case_1 = true;
+        for(size_t i=0; i<extensible_compound_targets.size() && case_1; i++)
+            if(extensible_compound_targets[i]->cur_child)
+                case_1 = false;
 
-        ExtractPlanFromTargets(targets2visit, node);
+        /* case (1): No extensible componend on the current search node
+         *         => Calculate costs, solve knapsack, mark unselected
+         *            non-extensible targets as ignored, if cur_targets
+         *            are selected cover them and then continue the high
+         *            level Lawnmower.
+         */
+
+        if(case_1)
+        {
+
+
+
+        }
+        else
+            /* case (2): there is an extensible componend on the current search node
+             *         => consider 2 options and select the one that has more reward
+             *              option 1: delay current target
+             *              option 2: do not delay current target
+             *              In either case, compute the costs, solve the knapsack
+             *              mark unselected non-extensible targets as ignored, if
+             *              option 2 is selected and cur_target is among the knapsack solution
+             *              cover it right away.
+             */
+
+        {
+
+
+        }
+
+//        //for each target, find the unvisited nearest start search node
+//        GetNearestStartCellAndCost(integrated_components, node);
+
+//        Knapsack<CompoundTarget> ns;
+//        for(size_t i=0; i<integrated_components.size(); i++)
+//            ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->value);
+
+//        targets2visit.clear();
+//        ns.Solve(time_budget, targets2visit);
+//        ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
+
+//        ExtractPlanFromTargets(targets2visit, node);
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
     }
@@ -758,8 +800,18 @@ void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarg
         cmpn[i]->value = val;
 
     }
+}
 
-    //assert(costs.size() == cmpn.size());
+void SearchCoverageStrategy::SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
+                             vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets)
+{
+    for(size_t i=0; i<all_targets.size(); i++)
+    {
+        if(!all_targets[i]->IsExtensible())
+            cur_targets.push_back(all_targets[i]);
+        else
+            extensible_targets.push_back(all_targets[i]);
+    }
 }
 
 bool SearchCoverageStrategy::NeighboursNode(CNode *n1, CNode *n2)

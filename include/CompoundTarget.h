@@ -20,7 +20,7 @@ class CompoundTarget
         bool IsNonBoundary(){return nonBoundary;}
         void ResetBoundaries();
         bool IsExtensible();
-
+        void SetIsCurChildFlag(CNode* cur_search_node);
 
     private:
         vector<TargetPolygon*> targets;
@@ -31,6 +31,7 @@ class CompoundTarget
         CNode* startNode;
         double value;
         double cost;
+        bool cur_child; // shows if the compound target is partly a child of a search node
 
         friend class SearchCoverageStrategy;
 };

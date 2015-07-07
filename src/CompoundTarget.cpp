@@ -58,6 +58,16 @@ void CompoundTarget::ResetBoundaries()
     }
 }
 
+void CompoundTarget::SetIsCurChildFlag(CNode* cur_search_node)
+{
+    cur_child = false;
+    for(size_t i=0; i<targets.size() && !cur_child; i++)
+    {
+        if(targets[i]->HasParent(cur_search_node))
+            cur_child = true;
+    }
+}
+
 bool CompoundTarget::IsExtensible()
 {
     for(size_t j=0; j<TargetPolygon::ALL; j++)

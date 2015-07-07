@@ -41,6 +41,8 @@ private:
 
     void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, CNode* cur_node);
 
+    void SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
+                                 vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);
     bool NeighboursNode(CNode* n1, CNode* n2);
     void ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node);
 
