@@ -16,7 +16,7 @@ bypass_controller: false
 prob_r: 0.5
 prior_file_name: prior7.jpg
 lm_height: 3
-time_limit: 800
+time_limit: 1000
 average_speed: 1.0
-turning_time: 5.0
+turning_time: 3.0
 lm_tracks: 4

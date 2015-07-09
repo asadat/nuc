@@ -41,6 +41,7 @@ private:
 
     void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, CNode* cur_node);
     void SetupCostsValuesCase_1(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node);
+    void SetupCostsValuesCase_2(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node, bool delay);
 
     void SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
                                  vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);

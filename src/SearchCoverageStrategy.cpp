@@ -673,15 +673,14 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         CleanupComponents();
 
         // get the targets
-        ROS_INFO("1");
         gc.GetIntegratedComponents(integrated_components);
-        ROS_INFO("2");
+
         for(size_t i=0; i<integrated_components.size(); i++)
         {
             SetCompoundTargetBoundaryFlags(integrated_components[i]);
             integrated_components[i]->SetIsCurChildFlag(node);
         }
-        ROS_INFO("3");
+
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
 
@@ -689,7 +688,6 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         vector<CompoundTarget*> extensible_compound_targets;
 
         SeparateCompoundTargets(integrated_components, node, cur_compound_targets, extensible_compound_targets);
-        ROS_INFO("4");
         bool case_1 = true;
         for(size_t i=0; i<extensible_compound_targets.size() && case_1; i++)
             if(extensible_compound_targets[i]->cur_child)
@@ -706,7 +704,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         {
             ROS_INFO("****** Case 1");
             SetupCostsValuesCase_1(cur_compound_targets, extensible_compound_targets, node);
-            ROS_INFO("5");
+
             Knapsack<CompoundTarget> ns;
             for(size_t i=0; i<integrated_components.size(); i++)
                 ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
@@ -737,6 +735,67 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         {
             ROS_INFO("****** Case 2");
+            double delay_value = 0;
+            double cover_value = 0;
+
+            SetupCostsValuesCase_2(cur_compound_targets, extensible_compound_targets, node, true);
+            ROS_INFO("#Integrated: %lu #cur: %lu #ext: %lu", integrated_components.size(), cur_compound_targets.size(), extensible_compound_targets.size());
+
+            Knapsack<CompoundTarget> ns1;
+            for(size_t i=0; i<integrated_components.size(); i++)
+                ns1.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
+
+            set<CompoundTarget*> targets2visit1;
+            delay_value = ns1.Solve(time_budget, targets2visit1);
+            ROS_INFO("Knapsack solution size1: %lu budget:%f", targets2visit1.size(), time_budget);
+
+            SetupCostsValuesCase_2(cur_compound_targets, extensible_compound_targets, node, false);
+
+            Knapsack<CompoundTarget> ns2;
+            for(size_t i=0; i<integrated_components.size(); i++)
+                ns2.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
+
+            set<CompoundTarget*> targets2visit2;
+            cover_value = ns2.Solve(time_budget, targets2visit2);
+            ROS_INFO("Knapsack solution size2: %lu budget:%f", targets2visit2.size(),time_budget);
+
+            ROS_INFO("Case2 ->   Value_delay: %f Value_cover: %f", delay_value, cover_value);
+
+            bool delay_extensibles = false;
+
+            if(delay_value < cover_value)
+            {
+                copy(targets2visit2.begin(), targets2visit2.end(), inserter(targets2visit, targets2visit.begin()));
+                delay_extensibles = false;
+            }
+            else
+            {
+                copy(targets2visit1.begin(), targets2visit1.end(), inserter(targets2visit, targets2visit.begin()));
+                delay_extensibles = true;
+            }
+
+            for(size_t i=0; i<cur_compound_targets.size(); i++)
+            {
+                cur_compound_targets[i]->SetVisited();
+
+                if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
+                {
+                    cur_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                }
+            }
+
+            if(!delay_extensibles)
+            {
+                for(size_t i=0; i<extensible_compound_targets.size(); i++)
+                {
+                    if(targets2visit.find(extensible_compound_targets[i]) != targets2visit.end())
+                    {
+                        extensible_compound_targets[i]->SetVisited();
+                        extensible_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                    }
+                }
+            }
+
         }
 
 //        //for each target, find the unvisited nearest start search node
@@ -780,7 +839,6 @@ void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *
         v.GetBoundarySeachNodes(nds);
         v.CalculateValue();
 
-
         double minCost = 99999999;
         CNode* minNode = NULL;
         for(size_t k=0; k<nds.size(); k++)
@@ -793,6 +851,56 @@ void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *
             }
         }
 
+        v.startNode = minNode;
+        v.cost = minCost;
+    }
+
+    for(size_t i=0; i < cur_targets.size(); i++)
+    {
+        CompoundTarget &v = *cur_targets[i];
+
+        v.CalculateValue();
+        v.startNode = cur_node;
+        v.cost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+    }
+}
+
+void SearchCoverageStrategy::SetupCostsValuesCase_2(std::vector<CompoundTarget *> &cur_targets,
+                                              std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node, bool delay)
+{
+    TargetTour tt;
+    vector<CNode*> nds;
+
+    for(size_t i=0; i < extensible_targets.size(); i++)
+    {
+        CompoundTarget &v = *extensible_targets[i];
+
+        nds.clear();
+        v.GetBoundarySeachNodes(nds);
+        v.CalculateValue();
+
+        double minCost = 99999999;
+        CNode* minNode = NULL;
+
+        if(!v.cur_child || delay)
+        {
+            for(size_t k=0; k<nds.size(); k++)
+            {
+                double c = tt.GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
+                if(minCost > c)
+                {
+                    minCost = c;
+                    minNode = nds[k];
+                }
+            }
+        }
+        else
+        {
+            minCost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+            minNode = cur_node;
+        }
+
+        ROS_INFO("Setting cost: %f cur_child:%d delay:%d #nds:%lu", minCost, v.cur_child, delay, nds.size());
         v.startNode = minNode;
         v.cost = minCost;
     }
@@ -1258,7 +1366,7 @@ void SearchCoverageStrategy::glDraw()
         glEnd();
     }
 
-    gc.glDraw();
+   // gc.glDraw();
 
 //    for(size_t i=0; i < components.size(); i++)
 //        for(size_t j=0; j < components[i]->size(); j++)
@@ -1383,8 +1491,6 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
 //            visitedNodes[i]->GenerateTargets(cutoff_prob);
 //        FindClusters(true);
 //    }
-
-
 }
 
 void SearchCoverageStrategy::CleanupComponents()

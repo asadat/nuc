@@ -21,7 +21,7 @@ class CompoundTarget
         void ResetBoundaries();
         bool IsExtensible();
         void SetIsCurChildFlag(CNode* cur_search_node);
-        void GetBoundarySeachNodes(vector<CNode*> bnodes);
+        void GetBoundarySeachNodes(vector<CNode*> &bnodes);
         void CalculateValue();
         void SetIgnored();
         void SetVisited();

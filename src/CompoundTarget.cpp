@@ -83,7 +83,7 @@ bool CompoundTarget::IsExtensible()
     return false;
 }
 
-void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> bnodes)
+void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> &bnodes)
 {
     for(size_t j=0; j<TargetPolygon::ALL; j++)
     {
