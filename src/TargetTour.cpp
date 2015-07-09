@@ -34,8 +34,9 @@ double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, Vector<3> start
     wps.push_back(start);
     for(size_t i=0; i<targets.size(); i++)
     {
-        wps.push_back(targets[i]->FirstLMPos());
-        wps.push_back(targets[i]->LastLMPos());
+        //wps.push_back(targets[i]->FirstLMPos());
+        //wps.push_back(targets[i]->LastLMPos());
+        targets[i]->GetLawnmowerPlan(wps);
     }
 
     wps.push_back(end);

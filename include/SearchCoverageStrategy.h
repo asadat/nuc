@@ -31,6 +31,7 @@ private:
 
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
     void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
+    void EnqueueCompoundTarget(CompoundTarget* ct);
 
     void FindSubCells(CNode* n);
 
@@ -46,7 +47,6 @@ private:
     void SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
                                  vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);
     bool NeighboursNode(CNode* n1, CNode* n2);
-    void ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;
@@ -75,10 +75,8 @@ private:
     TooN::Vector<3> prevGoal;
 
     // delayed_greedy
-    //vector<CNode*> start_nodes;
-    //vector<double> target_costs;
-    //vector<double> target_values;
     set<CompoundTarget*> targets2visit;
+    double high_res_coverage;
 };
 
 #endif

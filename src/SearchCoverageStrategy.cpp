@@ -13,6 +13,8 @@ using namespace TooN;
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
+    high_res_coverage=0;
+
     dummy = new CNode(makeVector(0,0,0,0));
     dummy->visited = false;
     dummy->depth = dummy->maxDepth;
@@ -34,6 +36,9 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
 {
+    CleanupTargets();
+    CleanupComponents();
+
     while(!nodeStack.empty())
     {
         CNode * n= nodeStack.back();
@@ -49,9 +54,6 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     }
 
     delete dummy;
-
-    CleanupTargets();
-    CleanupComponents();
 }
 
 void SearchCoverageStrategy::GenerateLawnmower()
@@ -137,6 +139,11 @@ CNode* SearchCoverageStrategy::GetNextNode()
         dummy->pos = startPos;
         dummy->visited = false;
         result = dummy;
+    }
+
+    if(!result)
+    {
+        ROS_INFO("Area covered with high resolution: %f.2 m^2", high_res_coverage);
     }
 
     UpdateRemainingTime(result);
@@ -401,6 +408,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
             {
                 newTargets[i]->GetLawnmowerPlan(target_lms);
                 newTargets[i]->MarkAsVisited();
+                high_res_coverage += newTargets[i]->GetTargetRegionsArea();
 
                 while(!target_lms.empty())
                 {
@@ -718,7 +726,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
                 if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
                 {
-                    cur_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                    EnqueueCompoundTarget(cur_compound_targets[i]);
                 }
             }
         }
@@ -780,7 +788,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
                 if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
                 {
-                    cur_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                    EnqueueCompoundTarget(cur_compound_targets[i]);
                 }
             }
 
@@ -791,33 +799,21 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                     if(targets2visit.find(extensible_compound_targets[i]) != targets2visit.end())
                     {
                         extensible_compound_targets[i]->SetVisited();
-                        extensible_compound_targets[i]->GetLawnmowerPlan(target_lms);
+                        EnqueueCompoundTarget(extensible_compound_targets[i]);
                     }
                 }
             }
 
         }
 
-//        //for each target, find the unvisited nearest start search node
-//        GetNearestStartCellAndCost(integrated_components, node);
-
-//        Knapsack<CompoundTarget> ns;
-//        for(size_t i=0; i<integrated_components.size(); i++)
-//            ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->value);
-
-//        targets2visit.clear();
-//        ns.Solve(time_budget, targets2visit);
-//        ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
-
-//        ExtractPlanFromTargets(targets2visit, node);
-
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
     }
 }
 
-void SearchCoverageStrategy::ExtractPlanFromTargets(set<CompoundTarget*> final_targets, CNode* cur_node)
+void SearchCoverageStrategy::EnqueueCompoundTarget(CompoundTarget *ct)
 {
-
+    high_res_coverage += ct->value;
+    ct->GetLawnmowerPlan(target_lms);
 }
 
 void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *> &cur_targets,

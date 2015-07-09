@@ -23,6 +23,7 @@ class TargetTour
         static double GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<3> curpospos, TooN::Vector<3> endpos, bool initalTurn, bool endTurn);
         static double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, bool ignoreFirstSegment, bool ignoreLastSegment);
         double GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> start, Vector<3> end);
+        //double GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> start, Vector<3> end);
 
     private:
         double GetTourCost(vector<TargetPolygon*> &targets, Vector<3> start, Vector<3> end);
