@@ -27,8 +27,11 @@ private:
     void OnReachedNode_GreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void OnReachedNode_DelayedPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void OnReachedNode_DelayedGreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
+
     void UpdateRemainingTime(CNode* node);
 
+    void PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos);
+    void AddTargetsToComponentGenerators(vector<TargetPolygon*> &newTargets, CNode* node);
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
     void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
     void EnqueueCompoundTarget(CompoundTarget* ct);
@@ -41,8 +44,8 @@ private:
     void CleanupComponents();
 
     void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, CNode* cur_node);
-    void SetupCostsValuesCase_1(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node);
-    void SetupCostsValuesCase_2(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node, bool delay);
+    void SetupCostsValues_NoExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node);
+    void SetupCostsValues_WithExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node, bool delay);
 
     void SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
                                  vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);
@@ -77,6 +80,8 @@ private:
     // delayed_greedy
     set<CompoundTarget*> targets2visit;
     double high_res_coverage;
+
+    std::vector<TooN::Vector<3> > turningLocations;
 };
 
 #endif

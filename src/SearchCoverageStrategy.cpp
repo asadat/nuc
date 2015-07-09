@@ -168,7 +168,13 @@ void SearchCoverageStrategy::UpdateRemainingTime(CNode *node)
     }
     else
     {
-        remaining_time -= COLLINEAR(p2, p1, node->GetMAVWaypoint()) * NUCParam::turning_time;
+        double turned = COLLINEAR(p2, p1, node->GetMAVWaypoint());
+        remaining_time -= turned*NUCParam::turning_time;
+        if(turned > 0.1)
+        {
+            turningLocations.push_back(p1);
+        }
+
         remaining_time -= sqrt(D2(p1, node->GetMAVWaypoint()))/NUCParam::average_speed;
     }
 
@@ -546,6 +552,135 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
     }
 }
 
+void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
+{
+
+}
+
+void SearchCoverageStrategy::AddTargetsToComponentGenerators(vector<TargetPolygon *> &newTargets, CNode* node)
+{
+    for(size_t i=0; i < newTargets.size(); i++)
+    {
+       SetPolygonBoundaryFlags(newTargets[i], node, false);
+    }
+
+    for(size_t i=0; i < newTargets.size(); i++)
+    {
+        if(newTargets.size()==1)
+        {
+            gc.AddNode(newTargets[0]);
+        }
+
+        if(newTargets[i]->IsNonBoundaryTarget())
+        {
+            double bminDist = 99999999;
+            TargetPolygon* nearestBoundaryTarget = NULL;
+
+            for(size_t j=0; j<newTargets.size(); j++)
+            {
+                if(i==j)
+                    continue;
+
+                if(!newTargets[j]->IsNonBoundaryTarget())
+                {
+                    Vector<3> v = newTargets[i]->GetCenter()-newTargets[j]->GetCenter();
+                    double dist = v*v;
+                    if(bminDist > dist)
+                    {
+                        bminDist = dist;
+                        nearestBoundaryTarget = newTargets[j];
+                    }
+                }
+            }
+
+            if(nearestBoundaryTarget != NULL)
+            {
+                gc.AddEdge(newTargets[i], nearestBoundaryTarget, true);
+            }
+            else
+            {
+                for(size_t j=0; j<newTargets.size(); j++)
+                {
+                    if(newTargets[j]->IsNonBoundaryTarget())
+                        gc.AddEdge(newTargets[i], newTargets[j], true);
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
+        {
+            int gx = node->grd_x-1;
+            int gy = node->grd_y;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::R))
+        {
+            int gx = node->grd_x+1;
+            int gy = node->grd_y;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::U))
+        {
+            int gx = node->grd_x;
+            int gy = node->grd_y+1;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::D))
+        {
+            int gx = node->grd_x;
+            int gy = node->grd_y-1;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
     if(searchNode)
@@ -553,129 +688,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
         for(size_t i=0; i<targets.size(); i++)
             targets[i]->UpdateIsVisited();
 
-        bool non_boundary_targets = true;
-
-        for(size_t i=0; i < newTargets.size(); i++)
-        {
-           SetPolygonBoundaryFlags(newTargets[i], node, false);
-           non_boundary_targets &= newTargets[i]->IsNonBoundaryTarget();
-        }
-
-        for(size_t i=0; i < newTargets.size(); i++)
-        {
-            if(newTargets.size()==1)
-            {
-                gc.AddNode(newTargets[0]);
-            }
-
-            if(newTargets[i]->IsNonBoundaryTarget())
-            {
-                double bminDist = 99999999;
-                TargetPolygon* nearestBoundaryTarget = NULL;
-
-                for(size_t j=0; j<newTargets.size(); j++)
-                {
-                    if(i==j)
-                        continue;
-
-                    if(!newTargets[j]->IsNonBoundaryTarget())
-                    {
-                        Vector<3> v = newTargets[i]->GetCenter()-newTargets[j]->GetCenter();
-                        double dist = v*v;
-                        if(bminDist > dist)
-                        {
-                            bminDist = dist;
-                            nearestBoundaryTarget = newTargets[j];
-                        }
-                    }
-                }
-
-                if(nearestBoundaryTarget != NULL)
-                {
-                    gc.AddEdge(newTargets[i], nearestBoundaryTarget, true);
-                }
-                else
-                {
-                    for(size_t j=0; j<newTargets.size(); j++)
-                    {
-                        if(newTargets[j]->IsNonBoundaryTarget())
-                            gc.AddEdge(newTargets[i], newTargets[j], true);
-                    }
-                }
-            }
-
-            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
-            {
-                int gx = node->grd_x-1;
-                int gy = node->grd_y;
-                CNode* ln = GetSearchNode(gx, gy);
-
-                if(ln && ln->visited)
-                {
-                    for(size_t j = 0; j < ln->targets.size(); j++)
-                    {
-                        if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
-                        {
-                            gc.AddEdge(newTargets[i], ln->targets[j], false);
-                        }
-                    }
-                }
-            }
-
-            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::R))
-            {
-                int gx = node->grd_x+1;
-                int gy = node->grd_y;
-                CNode* ln = GetSearchNode(gx, gy);
-
-                if(ln && ln->visited)
-                {
-                    for(size_t j = 0; j < ln->targets.size(); j++)
-                    {
-                        if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
-                        {
-                            gc.AddEdge(newTargets[i], ln->targets[j], false);
-                        }
-                    }
-                }
-            }
-
-            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::U))
-            {
-                int gx = node->grd_x;
-                int gy = node->grd_y+1;
-                CNode* ln = GetSearchNode(gx, gy);
-
-                if(ln && ln->visited)
-                {
-                    for(size_t j = 0; j < ln->targets.size(); j++)
-                    {
-                        if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
-                        {
-                            gc.AddEdge(newTargets[i], ln->targets[j], false);
-                        }
-                    }
-                }
-            }
-
-            if(newTargets[i]->GetBoundaryFlag(TargetPolygon::D))
-            {
-                int gx = node->grd_x;
-                int gy = node->grd_y-1;
-                CNode* ln = GetSearchNode(gx, gy);
-
-                if(ln && ln->visited)
-                {
-                    for(size_t j = 0; j < ln->targets.size(); j++)
-                    {
-                        if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
-                        {
-                            gc.AddEdge(newTargets[i], ln->targets[j], false);
-                        }
-                    }
-                }
-            }
-        }
+        AddTargetsToComponentGenerators(newTargets, node);
 
         targets2visit.clear();
         CleanupComponents();
@@ -710,14 +723,20 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         if(case_1)
         {
+            double extra_time = 0;
+            double knapsack_cost = 0;
+
             ROS_INFO("****** Case 1");
-            SetupCostsValuesCase_1(cur_compound_targets, extensible_compound_targets, node);
+            SetupCostsValues_NoExtensibleTarget(cur_compound_targets, extensible_compound_targets, node);
 
             Knapsack<CompoundTarget> ns;
             for(size_t i=0; i<integrated_components.size(); i++)
                 ns.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
 
-            ns.Solve(time_budget, targets2visit);
+            double tmp_d = 0;
+            ns.Solve(time_budget, targets2visit, tmp_d, knapsack_cost);
+            extra_time = time_budget - knapsack_cost;
+
             ROS_INFO("Knapsack solution size: %lu", targets2visit.size());
 
             for(size_t i=0; i<cur_compound_targets.size(); i++)
@@ -727,8 +746,13 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
                 {
                     EnqueueCompoundTarget(cur_compound_targets[i]);
+                    cur_compound_targets.erase(cur_compound_targets.begin()+(i++));
                 }
             }
+
+            PartiallyCoverTargets(cur_compound_targets, extra_time, node->GetMAVWaypoint(), node->GetMAVWaypoint());
+
+
         }
         else
             /* case (2): there is an extensible compound on the current search node
@@ -745,8 +769,12 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
             ROS_INFO("****** Case 2");
             double delay_value = 0;
             double cover_value = 0;
+            double delay_cost = 0;
+            double cover_cost = 0;
+            double extra_time_delay = 0;
+            double extra_time_cover = 0;
 
-            SetupCostsValuesCase_2(cur_compound_targets, extensible_compound_targets, node, true);
+            SetupCostsValues_WithExtensibleTarget(cur_compound_targets, extensible_compound_targets, node, true);
             ROS_INFO("#Integrated: %lu #cur: %lu #ext: %lu", integrated_components.size(), cur_compound_targets.size(), extensible_compound_targets.size());
 
             Knapsack<CompoundTarget> ns1;
@@ -754,18 +782,21 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 ns1.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
 
             set<CompoundTarget*> targets2visit1;
-            delay_value = ns1.Solve(time_budget, targets2visit1);
-            ROS_INFO("Knapsack solution size1: %lu budget:%f", targets2visit1.size(), time_budget);
+            ns1.Solve(time_budget, targets2visit1, delay_value, delay_cost);
+            extra_time_delay = time_budget - delay_cost;
 
-            SetupCostsValuesCase_2(cur_compound_targets, extensible_compound_targets, node, false);
+            ROS_INFO("Knapsack solution size when delaying: %lu budget:%f", targets2visit1.size(), time_budget);
+
+            SetupCostsValues_WithExtensibleTarget(cur_compound_targets, extensible_compound_targets, node, false);
 
             Knapsack<CompoundTarget> ns2;
             for(size_t i=0; i<integrated_components.size(); i++)
                 ns2.AddItem(integrated_components[i],integrated_components[i]->value, integrated_components[i]->cost);
 
             set<CompoundTarget*> targets2visit2;
-            cover_value = ns2.Solve(time_budget, targets2visit2);
-            ROS_INFO("Knapsack solution size2: %lu budget:%f", targets2visit2.size(),time_budget);
+            ns2.Solve(time_budget, targets2visit2, cover_value, cover_cost);
+            extra_time_cover = time_budget - cover_cost;
+            ROS_INFO("Knapsack solution size when covering: %lu budget:%f", targets2visit2.size(),time_budget);
 
             ROS_INFO("Case2 ->   Value_delay: %f Value_cover: %f", delay_value, cover_value);
 
@@ -782,6 +813,8 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 delay_extensibles = true;
             }
 
+            vector<CompoundTarget*> cur_unselected_compounds;
+
             for(size_t i=0; i<cur_compound_targets.size(); i++)
             {
                 cur_compound_targets[i]->SetVisited();
@@ -789,6 +822,10 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 if(targets2visit.find(cur_compound_targets[i]) != targets2visit.end())
                 {
                     EnqueueCompoundTarget(cur_compound_targets[i]);
+                }
+                else
+                {
+                    cur_unselected_compounds.push_back(cur_compound_targets[i]);
                 }
             }
 
@@ -801,8 +838,24 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                         extensible_compound_targets[i]->SetVisited();
                         EnqueueCompoundTarget(extensible_compound_targets[i]);
                     }
+                    else if(extensible_compound_targets[i]->cur_child)
+                    {
+                        cur_unselected_compounds.push_back(extensible_compound_targets[i]);
+                    }
                 }
             }
+            else
+            {
+                for(size_t i=0; i<extensible_compound_targets.size(); i++)
+                {
+                    if(targets2visit.find(extensible_compound_targets[i]) == targets2visit.end() && extensible_compound_targets[i]->cur_child)
+                    {
+                        cur_unselected_compounds.push_back(extensible_compound_targets[i]);
+                    }
+                }
+            }
+
+            PartiallyCoverTargets(cur_unselected_compounds, delay_extensibles?extra_time_delay:extra_time_cover, node->GetMAVWaypoint(), node->GetMAVWaypoint());
 
         }
 
@@ -816,7 +869,7 @@ void SearchCoverageStrategy::EnqueueCompoundTarget(CompoundTarget *ct)
     ct->GetLawnmowerPlan(target_lms);
 }
 
-void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *> &cur_targets,
+void SearchCoverageStrategy::SetupCostsValues_NoExtensibleTarget(std::vector<CompoundTarget *> &cur_targets,
                                               std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node)
 {
     TargetTour tt;
@@ -861,7 +914,7 @@ void SearchCoverageStrategy::SetupCostsValuesCase_1(std::vector<CompoundTarget *
     }
 }
 
-void SearchCoverageStrategy::SetupCostsValuesCase_2(std::vector<CompoundTarget *> &cur_targets,
+void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<CompoundTarget *> &cur_targets,
                                               std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node, bool delay)
 {
     TargetTour tt;
@@ -1395,6 +1448,17 @@ void SearchCoverageStrategy::glDraw()
 //        (*it)->glDraw();
 //        //if(start_nodes)
 //    }
+
+    glPointSize(5);
+    glColor3f(1,1,0);
+    glBegin(GL_POINTS);
+    for(size_t i =0; i<turningLocations.size(); i++)
+    {
+        Vector<3> cn = turningLocations[i];
+        glVertex3f(cn[0],cn[1],cn[2]);
+    }
+    glEnd();
+
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)

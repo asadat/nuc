@@ -19,7 +19,7 @@ class Knapsack
        ~Knapsack();
 
         void AddItem(ITEM* item, const double value, const double weight);
-        double Solve(const double weight, set<ITEM*> & solution);
+        void Solve(const double weight, set<ITEM*> & solution, double &solution_value, double &solution_cost);
 
     private:
 
@@ -59,7 +59,7 @@ void Knapsack<ITEM>::AddItem(ITEM *item, const double value, const double weight
 }
 
 template <class ITEM>
-double Knapsack<ITEM>::Solve(const double weight, set<ITEM *> &solution)
+void Knapsack<ITEM>::Solve(const double weight, set<ITEM *> &solution, double &solution_value, double &solution_cost)
 {
     for(size_t i = 0; i < items.size(); i++)
     {
@@ -73,15 +73,18 @@ double Knapsack<ITEM>::Solve(const double weight, set<ITEM *> &solution)
 
     solution.clear();
 
+    solution_cost = 0;
+
     for(size_t i = 0; i < bs.size(); i++)
     {
         if(bs.test(i))
         {
             solution.insert(items[i].item);
+            solution_cost += items[i].weight;
         }
     }
 
-    return v;
+    solution_value = v;
 }
 
 template <class ITEM>
