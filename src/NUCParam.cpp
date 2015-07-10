@@ -33,7 +33,7 @@ double NUCParam::prob_r = 0.8;
 double NUCParam::pathCost = 100;
 std::string NUCParam::prior_file_name = "prior.jpg";
 std::string NUCParam::nuc_dir = "";
-int NUCParam::lm_height = 2;
+int NUCParam::high_res_cells = 3;
 std::string NUCParam::policy = "dfs";
 double NUCParam::average_speed = 2.0;
 double NUCParam::turning_time = 1.0;
@@ -79,7 +79,7 @@ void NUCParam::GetParams(ros::NodeHandle &nh)
     nh.param("nuc_dir", nuc_dir, std::string(""));
 
 
-    nh.param("lm_height", lm_height, 2);
+    nh.param("high_res_cells", high_res_cells, 3);
     nh.param("policy", policy, std::string("dfs"));
     nh.param<double>("time_limit",time_limit,600.0);
     nh.param<double>("average_speed",average_speed,2.0);

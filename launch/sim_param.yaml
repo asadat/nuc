@@ -3,7 +3,7 @@ visualization: True
 branching_sqrt: 2
 FOV: 1.57
 min_footprint: 1.9
-speed: 5
+speed: 8
 policy: delayed_greedy
 strategy: scs
 area_length: 64.0
@@ -15,8 +15,8 @@ auto_exit: false
 bypass_controller: false
 prob_r: 0.5
 prior_file_name: prior6.jpg
-lm_height: 3
-time_limit: 550
+high_res_cells: 3
+time_limit: 555
 average_speed: 1.0
 turning_time: 5.0
 lm_tracks: 4

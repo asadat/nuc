@@ -50,7 +50,8 @@ class TargetPolygon
         double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
         bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3, TooN::Vector<3> p4, TooN::Vector<3> &intersection_p);
         void PlanLawnmower();
-
+        void SetLawnmowerHeight();
+        inline void PushLMwWypoint(TooN::Vector<3> v, const double wheight){lm.push_back(TooN::makeVector(v[0],v[1],wheight));}
         bool boundaryFLags[5];
 
         bool ignored;
@@ -60,7 +61,7 @@ class TargetPolygon
         vector<Vector<3> > lm;
         set<CNode*> parentSearchNodes;
         double height;
-        double cellW;
+        static double cellW;
         bool visited;
         int base_idx[2];
         Vector<3> pc;

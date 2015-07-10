@@ -102,25 +102,6 @@ void SearchCoverageStrategy::GenerateLawnmower()
 
         copy(lanes.begin(), lanes.end(), back_inserter(nodeStack));
     }
-
-//    CNode * startNode = tree->GetNearestLeaf(makeVector(r[0],r[1],0), NUCParam::lm_height);
-//    ROS_INFO("lm_height: %d depth: %d maxdepth: %d", NUCParam::lm_height, startNode->depth, CNode::maxDepth);
-//    Vector<3> startPos = startNode->GetPos();
-
-//    Rect rc = startNode->GetFootPrint();
-//    double ld = sqrt((rc[0]-rc[2])*(rc[1]-rc[3]));
-//    int n = l/ld;
-
-
-//    printf("LM: n:%d l:%f ld:%f \n", n, l, ld);
-
-//    for(int i=0; i< n; i++)
-//        for(int j=0; j< n; j++)
-//        {
-//            int jj = (i%2 == 0)?j:n-j-1;
-//            Vector<3> npos = startPos + makeVector(((double)i)*ld, ((double)jj)*ld, 0);
-//            nodeStack.push_back(tree->GetNearestLeaf(npos,  NUCParam::lm_height));
-//        }
 }
 
 CNode* SearchCoverageStrategy::GetNextNode()
@@ -151,7 +132,7 @@ CNode* SearchCoverageStrategy::GetNextNode()
 
     if(!result)
     {
-        ROS_INFO("Area covered with high resolution: %f.2 m^2", high_res_coverage);
+        ROS_INFO("Area covered with high resolution: %.2f m^2", high_res_coverage);
     }
 
     UpdateRemainingTime(result);
@@ -195,7 +176,7 @@ void SearchCoverageStrategy::UpdateRemainingTime(CNode *node)
 
 void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
-    bool reachedSearchNode = node->searchNode;//(node->depth == (node->maxDepth - NUCParam::lm_height));
+    bool reachedSearchNode = node->searchNode;
 
     vector<TargetPolygon*> newTargets;
 
@@ -565,10 +546,19 @@ double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, 
     double value = 0;
     set<CNode*> covered_cells;
 
-
+    double checkPoint_dist = 0.5*NUCParam::high_res_cells*TargetPolygon::cellW;
     for(size_t i=0; i+1<lms.size(); i++)
     {
+        Vector<3> p= lms[i];
+        Vector<3> dir = lms[i+1]-lms[i];
+        normalize(dir);
+        tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
 
+        while(D1(p,lms[i+1]) > checkPoint_dist)
+        {
+            p = checkPoint_dist*dir+p;
+            tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
+        }
     }
 
     for(auto it = covered_cells.begin(); it != covered_cells.end(); ++it)

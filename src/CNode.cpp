@@ -5,6 +5,7 @@
 #include "NUCParam.h"
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
+#define D2_OF3(a,b) sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
 
 #define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
 #define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
@@ -12,7 +13,6 @@
 #define PRIOR_INTERESTING 0.5
 #define PRIOR_UNINTERESTING 0.3
 #define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
-
 
 bool CNode::drawEdges = false;
 bool CNode::drawCoverage = false;
@@ -515,6 +515,25 @@ bool CNode::IsNeighbour(CNode *n)
     }
 
     return false;
+}
+
+void CNode::GetLeavesInRange(std::set<CNode*> &list, double range, TooN::Vector<3> center)
+{
+    double r = 1.4142*fabs(footPrint[0]-footPrint[2]);
+    if(D2_OF3(GetMAVWaypoint(), center) < r+range)
+    {
+        if(IsLeaf())
+        {
+            list.insert(this);
+        }
+        else
+        {
+            for(size_t i=0; i<children.size(); i++)
+                children[i]->GetLeavesInRange(list, range, center);
+        }
+    }
+
+    return;
 }
 
 CNode* CNode::GetNeighbourLeaf(bool left, bool right, bool up, bool down, int inverse_depth)

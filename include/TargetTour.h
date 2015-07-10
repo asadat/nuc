@@ -7,6 +7,8 @@
 
 #define ANGLE(a,b,c) (acos( ((a-b)*(c-b)) / (sqrt((a-b)*(a-b))*sqrt((c-b)*(c-b))) ))
 #define D2(a,b) (a-b)*(a-b)
+#define D1(a,b) sqrt((a-b)*(a-b))
+
 #define COLLINEAR(a,b,c) ((fabs(fabs(ANGLE(a,b,c))-3.14) > 0.1)?1.0:0)
 #define IN(a,r) ((a[0]>= r[0] && a[0] <= r[2]) && (a[1] >= r[1] && a[1] <= r[3]))
 

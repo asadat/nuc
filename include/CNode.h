@@ -1,6 +1,7 @@
 #ifndef _CNODE_
 #define _CNODE_
 #include <vector>
+#include <set>
 #include "TooN/TooN.h"
 
 typedef TooN::Vector<4> Rect;
@@ -42,6 +43,7 @@ public:
     CNode* GetNearestNode(TooN::Vector<3> p);
     CNode* GetNearestLeaf(TooN::Vector<3> p, int revDepth=0);
     void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list);
+    void GetLeavesInRange(std::set<CNode*> &list, double range, TooN::Vector<3> center);
 
     Rect GetFootPrint(){return footPrint;}
 

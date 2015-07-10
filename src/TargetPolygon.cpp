@@ -9,6 +9,7 @@
 #define MAX(a,b) ((a<b)?b:a)
 #define D2(a,b) (a-b)*(a-b)
 
+double TargetPolygon::cellW=0;
 using namespace std;
 
 TargetPolygon::TargetPolygon()
@@ -115,13 +116,10 @@ void TargetPolygon::ProcessPolygon()
     Vector<4> fp = cells.back()->footPrint;
     cellW = fp[2]-fp[0];
 
-    //ROS_INFO("***** 1");
     ConvexHull();
-    //ROS_INFO("***** 2");
     FindBaseEdge();
-    //ROS_INFO("***** 3");
     PlanLawnmower();
-    //ROS_INFO("***** 4");
+    SetLawnmowerHeight();
 }
 
 bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
@@ -471,11 +469,22 @@ bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vecto
 
 }
 
+void TargetPolygon::SetLawnmowerHeight()
+{
+    double interlap_d = NUCParam::high_res_cells*cellW;
+    double hi_res_lm_height = (0.5*interlap_d)/tan(0.5*NUCParam::FOV);
+
+    for(size_t i =0; i<lm.size(); i++)
+    {
+        lm[i][2] = hi_res_lm_height;
+    }
+}
+
 void TargetPolygon::PlanLawnmower()
 {
     lm.clear();
 
-    double interlap_d = 3*cellW;
+    double interlap_d = NUCParam::high_res_cells*cellW;
 
     if(ch.size() == 0)
     {

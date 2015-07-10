@@ -51,7 +51,7 @@ public:
     static std::string prior_file_name;
 
     static int lm_tracks;
-    static int lm_height;
+    static int high_res_cells;
     static std::string policy;
     static double time_limit;
     static double average_speed;
