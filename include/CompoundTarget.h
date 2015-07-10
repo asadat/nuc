@@ -26,7 +26,7 @@ class CompoundTarget
         void SetIgnored();
         void SetVisited();
         void GetLawnmowerPlan(vector<Vector<3> > &lm_plan);
-
+        bool IsInside(CNode* cell);
     private:
         vector<TargetPolygon*> targets;
 

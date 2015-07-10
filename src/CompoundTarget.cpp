@@ -123,3 +123,14 @@ void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan)
         targets[i]->GetLawnmowerPlan(lm_plan);
     }
 }
+
+bool CompoundTarget::IsInside(CNode *cell)
+{
+    for(size_t i=0; i<targets.size(); i++)
+    {
+        if(targets[i]->IsInside(cell))
+            return true;
+    }
+
+    return false;
+}

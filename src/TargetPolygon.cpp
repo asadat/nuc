@@ -96,6 +96,15 @@ bool TargetPolygon::IsNonBoundaryTarget()
     return !(boundaryFLags[0]||boundaryFLags[1]||boundaryFLags[2]||boundaryFLags[3]);
 }
 
+bool TargetPolygon::IsInside(CNode *cell)
+{
+    for(size_t i=0; i<cells.size(); i++)
+        if(cells[i] == cell)
+            return true;
+
+    return false;
+}
+
 void TargetPolygon::ProcessPolygon()
 {
     label = cells[0]->label;

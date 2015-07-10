@@ -23,6 +23,8 @@ private:
     bool InSearchGridBoundary(int i, int j);
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
+    inline bool SearchNodeExists() const {return !nodeStack.empty();}
+    TooN::Vector<3> GetNextSearchPos();
 
     void OnReachedNode_GreedyPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
     void OnReachedNode_DelayedPolicy(CNode * node, std::vector<TargetPolygon*> &newTargets, bool searchNode);
@@ -30,6 +32,7 @@ private:
 
     void UpdateRemainingTime(CNode* node);
 
+    double LawnmowerPlanValue(std::vector<TooN::Vector<3> > &lms, CompoundTarget* ct);
     void PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos);
     void AddTargetsToComponentGenerators(vector<TargetPolygon*> &newTargets, CNode* node);
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
@@ -43,7 +46,6 @@ private:
     void CleanupTargets();
     void CleanupComponents();
 
-    void GetNearestStartCellAndCost(std::vector<CompoundTarget*> &cmpn, CNode* cur_node);
     void SetupCostsValues_NoExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node);
     void SetupCostsValues_WithExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node, bool delay);
 

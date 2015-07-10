@@ -41,6 +41,8 @@ class TargetPolygon
         void ProcessPolygon();
         inline bool HasParent(CNode* par){return parentSearchNodes.find(par)!=parentSearchNodes.end();}
         inline Vector<3> GetCenter(){return center;}
+        bool IsInside(CNode* cell);
+
     private:
         void ConvexHull();
         void FindBaseEdge();

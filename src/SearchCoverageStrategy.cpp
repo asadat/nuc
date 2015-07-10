@@ -56,6 +56,14 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     delete dummy;
 }
 
+Vector<3> SearchCoverageStrategy::GetNextSearchPos()
+{
+    if(SearchNodeExists())
+        return nodeStack.front()->GetMAVWaypoint();
+    else
+        return startPos;
+}
+
 void SearchCoverageStrategy::GenerateLawnmower()
 {
     int cell_in_lanes = ceil(((double)s)/NUCParam::lm_tracks);
@@ -552,9 +560,61 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
     }
 }
 
-void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
+double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, CompoundTarget* ct)
 {
+    double value = 0;
+    set<CNode*> covered_cells;
 
+
+    for(size_t i=0; i+1<lms.size(); i++)
+    {
+
+    }
+
+    for(auto it = covered_cells.begin(); it != covered_cells.end(); ++it)
+        if(ct->IsInside(*it))
+        {
+            value += ((*it)->footPrint[0]-(*it)->footPrint[2])*((*it)->footPrint[0]-(*it)->footPrint[2]);
+        }
+
+    return value;
+}
+
+void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget,
+                                                   TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
+{
+    TargetTour tour;
+    vector<Vector<3> > best_partial_lm;
+    double best_partial_value = 0;
+
+    for(size_t i=0; i<cts.size(); i++)
+    {
+        CompoundTarget &ct = *cts[i];
+
+        vector<Vector<3> > partial_lm;
+        double partial_cost = 0;
+        double partial_value = 0;
+
+        ct.GetLawnmowerPlan(partial_lm);
+        partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+        while(partial_cost > budget)
+        {
+            partial_lm.pop_back();
+            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+        }
+
+        partial_value = LawnmowerPlanValue(partial_lm, &ct);
+
+        if(partial_value > best_partial_value)
+        {
+            best_partial_value = partial_value;
+            best_partial_lm.clear();
+            copy(partial_lm.begin(), partial_lm.end(), back_inserter(best_partial_lm));
+        }
+    }
+
+    high_res_coverage += best_partial_value;
+    copy(best_partial_lm.begin(), best_partial_lm.end(), back_inserter(target_lms));
 }
 
 void SearchCoverageStrategy::AddTargetsToComponentGenerators(vector<TargetPolygon *> &newTargets, CNode* node)
@@ -750,7 +810,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 }
             }
 
-            PartiallyCoverTargets(cur_compound_targets, extra_time, node->GetMAVWaypoint(), node->GetMAVWaypoint());
+            PartiallyCoverTargets(cur_compound_targets, extra_time, node->GetMAVWaypoint(), GetNextSearchPos());
 
 
         }
@@ -855,7 +915,8 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 }
             }
 
-            PartiallyCoverTargets(cur_unselected_compounds, delay_extensibles?extra_time_delay:extra_time_cover, node->GetMAVWaypoint(), node->GetMAVWaypoint());
+            PartiallyCoverTargets(cur_unselected_compounds, delay_extensibles?extra_time_delay:extra_time_cover,
+                                  node->GetMAVWaypoint(), GetNextSearchPos());
 
         }
 
@@ -961,67 +1022,6 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
         v.CalculateValue();
         v.startNode = cur_node;
         v.cost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
-    }
-}
-
-void SearchCoverageStrategy::GetNearestStartCellAndCost(std::vector<CompoundTarget *> &cmpn, CNode* cur_node)
-{
-    TargetTour tt;
-    vector<CNode*> nds;
-
-    /* We will consider covering the current target from the current node
-     * as well as from the unvisited neighbours. For the rest of the targets
-     * it only suffices to consider unvisited neighbours.
-     */
-
-    copy(nodeStack.begin(), nodeStack.end(), back_inserter(nds));
-    nds.insert(nds.begin(), cur_node);
-
-    for(size_t i=0; i < cmpn.size(); i++)
-    {
-        double val = 0;
-        vector<CNode*> parents;
-        CompoundTarget &v = *cmpn[i];
-        for(size_t j=0; j<v.targets.size(); j++)
-        {
-            val += v.targets[j]->GetTargetRegionsArea();
-            copy(v.targets[j]->parentSearchNodes.begin(),v.targets[j]->parentSearchNodes.end(), back_inserter(parents));
-        }
-
-        // check if the cur_node is a parent of a sub-patch of the compound target
-        // if yes, consider it as a waypoint to start coverage of the compound;
-        bool consider_cur_node = false;
-        for(size_t w=0; w<parents.size(); w++)
-        {
-            if(parents[w] == cur_node)
-            {
-                consider_cur_node = true;
-                break;
-            }
-        }
-
-        double minCost = 99999999;
-        CNode* minNode = NULL;
-        for(size_t k=0; k<parents.size(); k++)
-        {
-            for(size_t j=(consider_cur_node?0:1); j<nds.size(); j++)
-            {
-                if(!NeighboursNode(nds[j],parents[k]))
-                    continue;
-
-                double c = tt.GetTargetTour(v.targets, nds[j]->GetMAVWaypoint(), nds[j]->GetMAVWaypoint());
-                if(minCost > c)
-                {
-                    minCost = c;
-                    minNode = nds[j];
-                }
-            }
-        }
-
-        cmpn[i]->startNode = minNode;
-        cmpn[i]->cost = minCost;
-        cmpn[i]->value = val;
-
     }
 }
 
@@ -1458,7 +1458,6 @@ void SearchCoverageStrategy::glDraw()
         glVertex3f(cn[0],cn[1],cn[2]);
     }
     glEnd();
-
 }
 
 void SearchCoverageStrategy::SetupGrid(CNode *root)
