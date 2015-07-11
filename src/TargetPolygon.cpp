@@ -46,17 +46,8 @@ TargetPolygon::~TargetPolygon()
 
 void TargetPolygon::SetBoundaryFlag(SIDE side, bool val)
 {
-
     if(side != ALL)
     {
-//        if(val)
-//            ROS_INFO("Setting Side %d true", (int)side);
-
-//        char clear = ~(1 << side);
-//        boundaryFlags = boundaryFlags & clear;
-
-//        val = (val << side);
-//        boundaryFlags = boundaryFlags & val;
         boundaryFLags[(int)side] = val;
     }
     else if(side == ALL)
@@ -87,8 +78,6 @@ void TargetPolygon::OrBoundaryFlag(SIDE side, bool val)
 
 bool TargetPolygon::GetBoundaryFlag(SIDE side)
 {
-//    char selector = (1 << side);
-//    return (boundaryFlags & selector);
     return boundaryFLags[(int)side];
 }
 

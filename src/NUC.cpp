@@ -4,39 +4,23 @@
 #include "GL/glut.h"
 #include "CNode.h"
 #include "TooN/TooN.h"
-//#include "DepthFirstStrategy.h"
-//#include "LawnmowerStrategy.h"
-//#include "ShortCutStrategy.h"
-//#include "BudgetedStrategy.h"
 #include "SearchCoverageStrategy.h"
 #include "InterestingnessSensor.h"
-//#include "HilbertStrategy.h"
-//#include "TestStrategy.h"
-//#include "HilbertOptimization.h"
-
 #include "NUCParam.h"
-//#include "HuskyInterface.h"
 
 #define AREA(r) (fabs(r[0]-r[2]) * fabs(r[1]-r[3]))
 
 FILE *NUC::logFile = NULL;
 std::string NUC::logFileName = std::string("");
 
-//#define AREA_LENGTH 16
-//#define AREA_CX 0
-//#define AREA_CY 0
-
 using namespace TooN;
 
 NUC * NUC::instance = NULL;
-//bool NUC::simulation = true;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
 {
     traversal = NULL;
     visitedFalsePositives = 0;
-    //runCircleDetection();
-    //runPhotoStitcher();
     drawPath = false;
     traverseLength = 0;
     isOver = false;
@@ -62,69 +46,11 @@ NUC::NUC(int argc, char **argv):nh("NUC")
         logFile = fopen(logFileName.c_str(), "w");
     }
 
-    //bVisEnabled = true;
-    //double area_length = 0;
-
-//    NUCParam::simulation;
-//    private_node_handle_.param<bool>("simulation", simulation, true);
-//    private_node_handle_.param<bool>("visualization", bVisEnabled, true);
-//    private_node_handle_.param<int>("branching_sqrt",CNode::bf_sqrt,2);
-//    private_node_handle_.param<double>("speed",MAV::speed,1.0);
-//    private_node_handle_.param<double>("area_length",area_length,16);
-
-    int traversalStrategy=-1;
-    //std::string strategy_str;
-    //private_node_handle_.param("strategy", strategy_str, std::string("lm"));
-
-    if(NUCParam::strategy == "lm")
-    {
-        traversalStrategy = 2;
-    }
-    else if(NUCParam::strategy == "df")
-    {
-        traversalStrategy = 0;
-    }
-    else if(NUCParam::strategy == "sc")
-    {
-        traversalStrategy = 1;
-    }
-    else if(NUCParam::strategy == "ts")
-    {
-        ROS_INFO("test strategy");
-
-        traversalStrategy = 3;
-    }
-    else if(NUCParam::strategy == "hi")
-    {
-        ROS_INFO("hilbert strategy");
-
-        traversalStrategy = 4;
-    }
-    else if(NUCParam::strategy == "ho")
-    {
-        ROS_INFO("hilbert optimization strategy");
-
-        traversalStrategy = 5;
-    }
-    else if(NUCParam::strategy == "bu")
-    {
-        ROS_INFO("budgeted strategy");
-
-        traversalStrategy =6;
-    }
-    else if(NUCParam::strategy == "scs")
-    {
-        ROS_INFO("search and coverage strategy");
-
-        traversalStrategy =7;
-    }
-
     mav.Init(&nh, NUCParam::simulation);
 
     if(!NUCParam::simulation && !NUCParam::interesting_simulation)
     {
         InterestingnessSensor::Instance(&nh);
-        //HuskyInterafce::Instance(&nh);
     }
 
     glutInit(&argc, argv);
@@ -133,51 +59,13 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     tree = new CNode(area);
     tree->PropagateDepth();
 
-    ROS_INFO("here 1");
-
     if(NUCParam::simulation || NUCParam::interesting_simulation)
     {
-        LoadPriorFromFile();
-        //PopulateTargets();
-        //MarkNodesInterestingness();
+        LoadPriorFromFile();        
     }
 
-
-    ROS_INFO("test strategy %d", traversalStrategy);
-
-
-    if(traversalStrategy == 0)
-    {
-        //traversal = new DepthFirstStrategy(tree);
-    }
-    else if(traversalStrategy == 1)
-    {
-        //traversal = new ShortCutStrategy(tree);
-    }
-    else if(traversalStrategy == 3)
-    {
-        //traversal = new TestStrategy(tree);
-    }
-    else if(traversalStrategy == 4)
-    {
-        //traversal = new HilbertStrategy(tree);
-    }
-    else if(traversalStrategy == 5)
-    {
-        //traversal = new HilbertOptimization(tree, mav.GetPos(), mav.GetPos());
-    }
-    else if(traversalStrategy == 6)
-    {
-        //traversal = new BudgetedStrategy(tree);
-    }
-    else if(traversalStrategy == 7)
-    {
-        traversal = new SearchCoverageStrategy(tree);
-    }
-    else
-    {
-        //traversal = new LawnmowerStrategy(tree);
-    }
+    assert(NUCParam::strategy == "scs");
+    traversal = new SearchCoverageStrategy(tree);
 
     StartTraversing();
 }
@@ -354,8 +242,7 @@ bool NUC::RectIntersect(Rect r, Rect d)
 void NUC::PopulateTargets()
 {
     srand(time(NULL));
-    //srand(111);
-    //double xy_ratio = 1/5.0;
+
 
     CNode* leaf = tree->GetNearestLeaf(makeVector(0,0,0));
     Rect lr;
@@ -366,39 +253,11 @@ void NUC::PopulateTargets()
         cellW = fabs(lr[2]-lr[0]);
     }
 
-    //cellW *= 2;
-    //cellW *= 2;
     int n=0;
     double patch = ((NUCParam::percent_interesting/100.0)* fabs(area[0]-area[2])*fabs(area[1]-area[3])/NUCParam::patches);
-    //lx = floor(lx/(lr[2]-lr[0]))* (lr[2]-lr[0]);
-    //double eps = 0.1;
-//    for(int i=0; i<(area[2]-area[0])/cellW; i++)
-//    {
-//        for(int j=0; j<(area[3]-area[1])/cellW; j++)
-//        {
-//            if(j%2 == i%2)
-//                continue;
 
-//            Rect r;
-//            r[0] = area[0] + i * cellW + eps;
-//            r[2] = area[0] + (i+1) * cellW - eps;
-//            r[1] = area[1] + j * cellW + eps;
-//            r[3] = area[1] + (j+1) * cellW - eps;
-//            targets.push_back(r);
-//        }
-//    }
-
-//    return;
     while(targets.size() < (unsigned int)NUCParam::patches)
     {
-//        Rect r;
-//        r[0] = RAND(area[0], area[2]-lx);
-//        r[0] = floor(r[0]/(lr[2]-lr[0]))*(lr[2]-lr[0]);
-//        r[1] = RAND(area[1], area[3]-lx/xy_ratio);
-//        r[1] = floor(r[1]/(lr[3]-lr[1]))* (lr[3]-lr[1]);
-//        r[2] = r[0]+lx;
-//        r[3] = r[1]+lx/xy_ratio;
-
         Rect r;
         r[0] = RAND(area[0], area[2]-cellW);
         r[0] = floor(r[0]/cellW)*cellW;
@@ -457,19 +316,6 @@ void NUC::PopulateTargets()
     for(unsigned int i=0; i < targets.size(); i++)
         ROS_INFO("target:%d area:%.2f %.2f %.2f %.2f %.2f", i, AREA(targets[i]), targets[i][0],targets[i][1],targets[i][2],targets[i][3]);
 
-//    srand(time(NULL));
-//    int n = 0.5 * NUCParam::area_length / NUCParam::min_footprint;
-//    double l =2*NUCParam::min_footprint;
-//    for(int i=0; i<n; i++)
-//    {
-//        Rect r;
-//        r[0] = RAND(area[0], area[2]-l);
-//        r[1] = RAND(area[1], area[3]-l);
-//        r[2] = r[0]+ RAND(l*0.5,l*1.5);
-//        r[3] = r[1]+ RAND(l*0.5,l*1.5);
-
-//        targets.push_back(r);
-//    }
 }
 
 void NUC::MarkNodesInterestingness()
@@ -555,8 +401,6 @@ void NUC::glDraw()
      TooN::Matrix<2,2,double> rot = TooN::Data(cos(NUCParam::area_rotation*D2R), sin(NUCParam::area_rotation*D2R),
                                       -sin(NUCParam::area_rotation*D2R), cos(NUCParam::area_rotation*D2R));
 
-     //ROS_INFO("%f\t%f\n%f\t%f", rot[0][0], rot[0][1], rot[1][0], rot[1][1]);
-
      if(NUCParam::interesting_simulation)
      {
          for(unsigned int i=0; i<targets.size(); i++)
@@ -578,11 +422,9 @@ void NUC::glDraw()
              Vector<2,double> r4 = c + rot*(v4-c);
 
 
-//             if(!CNode::drawCoverage)
-//                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//             else
+
              glLineWidth(8);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
              glColor4f(0.8,0.4,0.0,1);
              glBegin(GL_POLYGON);
@@ -696,27 +538,13 @@ bool NUC::VisitGoal()
 
     if(!curGoal->visited)
     {
-
-       // ROS_INFO("start sensing ....");
         NUC_LOG("SENSING_START %f \n", sensingStart.toSec());
         sensingStart = ros::Time::now();
         curGoal->SetTreeVisited(true);
     }
 
     if(NUCParam::simulation)
-    {
-        // In simulations it uses the precomputed interestingness
-        //curGoal->SetIsInteresting(curGoal->trueIsInteresting);
-        //curGoal->GenerateObservationAndPropagate();
-        //if(curGoal->IsLeaf() && !curGoal->trueIsInteresting)
-        //    visitedFalsePositives++;
-
-        //simulating interestingness
-        //for(unsigned int i=0; i<curGoal->children.size();i++)
-        //    curGoal->children[i]->SetIsInteresting(curGoal->children[i]->trueIsInteresting);
-
-        //curGoal->propagateCoverage(curGoal->pos[2]);
-        //curGoal->GenerateTargets();
+    {       
         traversal->ReachedNode(curGoal);
         return true;
     }
@@ -768,7 +596,6 @@ bool NUC::VisitGoal()
                 if(curNodeInterest && curGoal->IsLeaf())
                 {
                     sensor_msgs::NavSatFix gpsTmp = mav.GetLastGPSLocation();
-                    //HuskyInterafce::Instance()->SendWaypoint(gpsTmp);
                     NUC_LOG("WAYPOINT_TO_HUSKY %f %f %f", gpsTmp.latitude, gpsTmp.longitude, gpsTmp.altitude);
                 }
             }
@@ -804,15 +631,7 @@ void NUC::Update()
         lastTime = ros::Time::now();
         if(ros::ok())
         {
-           //ROS_INFO_THROTTLE(0.5, "Ros spinning ... %d", i);
-            ros::spinOnce();
-           // i++;
-
-            //if(!simulation)
-            //{
-            //TooN::Matrix<10,10,int> grd_int = TooN::Zeros;
-            //InterestingnessSensor::Instance()->GetInterestingnessGrid(grd_int, CNode::bf_sqrt);
-            //}
+            ros::spinOnce();          
         }
         else
         {

@@ -235,56 +235,6 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
 {
     if(searchNode && !newTargets.empty())
     {
-
-        //join the targets of the current cell
-        //SimplifyTargetSet(newTargets);
-
-//        if(targets.size()-newTargetIdxBegin >= 2)
-//        {
-//            TargetPolygon *t = targets[newTargetIdxBegin];
-//            while(targets.size() > newTargetIdxBegin + 1)
-//            {
-//                TargetPolygon * tmp = targets.back();
-//                targets.pop_back();
-//               // ROS_INFO("here1 %u %u",newTargetIdxBegin, targets.size());
-//                t->AddPolygon(tmp);
-//               // ROS_INFO("here1 1.5 %u %u",newTargetIdxBegin, targets.size());
-
-//                delete tmp;
-//            }
-//        }
-
-        //            for(size_t i=0; i < newTargets.size(); i++)
-        //            {
-        //                newTargets[i]->GetLawnmowerPlan(target_lms);
-        //                newTargets[i]->MarkAsVisited();
-        //                targets.push_back(newTargets[i]);
-        //            }
-
-        //            vector<Vector<3> > tmp_plan;
-        //            tmp_plan.push_back(prevGoal);
-        //            tmp_plan.push_back(node->GetMAVWaypoint());
-        //            copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
-        //            for(size_t i = 0; i < nodeStack.size(); i++)
-        //                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-        //            tmp_plan.push_back(startPos);
-
-        //            double total_time = GetPlanExecutionTime(tmp_plan, true, false);
-
-        //            if(total_time > remaining_time)
-        //            {
-        //                if(targets.size() > newTargetIdxBegin)
-        //                    targets[newTargetIdxBegin]->SetVisited(false);
-
-        //                target_lms.clear();
-        //            }
-        //            else
-        //            {
-        //                if(targets.size() > newTargetIdxBegin)
-        //                    targets[newTargetIdxBegin]->SetVisited(true);
-        //            }
-
-
         long int selector = 1;
         long int maxSelector = 1 << newTargets.size();
         long int bestSelector = 0;
@@ -1516,30 +1466,7 @@ CNode * SearchCoverageStrategy::GetSearchNode(int i, int j)
 
 void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-//    bool flag = false;
-//    if(key['\''])
-//    {
-//        cutoff_prob = (cutoff_prob<1.0)?cutoff_prob+0.05:cutoff_prob;
-//        updateKey = true;
-//        flag = true;
-//    }
-//    else if(key[';'])
-//    {
-//        cutoff_prob = (cutoff_prob>0.0)?cutoff_prob-0.05:cutoff_prob;
-//        updateKey = true;
-//        flag = true;
-//    }
-//    else if(key['l'])
-//    {
-//        updateKey = true;
-//    }
 
-//    if(flag)
-//    {
-//        for(unsigned int i=0; i<visitedNodes.size(); i++)
-//            visitedNodes[i]->GenerateTargets(cutoff_prob);
-//        FindClusters(true);
-//    }
 }
 
 void SearchCoverageStrategy::CleanupComponents()

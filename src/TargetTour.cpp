@@ -34,8 +34,6 @@ double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, Vector<3> start
     wps.push_back(start);
     for(size_t i=0; i<targets.size(); i++)
     {
-        //wps.push_back(targets[i]->FirstLMPos());
-        //wps.push_back(targets[i]->LastLMPos());
         targets[i]->GetLawnmowerPlan(wps);
     }
 
@@ -98,7 +96,6 @@ double TargetTour::GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<
     double t=0;
     double dist = 0;
 
-    //dist += sqrt(D2(curpos, wps.front()->GetMAVWaypoint()));
     dist += sqrt(D2(wps.back()->GetMAVWaypoint(), endpos));
 
     for(size_t i=0; i+1 < wps.size(); i++)

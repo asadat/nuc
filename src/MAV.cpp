@@ -74,14 +74,6 @@ void MAV::gpsCallback(const sensor_msgs::NavSatFixPtr &msg)
 {
     //static bool sent=false;
     gpsLocation = (*msg);
-
-//    if(!sent)
-//    {
-//        HuskyInterafce::Instance()->SendWaypoint(gpsLocation);
-//        ROS_INFO("Sent GPS to husky.");
-//        sent = true;
-//    }
-
 }
 
 void MAV::atGoalCallback(const std_msgs::Bool::Ptr &msg)
@@ -116,14 +108,9 @@ void MAV::glDraw()
 {
     //ROS_INFO_THROTTLE(1, "AtGoal:%d", atGoal);
     Vector<3> p;
-//    if(simulation)
-//    {
-//        p = pos;
-//    }
-//    else
-    {
-        p[0] = realpos[0];p[1] = realpos[1];p[2] = realpos[2];
-    }
+
+    p[0] = realpos[0];p[1] = realpos[1];p[2] = realpos[2];
+
 
     glColor3f(0,0,1);
     glLineWidth(2);
@@ -155,11 +142,6 @@ void MAV::glDraw()
     glColor4f(0,0,0,0.5);
     circle(p4[0]+r()*0.01,p4[1]+r()*0.01,p4[2], 0.15, 50);
 
-//    glPointSize(10);
-//    glColor3f(0,0,1);
-//    glBegin(GL_POINTS);
-//    glVertex3f(goal[0], goal[1], goal[2]);
-//    glEnd();
 }
 
 void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
@@ -167,30 +149,22 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
     goal = goalpos;
     atGoal = false;
 
-//    if(simulation)
-//    {
-//        toGoalNorm = (goal-pos);
-//        normalize(toGoalNorm);
-//    }
-//    else
+    pelican_ctrl::gotoPos srv;
+    srv.request.x = goal[0];
+    srv.request.y = goal[1];
+    srv.request.z = goal[2];
+    srv.request.yaw = 0;
+    srv.request.set_orig = set_orig;
+
+    if(gotoPosService.call(srv))
     {
-
-        pelican_ctrl::gotoPos srv;
-        srv.request.x = goal[0];
-        srv.request.y = goal[1];
-        srv.request.z = goal[2];
-        srv.request.yaw = 0;
-        srv.request.set_orig = set_orig;
-
-        if(gotoPosService.call(srv))
-        {
-            //ROS_INFO("Waypoint is sent to Pelican Controller");
-        }
-        else
-        {
-            ROS_INFO("** Unable to call gotoPos service on Pelican Controller");
-        }
+        //ROS_INFO("Waypoint is sent to Pelican Controller");
     }
+    else
+    {
+        ROS_INFO("** Unable to call gotoPos service on Pelican Controller");
+    }
+
 }
 
 void MAV::Update(double dt)
@@ -198,23 +172,6 @@ void MAV::Update(double dt)
     if(simulation)
     {
         asctecPelican.Update();
-
-
-//        if(atGoal)
-//            return;
-
-//        double step = dt * NUCParam::speed;
-//        double goalDistSqr = (goal - pos)*(goal-pos);
-//        if(goalDistSqr < step*step || goalDistSqr < 0.2*0.2)
-//        {
-//            pos = goal;
-//            atGoal = true;
-
-//        }
-//        else
-//        {
-//            pos += step*toGoalNorm;
-//        }
     }
     else
     {
@@ -253,30 +210,19 @@ void MAV::AsctecFCU::Update()
 
     if((t-last_pose).toSec() > 0.02) // = 5 hz
     {
-
         last_pose = t;
 
+        p_seq++;
+        geometry_msgs::PoseWithCovarianceStamped p_msg;
+        p = poseQ.back().second;
+        p_msg.pose.pose.position.x = p[0];
+        p_msg.pose.pose.position.y = p[1];
+        p_msg.pose.pose.position.z = p[2];
+        p_msg.header.stamp = t;
+        p_msg.header.seq = p_seq;
 
-//        while(poseQ.size()>1  && fabs(t.toSec() - poseQ[poseQ.size()-2].first) < fabs(t.toSec() - poseQ[poseQ.size()-1].first) )
-//            poseQ.pop_back();
-
-//        if(poseQ.size() > 2)
-        {
-            p_seq++;
-            geometry_msgs::PoseWithCovarianceStamped p_msg;
-            p = poseQ.back().second;
-            p_msg.pose.pose.position.x = p[0];
-            p_msg.pose.pose.position.y = p[1];
-            p_msg.pose.pose.position.z = p[2];
-            p_msg.header.stamp = t;
-            p_msg.header.seq = p_seq;
-
-            fcuPose_pub.publish(p_msg);
-        }
-//        else
-        {
-            poseQ.clear();
-        }
+        fcuPose_pub.publish(p_msg);
+        poseQ.clear();
     }
 
     if((t-last_mag).toSec() > 1/50) // = 50 hz
@@ -303,9 +249,6 @@ void MAV::AsctecFCU::Update()
         //ROS_INFO("vel: %f %f %f", vel[0], vel[1], vel[2]);
         pose += dt * NUCParam::speed * vel;
         poseQ.insert(poseQ.begin(), std::pair<double,Vector<4> >(t.toSec()+delay,pose));
-
-
-
     }
 }
 
@@ -330,10 +273,7 @@ void MAV::AsctecFCU::fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg)
     Vector<2> p = msg->x*bodyX + msg->y*bodyY;
 
     static Vector<3> sigv = makeVector(0,0,0);
-    //Vector<3> sig = 0.01 * makeVector(r(),r(),r());
-    //sigv += sig;
 
-    //Vector<4> dp;
     vel[0] = p[0] + sigv[0];
     vel[1] = p[1] + sigv[1];
     vel[2] = msg->z + sigv[2];
