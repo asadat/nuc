@@ -491,7 +491,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
     }
 }
 
-double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, CompoundTarget* ct)
+double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, const CompoundTarget* ct)
 {
     double value = 0;
     set<CNode*> covered_cells;
@@ -864,7 +864,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     }
 }
 
-void SearchCoverageStrategy::EnqueueCompoundTarget(CompoundTarget *ct)
+void SearchCoverageStrategy::EnqueueCompoundTarget(const CompoundTarget *ct)
 {
     high_res_coverage += ct->value;
     ct->GetLawnmowerPlan(target_lms);
@@ -965,7 +965,7 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
     }
 }
 
-void SearchCoverageStrategy::SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
+void SearchCoverageStrategy::SeparateCompoundTargets(const vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
                              vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets)
 {
     for(size_t i=0; i<all_targets.size(); i++)
@@ -977,7 +977,7 @@ void SearchCoverageStrategy::SeparateCompoundTargets(vector<CompoundTarget*> &al
     }
 }
 
-bool SearchCoverageStrategy::NeighboursNode(CNode *n1, CNode *n2)
+bool SearchCoverageStrategy::NeighboursNode(const CNode *n1, const CNode *n2) const
 {
     if(abs(n1->grd_x-n2->grd_x)+abs(n1->grd_y-n2->grd_y) <= 1)
         return true;
@@ -1423,7 +1423,7 @@ void SearchCoverageStrategy::SetupGrid(CNode *root)
         }
 }
 
-CNode * SearchCoverageStrategy::GetNode(int i, int j)
+CNode * SearchCoverageStrategy::GetNode(int i, int j) const
 {
     size_t n = i*s+j;
     if(n < grid.size())
@@ -1435,7 +1435,7 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j)
     }
 }
 
-bool SearchCoverageStrategy::InSearchGridBoundary(int i, int j)
+bool SearchCoverageStrategy::InSearchGridBoundary(int i, int j) const
 {
     if(i < 0 || j < 0 || i >= NUCParam::lm_tracks || j >= NUCParam::lm_tracks)
     {
@@ -1445,7 +1445,7 @@ bool SearchCoverageStrategy::InSearchGridBoundary(int i, int j)
     return true;
 }
 
-CNode * SearchCoverageStrategy::GetSearchNode(int i, int j)
+CNode * SearchCoverageStrategy::GetSearchNode(int i, int j) const
 {
     if(i < 0 || j < 0 || i >= NUCParam::lm_tracks || j >= NUCParam::lm_tracks)
     {

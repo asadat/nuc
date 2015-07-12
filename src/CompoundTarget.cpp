@@ -72,7 +72,7 @@ void CompoundTarget::SetIsCurChildFlag(CNode* cur_search_node)
     }
 }
 
-bool CompoundTarget::IsExtensible()
+bool CompoundTarget::IsExtensible() const
 {
     for(size_t j=0; j<TargetPolygon::ALL; j++)
     {
@@ -83,7 +83,7 @@ bool CompoundTarget::IsExtensible()
     return false;
 }
 
-void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> &bnodes)
+void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> &bnodes) const
 {
     for(size_t j=0; j<TargetPolygon::ALL; j++)
     {
@@ -116,7 +116,7 @@ void CompoundTarget::SetVisited()
     }
 }
 
-void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan)
+void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan) const
 {
     for(size_t i=0; i<targets.size(); i++)
     {
@@ -124,7 +124,7 @@ void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan)
     }
 }
 
-bool CompoundTarget::IsInside(CNode *cell)
+bool CompoundTarget::IsInside(const CNode *cell) const
 {
     for(size_t i=0; i<targets.size(); i++)
     {

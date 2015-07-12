@@ -18,9 +18,9 @@ public:
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
     void ReachedNode(CNode *node);
 private:    
-    CNode * GetNode(int i, int j);
-    CNode * GetSearchNode(int i, int j);
-    bool InSearchGridBoundary(int i, int j);
+    CNode * GetNode(int i, int j) const;
+    CNode * GetSearchNode(int i, int j) const;
+    bool InSearchGridBoundary(int i, int j) const;
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
     inline bool SearchNodeExists() const {return !nodeStack.empty();}
@@ -32,12 +32,12 @@ private:
 
     void UpdateRemainingTime(CNode* node);
 
-    double LawnmowerPlanValue(std::vector<TooN::Vector<3> > &lms, CompoundTarget* ct);
+    double LawnmowerPlanValue(std::vector<TooN::Vector<3> > &lms, const CompoundTarget *ct);
     void PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos);
     void AddTargetsToComponentGenerators(vector<TargetPolygon*> &newTargets, CNode* node);
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
     void SetCompoundTargetBoundaryFlags(CompoundTarget* ct);
-    void EnqueueCompoundTarget(CompoundTarget* ct);
+    void EnqueueCompoundTarget(const CompoundTarget *ct);
 
     void FindSubCells(CNode* n);
 
@@ -49,9 +49,9 @@ private:
     void SetupCostsValues_NoExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node);
     void SetupCostsValues_WithExtensibleTarget(std::vector<CompoundTarget*> &cur_targets, std::vector<CompoundTarget*> &extensible_targets, CNode* cur_node, bool delay);
 
-    void SeparateCompoundTargets(vector<CompoundTarget*> &all_targets, CNode* cur_search_node,
+    void SeparateCompoundTargets(const vector<CompoundTarget *> &all_targets, CNode* cur_search_node,
                                  vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);
-    bool NeighboursNode(CNode* n1, CNode* n2);
+    bool NeighboursNode(const CNode *n1, const CNode *n2) const;
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;

@@ -15,40 +15,41 @@ class TargetPolygon
         ~TargetPolygon();
 
         void glDraw();
-        void GetLawnmowerPlan(vector<Vector<3> > &v);
+        void GetLawnmowerPlan(vector<Vector<3> > &v) const;
         void MarkAsVisited();
         void MarkIgnored();
-        inline bool IsIgnored(){return ignored;}
+        inline bool IsIgnored() const {return ignored;}
         Vector<3> GetMiddlePos();
         void ReverseLawnmower();
-        inline Vector<3> FirstLMPos(){return lm.front();}
-        inline Vector<3> LastLMPos(){return lm.back();}
-        inline size_t LawnmowerSize(){return lm.size();}
+        inline Vector<3> FirstLMPos() const {return lm.front();}
+        inline Vector<3> LastLMPos() const {return lm.back();}
+        inline size_t LawnmowerSize() const {return lm.size();}
         void AddPolygon(TargetPolygon* p, bool changeLabels=true, bool process=true);
         //int GetLabel(){return label;}
         bool IsNeighbour(TargetPolygon *tp);
         inline void SetVisited(bool visited_){visited = visited_;}
-        double GetTargetRegionsArea();
-        void GetCells(vector<CNode*> &v, CNode* ofParent);
+        double GetTargetRegionsArea() const;
+        void GetCells(vector<CNode*> &v, const CNode *ofParent) const;
         inline void SetPolygonColor(Vector<3> color){pc=color;}
 
         void UpdateIsVisited();
 
         void OrBoundaryFlag(SIDE side, bool val);
         void SetBoundaryFlag(SIDE side, bool val);
-        bool GetBoundaryFlag(SIDE side);
-        bool IsNonBoundaryTarget();
+        bool GetBoundaryFlag(SIDE side) const;
+        bool IsNonBoundaryTarget() const;
         void ProcessPolygon();
-        inline bool HasParent(CNode* par){return parentSearchNodes.find(par)!=parentSearchNodes.end();}
-        inline Vector<3> GetCenter(){return center;}
-        bool IsInside(CNode* cell);
+        inline bool HasParent(CNode* par) const {return parentSearchNodes.find(par)!=parentSearchNodes.end();}
+        inline Vector<3> GetCenter() const {return center;}
+        bool IsInside(const CNode *cell) const;
 
     private:
         void ConvexHull();
         void FindBaseEdge();
-        double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
-        double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
-        bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3, TooN::Vector<3> p4, TooN::Vector<3> &intersection_p);
+        double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x) const;
+        double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x) const;
+        bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3,
+                                        TooN::Vector<3> p4, TooN::Vector<3> &intersection_p) const;
         void PlanLawnmower();
         void SetLawnmowerHeight();
         inline void PushLMwWypoint(TooN::Vector<3> v, const double wheight){lm.push_back(TooN::makeVector(v[0],v[1],wheight));}

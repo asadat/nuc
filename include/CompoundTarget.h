@@ -17,16 +17,16 @@ class CompoundTarget
         void glDraw();
 
         size_t size() const {return targets.size();}
-        bool IsNonBoundary(){return nonBoundary;}
+        bool IsNonBoundary() const {return nonBoundary;}
         void ResetBoundaries();
-        bool IsExtensible();
-        void SetIsCurChildFlag(CNode* cur_search_node);
-        void GetBoundarySeachNodes(vector<CNode*> &bnodes);
+        bool IsExtensible() const;
+        void SetIsCurChildFlag(CNode *cur_search_node);
+        void GetBoundarySeachNodes(vector<CNode*> &bnodes) const;
         void CalculateValue();
         void SetIgnored();
         void SetVisited();
-        void GetLawnmowerPlan(vector<Vector<3> > &lm_plan);
-        bool IsInside(CNode* cell);
+        void GetLawnmowerPlan(vector<Vector<3> > &lm_plan) const;
+        bool IsInside(const CNode *cell) const;
     private:
         vector<TargetPolygon*> targets;
 

@@ -76,17 +76,17 @@ void TargetPolygon::OrBoundaryFlag(SIDE side, bool val)
     }
 }
 
-bool TargetPolygon::GetBoundaryFlag(SIDE side)
+bool TargetPolygon::GetBoundaryFlag(SIDE side) const
 {
     return boundaryFLags[(int)side];
 }
 
-bool TargetPolygon::IsNonBoundaryTarget()
+bool TargetPolygon::IsNonBoundaryTarget() const
 {
     return !(boundaryFLags[0]||boundaryFLags[1]||boundaryFLags[2]||boundaryFLags[3]);
 }
 
-bool TargetPolygon::IsInside(CNode *cell)
+bool TargetPolygon::IsInside(const CNode *cell) const
 {
     for(size_t i=0; i<cells.size(); i++)
         if(cells[i] == cell)
@@ -140,12 +140,12 @@ void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels, bool process
         ProcessPolygon();
 }
 
-double TargetPolygon::GetTargetRegionsArea()
+double TargetPolygon::GetTargetRegionsArea() const
 {
     return ((double)cells.size())*cellW*cellW;
 }
 
-void TargetPolygon::GetCells(vector<CNode *> &v, CNode* ofParent)
+void TargetPolygon::GetCells(vector<CNode *> &v, const CNode* ofParent) const
 {
     if(!ofParent)
         copy(cells.begin(), cells.end(), back_inserter(v));
@@ -159,7 +159,7 @@ void TargetPolygon::GetCells(vector<CNode *> &v, CNode* ofParent)
     }
 }
 
-void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v)
+void TargetPolygon::GetLawnmowerPlan(vector<Vector<3> >  & v) const
 {
     if(!lm.empty())
         std::copy(lm.begin(), lm.end(), std::back_inserter(v));
@@ -421,19 +421,20 @@ void TargetPolygon::FindBaseEdge()
     }
 }
 
-double TargetPolygon::pointToLineDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
+double TargetPolygon::pointToLineDist(Vector<3> p1, Vector<3> p2, Vector<3> x) const
 {
     double d = fabs((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
     return d;
 }
 
-double TargetPolygon::pointToLineSignedDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
+double TargetPolygon::pointToLineSignedDist(Vector<3> p1, Vector<3> p2, Vector<3> x) const
 {
     double d = ((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
     return d;
 }
 
-bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vector<3> p2, Vector<3> p3, Vector<3> &intersection_p)
+bool TargetPolygon::GetLineSegmentIntersection(Vector<3> p0, Vector<3> p1, Vector<3> p2,
+                                               Vector<3> p3, Vector<3> &intersection_p) const
 {
     float p0_x = p0[0], p0_y = p0[1], p1_x = p1[0], p1_y=p1[1], p2_x = p2[0], p2_y=p2[1], p3_x = p3[0], p3_y=p3[1];
 
