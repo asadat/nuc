@@ -750,11 +750,39 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
 
         ct.GetLawnmowerPlan(partial_lm);
         partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
-        while(partial_cost > budget)
+
+        bool lastPoped_flag = false;
+        Vector<3> lastPoped;
+
+        while(partial_cost > budget && !partial_lm.empty())
         {
+            lastPoped_flag = true;
+            lastPoped = partial_lm.back();
             partial_lm.pop_back();
+
             partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
         }
+
+        if(lastPoped_flag && !partial_lm.empty())
+        {
+            size_t count = 0;
+            size_t l = partial_lm.size();
+            partial_lm.push_back(lastPoped);
+            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+            while(partial_cost > budget)
+            {
+                partial_lm[l] += 0.5*(partial_lm[l-1]-partial_lm[l]);
+                partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+
+                if(count++ > 5)
+                {
+                    partial_lm.pop_back();
+                    partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+                    break;
+                }
+            }
+        }
+
 
         partial_value = LawnmowerPlanValue(partial_lm, &ct);
 

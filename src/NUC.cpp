@@ -92,6 +92,7 @@ void NUC::LoadPriorFromFile()
 {
     std::string fn = NUCParam::nuc_dir+"/";
     fn += NUCParam::prior_file_name;
+    ROS_INFO("Opening prior %s", fn.c_str());
     cv::Mat img = cv::imread(fn.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
     cv::Mat priorImg;
 
@@ -363,7 +364,7 @@ void NUC::glDraw()
      if(drawPath && pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
-         glLineWidth(5);
+         glLineWidth(3);
          glBegin(GL_LINES);
          for(unsigned int i=1; i<pathHistory.size()-1;i++)
          {
