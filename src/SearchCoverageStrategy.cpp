@@ -234,151 +234,167 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
 {
     if(searchNode && !newTargets.empty())
-    {
-        long int selector = 1;
-        long int maxSelector = 1 << newTargets.size();
-        long int bestSelector = 0;
-        double bestArea = 0;
+    {        
+        CompoundTarget ct;
+        for(size_t i=0; i<newTargets.size(); i++)
+            ct.AddTarget(newTargets[i]);
 
-        // keep track of the min cost plan
-        // in case cannot make complete coverage
-        double minCost = 99999999;
-        long int minCostSelector = 0;
+        TargetTour tt;
+        tt.GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
-        bool flagAll = false;
-        if(newTargets.size() > 63)
-            flagAll = true;
+        double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
+        double time_budget = remaining_time - coverage_time;
 
-        for(; selector < maxSelector && !flagAll; selector++)
-        {
-            double area=0;
-            vector<CNode*> unionCells;
-            for(size_t i=0; i < newTargets.size(); i++ )
-            {
-                long int b = 1 << (i);
-                if(b & selector)
-                {
-                    newTargets[i]->GetCells(unionCells, NULL);
-                    area += newTargets[i]->GetTargetRegionsArea();
-                }
-            }
+        vector<CompoundTarget*> cts;
+        cts.push_back(&ct);
+        PartiallyCoverTargets(cts, time_budget, node->GetMAVWaypoint(), GetNextSearchPos());
 
-            if(unionCells.empty())
-                continue;
+        std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
 
-            TargetPolygon * tmpPoly = new TargetPolygon(unionCells, NULL);
-            vector<Vector<3> > tmp_target_lm;
-            tmpPoly->GetLawnmowerPlan(tmp_target_lm);
+//        long int selector = 1;
+//        long int maxSelector = 1 << newTargets.size();
+//        long int bestSelector = 0;
+//        double bestArea = 0;
 
-            // generate a plan which visits the current target and the rest of the search pattern
-            vector<Vector<3> > tmp_plan;
-            tmp_plan.push_back(prevGoal);
-            tmp_plan.push_back(node->GetMAVWaypoint());
-            copy(tmp_target_lm.begin(), tmp_target_lm.end(), back_inserter(tmp_plan));
-            for(size_t i = 0; i < nodeStack.size(); i++)
-                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-            tmp_plan.push_back(startPos);
+//        // keep track of the min cost plan
+//        // in case cannot make complete coverage
+//        double minCost = 99999999;
+//        long int minCostSelector = 0;
 
-            double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
+//        bool flagAll = false;
+//        if(newTargets.size() > 63)
+//            flagAll = true;
 
-            if(total_time < remaining_time)
-            {
-                if(bestArea < area)
-                {
-                    bestArea = area;
-                    bestSelector = selector;
-                }
-            }
+//        for(; selector < maxSelector && !flagAll; selector++)
+//        {
+//            double area=0;
+//            vector<CNode*> unionCells;
+//            for(size_t i=0; i < newTargets.size(); i++ )
+//            {
+//                long int b = 1 << (i);
+//                if(b & selector)
+//                {
+//                    newTargets[i]->GetCells(unionCells, NULL);
+//                    area += newTargets[i]->GetTargetRegionsArea();
+//                }
+//            }
 
-            if(total_time < minCost)
-            {
-                minCost = total_time;
-                minCostSelector = selector;
-            }
-        }
+//            if(unionCells.empty())
+//                continue;
 
+//            TargetPolygon * tmpPoly = new TargetPolygon(unionCells, NULL);
+//            vector<Vector<3> > tmp_target_lm;
+//            tmpPoly->GetLawnmowerPlan(tmp_target_lm);
 
-        // if complete coverage was impossible
-        // create partial coverage
-        if(bestSelector == 0)
-            bestSelector = minCostSelector;
+//            // generate a plan which visits the current target and the rest of the search pattern
+//            vector<Vector<3> > tmp_plan;
+//            tmp_plan.push_back(prevGoal);
+//            tmp_plan.push_back(node->GetMAVWaypoint());
+//            copy(tmp_target_lm.begin(), tmp_target_lm.end(), back_inserter(tmp_plan));
+//            for(size_t i = 0; i < nodeStack.size(); i++)
+//                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
+//            tmp_plan.push_back(startPos);
 
-        int firstTarget = -1;
+//            double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
 
-        if(flagAll)
-            firstTarget = 0;
+//            if(total_time < remaining_time)
+//            {
+//                if(bestArea < area)
+//                {
+//                    bestArea = area;
+//                    bestSelector = selector;
+//                }
+//            }
 
-        // Add the selected polygons to the first selected polygon
-        for(size_t i=0; i < newTargets.size(); i++ )
-        {
-            long int b = 1 << (i);
-            if(b & bestSelector || flagAll)
-            {
-                if(firstTarget > -1)
-                {
-                    newTargets[firstTarget]->AddPolygon(newTargets[i]);
-                }
-                else
-                {
-                    firstTarget = i;
-                }
-            }
-        }
+//            if(total_time < minCost)
+//            {
+//                minCost = total_time;
+//                minCostSelector = selector;
+//            }
+//        }
 
 
-        if(firstTarget == -1)
-        {
-            ///for(size_t i=0; i < newTargets.size(); i++)
-            //    targets.push_back(newTargets[i]);
-            return;
-        }
+//        // if complete coverage was impossible
+//        // create partial coverage
+//        if(bestSelector == 0)
+//            bestSelector = minCostSelector;
 
-        // delete the selected polygons except the first one
-        int sze = newTargets.size()-1;
-        for(int i=sze; i > 0; i-- )
-        {
-            long int b = 1 << (i);
-            if(b & bestSelector || flagAll)
-            {
-                TargetPolygon * tmp = newTargets[i];
-                newTargets.erase(newTargets.begin()+i);
-                delete tmp;
-            }
-        }
+//        int firstTarget = -1;
 
-        // add the aggregate lawnmower plan to the current plan
-        for(size_t i=0; i < newTargets.size(); i++)
-        {
-            if((int)i == firstTarget)
-            {
-                newTargets[i]->GetLawnmowerPlan(target_lms);
-                newTargets[i]->MarkAsVisited();
-                high_res_coverage += newTargets[i]->GetTargetRegionsArea();
+//        if(flagAll)
+//            firstTarget = 0;
 
-                while(!target_lms.empty())
-                {
-                    //check if we should create partial plan
-                    vector<Vector<3> > tmp_plan;
-                    tmp_plan.push_back(prevGoal);
-                    tmp_plan.push_back(node->GetMAVWaypoint());
-                    copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
-                    for(size_t i = 0; i < nodeStack.size(); i++)
-                        tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-                    tmp_plan.push_back(startPos);
+//        // Add the selected polygons to the first selected polygon
+//        for(size_t i=0; i < newTargets.size(); i++ )
+//        {
+//            long int b = 1 << (i);
+//            if(b & bestSelector || flagAll)
+//            {
+//                if(firstTarget > -1)
+//                {
+//                    newTargets[firstTarget]->AddPolygon(newTargets[i]);
+//                }
+//                else
+//                {
+//                    firstTarget = i;
+//                }
+//            }
+//        }
 
-                    double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
 
-                    if(total_time < remaining_time)
-                    {
-                        targets.push_back(newTargets[i]);
-                        break;
-                    }
-                    else
-                       target_lms.pop_back();
-                }
+//        if(firstTarget == -1)
+//        {
+//            ///for(size_t i=0; i < newTargets.size(); i++)
+//            //    targets.push_back(newTargets[i]);
+//            return;
+//        }
 
-            }
-        }
+//        // delete the selected polygons except the first one
+//        int sze = newTargets.size()-1;
+//        for(int i=sze; i > 0; i-- )
+//        {
+//            long int b = 1 << (i);
+//            if(b & bestSelector || flagAll)
+//            {
+//                TargetPolygon * tmp = newTargets[i];
+//                newTargets.erase(newTargets.begin()+i);
+//                delete tmp;
+//            }
+//        }
+
+//        // add the aggregate lawnmower plan to the current plan
+//        for(size_t i=0; i < newTargets.size(); i++)
+//        {
+//            if((int)i == firstTarget)
+//            {
+//                newTargets[i]->GetLawnmowerPlan(target_lms);
+//                newTargets[i]->MarkAsVisited();
+//                high_res_coverage += newTargets[i]->GetTargetRegionsArea();
+
+//                while(!target_lms.empty())
+//                {
+//                    //check if we should create partial plan
+//                    vector<Vector<3> > tmp_plan;
+//                    tmp_plan.push_back(prevGoal);
+//                    tmp_plan.push_back(node->GetMAVWaypoint());
+//                    copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
+//                    for(size_t i = 0; i < nodeStack.size(); i++)
+//                        tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
+//                    tmp_plan.push_back(startPos);
+
+//                    double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
+
+//                    if(total_time < remaining_time)
+//                    {
+//                        targets.push_back(newTargets[i]);
+//                        break;
+//                    }
+//                    else
+//                       target_lms.pop_back();
+//                }
+
+//            }
+//        }
     }
 }
 
