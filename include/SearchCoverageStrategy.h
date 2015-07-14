@@ -79,10 +79,12 @@ private:
     TooN::Vector<3> startPos;
     TooN::Vector<3> prevGoal;
 
+    bool drawFootprints;
+    std::vector<TooN::Vector<3> > hi_res_waypoints;
+
     // delayed_greedy
     set<CompoundTarget*> targets2visit;
     double high_res_coverage;
-
     std::vector<TooN::Vector<3> > turningLocations;
 };
 

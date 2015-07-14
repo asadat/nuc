@@ -11,8 +11,11 @@
 using namespace std;
 using namespace TooN;
 
+extern void glVertex(Vector<3>);
+
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
+    drawFootprints = false;
     high_res_coverage=0;
 
     dummy = new CNode(makeVector(0,0,0,0));
@@ -36,6 +39,7 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
 {
+    drawFootprints = false;
     CleanupTargets();
     CleanupComponents();
 
@@ -116,6 +120,7 @@ CNode* SearchCoverageStrategy::GetNextNode()
         dummy->visited = false;
         target_lms.erase(target_lms.begin());
         result = dummy;
+        hi_res_waypoints.push_back(dummy->pos);
     }
     else if(!nodeStack.empty())
     {
@@ -1380,12 +1385,44 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
     }
 }
 
-
 void SearchCoverageStrategy::glDraw()
-{    
-//    for(size_t j=0; j<targets.size(); j++)
-//        targets[j]->glDraw();
+{
+    if(drawFootprints && hi_res_waypoints.size() > 2)
+    {
+        double half_fp = hi_res_waypoints[0][2] * tan(NUCParam::FOV*0.5);
 
+        glColor4f(1,1,0,0.5);
+        glBegin(GL_QUADS);
+        for(size_t i=0; i+1<hi_res_waypoints.size(); i++)
+        {
+            Vector<3> p1 = hi_res_waypoints[i];
+            Vector<3> p2 = hi_res_waypoints[i+1];
+
+            double dist = D2(p1,p2);
+            do
+            {
+                Vector<3> dir = p2-p1;
+                normalize(dir);
+                Vector<3> orthDir = makeVector(-dir[1], dir[0], dir[2]);
+
+                Vector<3> p[4];
+                p[0] = p1 + ( half_fp*dir+half_fp*orthDir);
+                p[1] = p1 + (-half_fp*dir+half_fp*orthDir);
+                p[2] = p1 + (-half_fp*dir-half_fp*orthDir);
+                p[3] = p1 + ( half_fp*dir-half_fp*orthDir);
+
+                glVertex(p[0]);
+                glVertex(p[1]);
+                glVertex(p[2]);
+                glVertex(p[3]);
+
+                p1 += dir;
+                dist = D2(p1,p2);
+
+            }while(dist > half_fp*half_fp);
+        }
+        glEnd();
+    }
 
     glColor3f(0.3,0.8,0.9);
     glLineWidth(2);
@@ -1527,7 +1564,11 @@ CNode * SearchCoverageStrategy::GetSearchNode(int i, int j) const
 
 void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
 {
-
+    if(key['4'])
+    {
+        drawFootprints = !drawFootprints;
+        updateKey = false;
+    }
 }
 
 void SearchCoverageStrategy::CleanupComponents()
