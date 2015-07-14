@@ -94,10 +94,11 @@ void CompoundTarget::GetBoundarySeachNodes(vector<CNode *> &bnodes) const
 
 void CompoundTarget::CalculateValue()
 {
+    //ROS_INFO("compound target value:");
     value = 0;
     for(size_t i=0; i<targets.size(); i++)
     {
-        value = targets[i]->GetTargetRegionsArea();
+        value += targets[i]->GetTargetRegionsArea();
     }
 }
 

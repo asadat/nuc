@@ -228,7 +228,6 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     prevGoal = node->GetMAVWaypoint();
 
     //ROS_INFO("returning from on_reached_goal ...");
-
 }
 
 void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<TargetPolygon*> &newTargets, bool searchNode)
@@ -407,292 +406,117 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
             CleanupTargets();
             FindClusters(false, targets);
 
+            CompoundTarget ct;
+            for(size_t i=0; i<targets.size(); i++)
+                ct.AddTarget(targets[i]);
 
-            vector<Entity*> t_list;
-            vector<Entity*> tsp_list;
+            TargetTour tt;
+            tt.GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
-            Entity * sn = new Entity();
-            sn->start = true;
-            sn->end = false;
-            sn->pos = node->GetMAVWaypoint();
-            t_list.push_back(sn);
+            //double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
+            double time_budget = remaining_time;
 
-            Entity * en = new Entity();
-            en->start = false;
-            en->end = true;
-            en->pos = visitedNodes.front()->GetMAVWaypoint();
-            t_list.push_back(en);
+            vector<CompoundTarget*> cts;
+            cts.push_back(&ct);
+            PartiallyCoverTargets(cts, time_budget, node->GetMAVWaypoint(), GetNextSearchPos());
 
-            for(size_t i=0; i < targets.size(); i++)
-            {
-                if(targets[i]->LawnmowerSize() <= 0)
-                    continue;
+            //std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
 
-                Entity * n = new Entity();
-                n->start = false;
-                n->end = false;
-                n->pos = targets[i]->GetMiddlePos();
-                n->nodeIdx = i;
-                t_list.push_back(n);
-            }
+//            vector<Entity*> t_list;
+//            vector<Entity*> tsp_list;
 
-            TSP tsp;
-            tsp.GetShortestPath(t_list, tsp_list);
+//            Entity * sn = new Entity();
+//            sn->start = true;
+//            sn->end = false;
+//            sn->pos = node->GetMAVWaypoint();
+//            t_list.push_back(sn);
 
-            vector<TargetPolygon*> tsp_target;
-            for(size_t i=0; i < tsp_list.size(); i++)
-            {
-                if(tsp_list[i]->start || tsp_list[i]->end)
-                    continue;
-                tsp_target.push_back(targets[tsp_list[i]->nodeIdx]);
-            }
+//            Entity * en = new Entity();
+//            en->start = false;
+//            en->end = true;
+//            en->pos = visitedNodes.front()->GetMAVWaypoint();
+//            t_list.push_back(en);
 
-            // optimizing target lawnmower start and end
-            for(size_t i=0; i < tsp_target.size(); i++)
-            {
-                bool flag = false;
+//            for(size_t i=0; i < targets.size(); i++)
+//            {
+//                if(targets[i]->LawnmowerSize() <= 0)
+//                    continue;
 
-                if(i==0)
-                {
-                    if(D2(node->GetMAVWaypoint(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
-                            D2(node->GetMAVWaypoint(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
-                    {
-                        tsp_target[i]->ReverseLawnmower();
-                        flag = true;
-                    }
-                }
-                else if(i+1 == tsp_target.size())
-                {
-                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), en->pos) >
-                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), en->pos))
-                    {
-                        tsp_target[i]->ReverseLawnmower();
-                        flag = true;
-                    }
-                }
-                else
-                {
-                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
-                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
-                    {
-                        tsp_target[i]->ReverseLawnmower();
-                        flag = true;
-                    }
-                }
+//                Entity * n = new Entity();
+//                n->start = false;
+//                n->end = false;
+//                n->pos = targets[i]->GetMiddlePos();
+//                n->nodeIdx = i;
+//                t_list.push_back(n);
+//            }
 
-                if(flag)
-                    i++;
-            }
+//            TSP tsp;
+//            tsp.GetShortestPath(t_list, tsp_list);
 
-            for(size_t i=0; i < tsp_target.size(); i++)
-            {
-                tsp_target[i]->GetLawnmowerPlan(target_lms);
-                tsp_target[i]->MarkAsVisited();
-            }
+//            vector<TargetPolygon*> tsp_target;
+//            for(size_t i=0; i < tsp_list.size(); i++)
+//            {
+//                if(tsp_list[i]->start || tsp_list[i]->end)
+//                    continue;
+//                tsp_target.push_back(targets[tsp_list[i]->nodeIdx]);
+//            }
+
+//            // optimizing target lawnmower start and end
+//            for(size_t i=0; i < tsp_target.size(); i++)
+//            {
+//                bool flag = false;
+
+//                if(i==0)
+//                {
+//                    if(D2(node->GetMAVWaypoint(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
+//                            D2(node->GetMAVWaypoint(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
+//                    {
+//                        tsp_target[i]->ReverseLawnmower();
+//                        flag = true;
+//                    }
+//                }
+//                else if(i+1 == tsp_target.size())
+//                {
+//                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), en->pos) >
+//                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), en->pos))
+//                    {
+//                        tsp_target[i]->ReverseLawnmower();
+//                        flag = true;
+//                    }
+//                }
+//                else
+//                {
+//                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
+//                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
+//                    {
+//                        tsp_target[i]->ReverseLawnmower();
+//                        flag = true;
+//                    }
+//                }
+
+//                if(flag)
+//                    i++;
+//            }
+
+//            for(size_t i=0; i < tsp_target.size(); i++)
+//            {
+//                tsp_target[i]->GetLawnmowerPlan(target_lms);
+//                tsp_target[i]->MarkAsVisited();
+//            }
 
 
-            delete sn;
-            delete en;
+//            delete sn;
+//            delete en;
 
-            tsp_list.clear();
-            while(t_list.empty())
-            {
-                Entity* e = t_list.back();
-                t_list.pop_back();
-                delete e;
-            }
+//            tsp_list.clear();
+//            while(t_list.empty())
+//            {
+//                Entity* e = t_list.back();
+//                t_list.pop_back();
+//                delete e;
+//            }
 
-            reverse(target_lms.begin(), target_lms.end());
-        }
-    }
-}
-
-double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, const CompoundTarget* ct)
-{
-    double value = 0;
-    set<CNode*> covered_cells;
-
-    double checkPoint_dist = 0.5*NUCParam::high_res_cells*TargetPolygon::cellW;
-    for(size_t i=0; i+1<lms.size(); i++)
-    {
-        Vector<3> p= lms[i];
-        Vector<3> dir = lms[i+1]-lms[i];
-        normalize(dir);
-        tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
-
-        while(D1(p,lms[i+1]) > checkPoint_dist)
-        {
-            p = checkPoint_dist*dir+p;
-            tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
-        }
-    }
-
-    for(auto it = covered_cells.begin(); it != covered_cells.end(); ++it)
-        if(ct->IsInside(*it))
-        {
-            value += ((*it)->footPrint[0]-(*it)->footPrint[2])*((*it)->footPrint[0]-(*it)->footPrint[2]);
-        }
-
-    return value;
-}
-
-void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget,
-                                                   TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
-{
-    TargetTour tour;
-    vector<Vector<3> > best_partial_lm;
-    double best_partial_value = 0;
-
-    for(size_t i=0; i<cts.size(); i++)
-    {
-        CompoundTarget &ct = *cts[i];
-
-        vector<Vector<3> > partial_lm;
-        double partial_cost = 0;
-        double partial_value = 0;
-
-        ct.GetLawnmowerPlan(partial_lm);
-        partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
-        while(partial_cost > budget)
-        {
-            partial_lm.pop_back();
-            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
-        }
-
-        partial_value = LawnmowerPlanValue(partial_lm, &ct);
-
-        if(partial_value > best_partial_value)
-        {
-            best_partial_value = partial_value;
-            best_partial_lm.clear();
-            copy(partial_lm.begin(), partial_lm.end(), back_inserter(best_partial_lm));
-        }
-    }
-
-    high_res_coverage += best_partial_value;
-    copy(best_partial_lm.begin(), best_partial_lm.end(), back_inserter(target_lms));
-}
-
-void SearchCoverageStrategy::AddTargetsToComponentGenerators(vector<TargetPolygon *> &newTargets, CNode* node)
-{
-    for(size_t i=0; i < newTargets.size(); i++)
-    {
-       SetPolygonBoundaryFlags(newTargets[i], node, false);
-    }
-
-    for(size_t i=0; i < newTargets.size(); i++)
-    {
-        if(newTargets.size()==1)
-        {
-            gc.AddNode(newTargets[0]);
-        }
-
-        if(newTargets[i]->IsNonBoundaryTarget())
-        {
-            double bminDist = 99999999;
-            TargetPolygon* nearestBoundaryTarget = NULL;
-
-            for(size_t j=0; j<newTargets.size(); j++)
-            {
-                if(i==j)
-                    continue;
-
-                if(!newTargets[j]->IsNonBoundaryTarget())
-                {
-                    Vector<3> v = newTargets[i]->GetCenter()-newTargets[j]->GetCenter();
-                    double dist = v*v;
-                    if(bminDist > dist)
-                    {
-                        bminDist = dist;
-                        nearestBoundaryTarget = newTargets[j];
-                    }
-                }
-            }
-
-            if(nearestBoundaryTarget != NULL)
-            {
-                gc.AddEdge(newTargets[i], nearestBoundaryTarget, true);
-            }
-            else
-            {
-                for(size_t j=0; j<newTargets.size(); j++)
-                {
-                    if(newTargets[j]->IsNonBoundaryTarget())
-                        gc.AddEdge(newTargets[i], newTargets[j], true);
-                }
-            }
-        }
-
-        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
-        {
-            int gx = node->grd_x-1;
-            int gy = node->grd_y;
-            CNode* ln = GetSearchNode(gx, gy);
-
-            if(ln && ln->visited)
-            {
-                for(size_t j = 0; j < ln->targets.size(); j++)
-                {
-                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
-                    {
-                        gc.AddEdge(newTargets[i], ln->targets[j], false);
-                    }
-                }
-            }
-        }
-
-        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::R))
-        {
-            int gx = node->grd_x+1;
-            int gy = node->grd_y;
-            CNode* ln = GetSearchNode(gx, gy);
-
-            if(ln && ln->visited)
-            {
-                for(size_t j = 0; j < ln->targets.size(); j++)
-                {
-                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
-                    {
-                        gc.AddEdge(newTargets[i], ln->targets[j], false);
-                    }
-                }
-            }
-        }
-
-        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::U))
-        {
-            int gx = node->grd_x;
-            int gy = node->grd_y+1;
-            CNode* ln = GetSearchNode(gx, gy);
-
-            if(ln && ln->visited)
-            {
-                for(size_t j = 0; j < ln->targets.size(); j++)
-                {
-                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
-                    {
-                        gc.AddEdge(newTargets[i], ln->targets[j], false);
-                    }
-                }
-            }
-        }
-
-        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::D))
-        {
-            int gx = node->grd_x;
-            int gy = node->grd_y-1;
-            CNode* ln = GetSearchNode(gx, gy);
-
-            if(ln && ln->visited)
-            {
-                for(size_t j = 0; j < ln->targets.size(); j++)
-                {
-                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
-                    {
-                        gc.AddEdge(newTargets[i], ln->targets[j], false);
-                    }
-                }
-            }
+//            reverse(target_lms.begin(), target_lms.end());
         }
     }
 }
@@ -880,6 +704,199 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     }
 }
 
+double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, const CompoundTarget* ct)
+{
+    double value = 0;
+    set<CNode*> covered_cells;
+
+    double checkPoint_dist = 0.5*NUCParam::high_res_cells*TargetPolygon::cellW;
+    for(size_t i=0; i+1<lms.size(); i++)
+    {
+        Vector<3> p= lms[i];
+        Vector<3> dir = lms[i+1]-lms[i];
+        normalize(dir);
+        tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
+
+        while(D1(p,lms[i+1]) > checkPoint_dist)
+        {
+            p = 0.5*checkPoint_dist*dir+p;
+            tree->GetLeavesInRange(covered_cells, checkPoint_dist, p);
+        }
+    }
+
+    for(auto it = covered_cells.begin(); it != covered_cells.end(); ++it)
+        if(ct->IsInside(*it))
+        {
+            value += ((*it)->footPrint[0]-(*it)->footPrint[2])*((*it)->footPrint[0]-(*it)->footPrint[2]);
+        }
+
+    return value;
+}
+
+void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget,
+                                                   TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
+{
+    TargetTour tour;
+    vector<Vector<3> > best_partial_lm;
+    double best_partial_value = 0;
+
+    for(size_t i=0; i<cts.size(); i++)
+    {
+        CompoundTarget &ct = *cts[i];
+
+        vector<Vector<3> > partial_lm;
+        double partial_cost = 0;
+        double partial_value = 0;
+
+        ct.GetLawnmowerPlan(partial_lm);
+        partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+        while(partial_cost > budget)
+        {
+            partial_lm.pop_back();
+            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+        }
+
+        partial_value = LawnmowerPlanValue(partial_lm, &ct);
+
+        if(partial_value > best_partial_value)
+        {
+            best_partial_value = partial_value;
+            best_partial_lm.clear();
+            copy(partial_lm.begin(), partial_lm.end(), back_inserter(best_partial_lm));
+        }
+    }
+
+    high_res_coverage += best_partial_value;
+    copy(best_partial_lm.begin(), best_partial_lm.end(), back_inserter(target_lms));
+    ROS_INFO("Partial Coverage Value: %.2f", best_partial_value);
+}
+
+void SearchCoverageStrategy::AddTargetsToComponentGenerators(vector<TargetPolygon *> &newTargets, CNode* node)
+{
+    for(size_t i=0; i < newTargets.size(); i++)
+    {
+       SetPolygonBoundaryFlags(newTargets[i], node, false);
+    }
+
+    for(size_t i=0; i < newTargets.size(); i++)
+    {
+        if(newTargets.size()==1)
+        {
+            gc.AddNode(newTargets[0]);
+        }
+
+        if(newTargets[i]->IsNonBoundaryTarget())
+        {
+            double bminDist = 99999999;
+            TargetPolygon* nearestBoundaryTarget = NULL;
+
+            for(size_t j=0; j<newTargets.size(); j++)
+            {
+                if(i==j)
+                    continue;
+
+                if(!newTargets[j]->IsNonBoundaryTarget())
+                {
+                    Vector<3> v = newTargets[i]->GetCenter()-newTargets[j]->GetCenter();
+                    double dist = v*v;
+                    if(bminDist > dist)
+                    {
+                        bminDist = dist;
+                        nearestBoundaryTarget = newTargets[j];
+                    }
+                }
+            }
+
+            if(nearestBoundaryTarget != NULL)
+            {
+                gc.AddEdge(newTargets[i], nearestBoundaryTarget, true);
+            }
+            else
+            {
+                for(size_t j=0; j<newTargets.size(); j++)
+                {
+                    if(newTargets[j]->IsNonBoundaryTarget())
+                        gc.AddEdge(newTargets[i], newTargets[j], true);
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::L))
+        {
+            int gx = node->grd_x-1;
+            int gy = node->grd_y;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::R))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::R))
+        {
+            int gx = node->grd_x+1;
+            int gy = node->grd_y;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::L))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::U))
+        {
+            int gx = node->grd_x;
+            int gy = node->grd_y+1;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::D))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+
+        if(newTargets[i]->GetBoundaryFlag(TargetPolygon::D))
+        {
+            int gx = node->grd_x;
+            int gy = node->grd_y-1;
+            CNode* ln = GetSearchNode(gx, gy);
+
+            if(ln && ln->visited)
+            {
+                for(size_t j = 0; j < ln->targets.size(); j++)
+                {
+                    if(!ln->targets[j]->ignored && ln->targets[j]->GetBoundaryFlag(TargetPolygon::U))
+                    {
+                        gc.AddEdge(newTargets[i], ln->targets[j], false);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 void SearchCoverageStrategy::EnqueueCompoundTarget(const CompoundTarget *ct)
 {
     high_res_coverage += ct->value;
@@ -966,7 +983,7 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
             minNode = cur_node;
         }
 
-        ROS_INFO("Setting cost: %f cur_child:%d delay:%d #nds:%lu", minCost, v.cur_child, delay, nds.size());
+        //ROS_INFO("Setting cost: %f cur_child:%d delay:%d #nds:%lu", minCost, v.cur_child, delay, nds.size());
         v.startNode = minNode;
         v.cost = minCost;
     }
