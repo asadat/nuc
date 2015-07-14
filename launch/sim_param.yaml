@@ -4,7 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 1.9
 speed: 4
-policy: delayed_greedy
+policy: delayed
 strategy: scs
 area_length: 64.0
 area_rotation: 0.0
@@ -12,9 +12,9 @@ logging: false
 patches: 3
 percent_interesting: 50.0
 auto_exit: false
-bypass_controller: false
+bypass_controller: true
 prob_r: 0.5
-prior_file_name: prior3.jpg
+prior_file_name: prior4.jpg
 high_res_cells: 3
 time_limit: 800
 average_speed: 1.0

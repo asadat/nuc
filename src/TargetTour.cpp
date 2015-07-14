@@ -3,6 +3,10 @@
 
 int TargetComp(TargetPolygon* tp1, TargetPolygon* tp2){return tp1->GetCenter()[0] > tp2->GetCenter()[0];}
 
+int RandomNum (int i)
+{
+    return std::rand()%i;
+}
 
 double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> start, Vector<3> end)
 {
@@ -13,17 +17,34 @@ double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> star
 
     std::sort(tmp.begin(), tmp.end(), TargetComp);
 
-    do
+    if(targets.size() > 7)
     {
-        double pcost = GetTourCost(tmp, start, end);
-        if(pcost < cost)
+        for(unsigned int i=0; i<10000; i++)
         {
-            cost = pcost;
-            targets.clear();
-            copy(tmp.begin(), tmp.end(), back_inserter(targets));
+            std::random_shuffle(tmp.begin(), tmp.end(), RandomNum);
+            double pcost = GetTourCost(tmp, start, end);
+            if(pcost < cost)
+            {
+                cost = pcost;
+                targets.clear();
+                copy(tmp.begin(), tmp.end(), back_inserter(targets));
+            }
         }
+    }
+    else
+    {
+        do
+        {
+            double pcost = GetTourCost(tmp, start, end);
+            if(pcost < cost)
+            {
+                cost = pcost;
+                targets.clear();
+                copy(tmp.begin(), tmp.end(), back_inserter(targets));
+            }
 
-    }while(next_permutation(targets.begin(), targets.end()));
+        }while(next_permutation(targets.begin(), targets.end()));
+    }
 
     return cost;
 }
