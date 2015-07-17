@@ -120,7 +120,8 @@ CNode* SearchCoverageStrategy::GetNextNode()
         dummy->visited = false;
         target_lms.erase(target_lms.begin());
         result = dummy;
-        hi_res_waypoints.push_back(dummy->pos);
+        Vector<3> tmp = dummy->pos;
+        hi_res_waypoints.push_back(tmp);
     }
     else if(!nodeStack.empty())
     {
@@ -1421,6 +1422,7 @@ void SearchCoverageStrategy::glDraw()
 
             }while(dist > half_fp*half_fp);
         }
+
         glEnd();
     }
 

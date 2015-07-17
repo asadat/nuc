@@ -1,4 +1,5 @@
 #include "CompoundTarget.h"
+#include <boost/bind.hpp>
 #include <GL/glut.h>
 #include "ros/ros.h"
 
@@ -104,17 +105,11 @@ void CompoundTarget::CalculateValue()
 
 void CompoundTarget::SetIgnored()
 {
-    for(size_t i=0; i<targets.size(); i++)
-    {
-        targets[i]->MarkIgnored();
-    }
+    for_each(targets.begin(), targets.end(), boost::bind(&TargetPolygon::MarkIgnored, _1));
 }
 void CompoundTarget::SetVisited()
 {
-    for(size_t i=0; i<targets.size(); i++)
-    {
-        targets[i]->MarkAsVisited();
-    }
+    for_each(targets.begin(), targets.end(), boost::bind(&TargetPolygon::MarkAsVisited, _1));
 }
 
 void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan) const
