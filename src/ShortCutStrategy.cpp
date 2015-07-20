@@ -1,6 +1,7 @@
 #include "ShortCutStrategy.h"
 #include "GL/glut.h"
 #include <stdio.h>
+#include "ros/ros.h"
 
 ShortCutStrategy::ShortCutStrategy(CNode *root)
 {
@@ -28,18 +29,25 @@ CNode* ShortCutStrategy::GetNextNode()
         // pop the visited node
         nodeStack.pop_back();
 
-        if(last->children.empty()) //visited a leaf node
+        if(last->children.empty() || !last->IsNodeInteresting()) //visited a leaf node
         {
+            ROS_WARN("Visited a child");
             if(nodeStack.empty())
                 return NULL;
 
             CNode * node = nodeStack.back();
             if(node->depth < last->depth )
             {
+                ROS_WARN("Next node is at higher altitude");
+
                 if(node->waiting)
                 {
+                    ROS_WARN("Next node is waiting node");
+
                     if(node->VisitedInterestingDescendentExists())
                     {
+                        ROS_WARN("There are visited interesting descendents");
+
                         CNode * ignoredParent = nodeStack.back();
                         nodeStack.pop_back();
 
@@ -52,10 +60,13 @@ CNode* ShortCutStrategy::GetNextNode()
                         }
 
                         nodeStack.push_back(ignoredParent); // it will be poped out in the next call to get next node
+                        ROS_WARN("Recursive call");
                         return GetNextNode();
                     }
                     else
                     {
+                        ROS_WARN("no visited interesting descendents");
+
                         //printf("*** NO interesting visited node exits.!!\n");
                         //nodeStack.pop_back();
                         last = node;
@@ -64,8 +75,10 @@ CNode* ShortCutStrategy::GetNextNode()
                 }
                 else
                 {
+                    ROS_WARN("Node is not waiting");
+
                     std::vector<CNode*> branch;
-                    node->GetNearestLeafAndParents(last->pos, branch);
+                    node->GetNearestLeafAndParents(last->pos, branch, last->depth);
                     if(branch.empty())
                     {
                         printf("Somthing weired happend !!!\n");
@@ -82,6 +95,8 @@ CNode* ShortCutStrategy::GetNextNode()
                         nodeStack.push_back(pnode);
                     }
 
+                    ROS_WARN("Branch size: %lu", branch.size());
+
                     last->waiting = false;
                     last = branch.back();
                     return branch.back();
@@ -89,6 +104,8 @@ CNode* ShortCutStrategy::GetNextNode()
             }
             else
             {
+                ROS_WARN("Node at lower/equal altitude");
+
                 last = node;
                 return node;
             }
@@ -96,6 +113,8 @@ CNode* ShortCutStrategy::GetNextNode()
         }
         else
         {
+            ROS_WARN("descending if anything interesting exists");
+
             for(unsigned int i=0; i<last->children.size(); i++)
             {
                 CNode* child = last->children[i];

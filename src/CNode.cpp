@@ -16,6 +16,7 @@ double CNode::rootHeight = 0;
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    waiting = false;
     coverage = 0;
     isInterestingnessSet = false;
     visited = false;
@@ -146,7 +147,17 @@ void CNode::glDraw()
 
     if(drawEdges)
     {
-        glPointSize(3);
+        if(waiting)
+        {
+            glColor3f(1,0,0);
+            glPointSize(10);
+        }
+        else
+        {
+            glColor3f(0,1,0);
+            glPointSize(3);
+        }
+
         glBegin(GL_POINTS);
         glVertex3f(v2[0],v2[1],v2[2]);
         glEnd();
@@ -339,9 +350,9 @@ CNode* CNode::GetNearestLeaf(TooN::Vector<3> p)
     return children[minidx]->GetNearestLeaf(p);
 }
 
-void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list)
+void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list, int atDepth)
 {
-    if(children.empty())
+    if(children.empty() || depth >= atDepth)
         return;
 
     int minidx=0;
@@ -357,7 +368,7 @@ void CNode::GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & li
     }
 
     list.push_back(children[minidx]);
-    return children[minidx]->GetNearestLeafAndParents(p, list);
+    return children[minidx]->GetNearestLeafAndParents(p, list, atDepth);
 }
 
 void CNode::propagateCoverage(double height)

@@ -34,7 +34,7 @@ public:
 
     CNode* GetNearestNode(TooN::Vector<3> p);
     CNode* GetNearestLeaf(TooN::Vector<3> p);
-    void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list);
+    void GetNearestLeafAndParents(TooN::Vector<3> p, std::vector<CNode*> & list, int atDepth);
 
     Rect GetFootPrint(){return footPrint;}
 

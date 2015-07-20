@@ -4,12 +4,12 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 3.0
 speed: 0
-strategy: hi
+strategy: sc
 area_length: 32.0
 area_rotation: 0.0
 logging: false
 patches: 2
-percent_interesting: 40.0
+percent_interesting: 10.0
 auto_exit: false
-bypass_controller: true
-LML_start: 2
+bypass_controller: false
+LML_start: 0
