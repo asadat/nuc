@@ -51,6 +51,20 @@ CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
 
     if(populateChildren)
         PopulateChildren();
+
+    p1[0] = footPrint[0];
+    p1[1] = footPrint[1];
+    p2[0] = footPrint[2];
+    p2[1] = footPrint[3];
+
+    p3 = TooN::makeVector(p1[0], p2[1]);
+    p4 = TooN::makeVector(p2[0], p1[1]);
+
+    v1 = Rotation2D(p1, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+    v2 = Rotation2D(p3, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+    v3 = Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+    v4 = Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
+
 }
 
 CNode::~CNode()
@@ -315,27 +329,9 @@ void CNode::glDraw()
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
 
-
-
-        double dc = 0.0;
-        glLineWidth(1);
-
-        TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
-        p1[0] = footPrint[0];
-        p1[1] = footPrint[1];
-        p2[0] = footPrint[2];
-        p2[1] = footPrint[3];
-
-        p3 = TooN::makeVector(p1[0], p2[1]);
-        p4 = TooN::makeVector(p2[0], p1[1]);
-
-        v1 = TooN::makeVector(dc,dc)+Rotation2D(p1, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v2 = TooN::makeVector(dc,-dc)+Rotation2D(p3, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v3 = TooN::makeVector(-dc,-dc)+Rotation2D(p2, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-        v4 = TooN::makeVector(-dc,dc)+Rotation2D(p4, NUCParam::area_rotation,TooN::makeVector(NUCParam::cx, NUCParam::cy));
-
         if(IsLeaf())
         {
+            glLineWidth(1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             if(!visited)
             {
@@ -356,12 +352,18 @@ void CNode::glDraw()
                 glColor4f(cl[0],cl[1],cl[2],1);
             }
 
-            glBegin(GL_POLYGON);
+//            glBegin(GL_POLYGON);
+//            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
+//            glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
+//            glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
+//            glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
+//            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
+//            glEnd();
+            glBegin(GL_QUADS);
             glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
             glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
             glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
             glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
-            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
             glEnd();
 
         }

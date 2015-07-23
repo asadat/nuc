@@ -144,6 +144,9 @@ private:
     std::vector<TargetPolygon*> dependents;
     std::vector<TargetPolygon*> targets;
 
+    //Drawing variables
+    TooN::Vector<2,double> p1,p2,p3,p4,v1,v2,v3,v4;
+
     int label;
     bool searchNode;
 
