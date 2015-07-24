@@ -244,8 +244,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         for(size_t i=0; i<newTargets.size(); i++)
             ct.AddTarget(newTargets[i]);
 
-        TargetTour tt;
-        tt.GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+        TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
@@ -416,8 +415,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
             for(size_t i=0; i<targets.size(); i++)
                 ct.AddTarget(targets[i]);
 
-            TargetTour tt;
-            tt.GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+            TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
             //double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
             double time_budget = remaining_time;
@@ -742,7 +740,6 @@ double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, 
 void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget,
                                                    TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos)
 {
-    TargetTour tour;
     vector<Vector<3> > best_partial_lm;
     double best_partial_value = 0;
 
@@ -755,7 +752,7 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
         double partial_value = 0;
 
         ct.GetLawnmowerPlan(partial_lm);
-        partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+        partial_cost = TargetTour::GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
 
         bool lastPoped_flag = false;
         Vector<3> lastPoped;
@@ -766,7 +763,7 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
             lastPoped = partial_lm.back();
             partial_lm.pop_back();
 
-            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+            partial_cost = TargetTour::GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
         }
 
         if(lastPoped_flag && !partial_lm.empty())
@@ -774,16 +771,16 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
             size_t count = 0;
             size_t l = partial_lm.size();
             partial_lm.push_back(lastPoped);
-            partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+            partial_cost = TargetTour::GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
             while(partial_cost > budget)
             {
                 partial_lm[l] += 0.5*(partial_lm[l-1]-partial_lm[l]);
-                partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+                partial_cost = TargetTour::GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
 
                 if(count++ > 5)
                 {
                     partial_lm.pop_back();
-                    partial_cost = tour.GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
+                    partial_cost = TargetTour::GetPlanExecutionTime(partial_lm, cur_pos, next_pos, true, true);
                     break;
                 }
             }
@@ -940,7 +937,6 @@ void SearchCoverageStrategy::EnqueueCompoundTarget(const CompoundTarget *ct)
 void SearchCoverageStrategy::SetupCostsValues_NoExtensibleTarget(std::vector<CompoundTarget *> &cur_targets,
                                               std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node)
 {
-    TargetTour tt;
     vector<CNode*> nds;
 
     /* We will consider covering the current target from the current node
@@ -960,7 +956,7 @@ void SearchCoverageStrategy::SetupCostsValues_NoExtensibleTarget(std::vector<Com
         CNode* minNode = NULL;
         for(size_t k=0; k<nds.size(); k++)
         {
-            double c = tt.GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
+            double c = TargetTour::GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
             if(minCost > c)
             {
                 minCost = c;
@@ -978,14 +974,13 @@ void SearchCoverageStrategy::SetupCostsValues_NoExtensibleTarget(std::vector<Com
 
         v.CalculateValue();
         v.startNode = cur_node;
-        v.cost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+        v.cost = TargetTour::GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
     }
 }
 
 void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<CompoundTarget *> &cur_targets,
                                               std::vector<CompoundTarget *> &extensible_targets, CNode* cur_node, bool delay)
 {
-    TargetTour tt;
     vector<CNode*> nds;
 
     for(size_t i=0; i < extensible_targets.size(); i++)
@@ -1003,7 +998,7 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
         {
             for(size_t k=0; k<nds.size(); k++)
             {
-                double c = tt.GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
+                double c = TargetTour::GetTargetTour(v.targets, nds[k]->GetMAVWaypoint(), nds[k]->GetMAVWaypoint());
                 if(minCost > c)
                 {
                     minCost = c;
@@ -1013,7 +1008,7 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
         }
         else
         {
-            minCost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+            minCost = TargetTour::GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
             minNode = cur_node;
         }
 
@@ -1028,7 +1023,7 @@ void SearchCoverageStrategy::SetupCostsValues_WithExtensibleTarget(std::vector<C
 
         v.CalculateValue();
         v.startNode = cur_node;
-        v.cost = tt.GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
+        v.cost = TargetTour::GetTargetTour(v.targets, cur_node->GetMAVWaypoint(), cur_node->GetMAVWaypoint());
     }
 }
 

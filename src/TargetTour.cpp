@@ -8,8 +8,9 @@ int RandomNum (int i)
     return std::rand()%i;
 }
 
-double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> start, Vector<3> end)
+double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, const Vector<3>& start, const Vector<3>& end)
 {
+    long unsigned int c = 0;
     vector<TargetPolygon*> tmp;
     copy(targets.begin(), targets.end(), back_inserter(tmp));
 
@@ -35,6 +36,12 @@ double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> star
     {
         do
         {
+            if(c++ > 1000)
+            {
+                c=0;
+                ROS_INFO(".");
+            }
+
             double pcost = GetTourCost(tmp, start, end);
             if(pcost < cost)
             {
@@ -49,11 +56,12 @@ double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, Vector<3> star
     return cost;
 }
 
-double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, Vector<3> start, Vector<3> end)
+double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, const Vector<3>& start, const Vector<3>& end)
 {
     vector<Vector<3> > wps;
     wps.push_back(start);
-    for(size_t i=0; i<targets.size(); i++)
+    size_t size = targets.size();
+    for(size_t i=0; i<size; ++i)
     {
         targets[i]->GetLawnmowerPlan(wps);
     }
@@ -64,7 +72,8 @@ double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, Vector<3> start
 }
 
 
-double TargetTour::GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initialTurn, bool endTurn)
+double TargetTour::GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, const TooN::Vector<3>& curpos,
+                                        const TooN::Vector<3>& endpos, bool initialTurn, bool endTurn)
 {
     if(wps.empty())
         return 0;
@@ -107,7 +116,8 @@ double TargetTour::GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, Too
     return t;
 }
 
-double TargetTour::GetPlanExecutionTime(std::vector<CNode*> & wps, TooN::Vector<3> curpos, TooN::Vector<3> endpos, bool initialTurn, bool endTurn)
+double TargetTour::GetPlanExecutionTime(std::vector<CNode*> & wps, const TooN::Vector<3>& curpos,
+                                        const TooN::Vector<3>& endpos, bool initialTurn, bool endTurn)
 {
     if(wps.empty())
     {

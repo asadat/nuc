@@ -456,11 +456,8 @@ void NUC::StartTraversing()
 void NUC::SetNextGoal()
 {    
     //ROS_INFO("calling GetNextNode()");
-    ros::Time t0 = ros::Time::now();
     curGoal = traversal->GetNextNode();
-    double dt = (ros::Time::now() - t0).toSec();
 
-    ROS_WARN("Planning Time: %f", dt);
     //ROS_INFO("returning from GetNextNode()");
 
     if(curGoal != NULL)
@@ -470,12 +467,14 @@ void NUC::SetNextGoal()
         NUC_LOG("NEXT_WAY_POINT: %f %f %f %d %d %d %f %f %f %f \n", curGoal->GetMAVWaypoint()[0], curGoal->GetMAVWaypoint()[1], curGoal->GetMAVWaypoint()[2], curGoal->depth, curGoal->waiting, curGoal->isInteresting,
             curGoal->footPrint[0], curGoal->footPrint[1], curGoal->footPrint[2], curGoal->footPrint[3]);
 
-       // ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
+        ROS_INFO("NEXT_WAY_POINT: %f %f %f \n", curGoal->pos[0], curGoal->pos[1], curGoal->pos[2]);
     }
 }
 
 void NUC::OnReachedGoal()
 {
+    ros::Time t0 = ros::Time::now();
+
     if(VisitGoal())
     {
         SetNextGoal();
@@ -488,6 +487,9 @@ void NUC::OnReachedGoal()
         {
             if(!NUCParam::bypass_controller)
                 mav.SetGoal(curGoal->GetMAVWaypoint());
+
+            double dt = (ros::Time::now() - t0).toSec();
+            ROS_WARN("Planning Time: %f", dt);
         }
     }
 }

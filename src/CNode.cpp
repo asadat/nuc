@@ -335,6 +335,9 @@ void CNode::glDraw()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             if(!visited)
             {
+                TooN::Vector<3> cl = TooN::makeVector(0,0,0);//colorBasis;
+                glColor4f(cl[0],cl[1],cl[2],1);
+
                 if(p_X >= 0.5)
                 {
                     TooN::Vector<3> cl = colorBasis;
@@ -348,7 +351,7 @@ void CNode::glDraw()
             }
             else
             {
-                TooN::Vector<3> cl = colorBasis;
+                TooN::Vector<3> cl = p_X*colorBasis;
                 glColor4f(cl[0],cl[1],cl[2],1);
             }
 
@@ -391,6 +394,7 @@ void CNode::GenerateTargets(double prob_cutoff)
     if(IsLeaf())
     {
         p_X = (imgPrior < prob_cutoff)?0.0:1.0;
+        //p_X = imgPrior;
     }
     else
     {

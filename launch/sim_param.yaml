@@ -6,7 +6,7 @@ min_footprint: 1.2
 speed: 4
 policy: delayed_greedy
 strategy: scs
-area_length: 40.0
+area_length: 50.0
 area_rotation: 0.0
 logging: false
 patches: 3
@@ -14,9 +14,9 @@ percent_interesting: 50.0
 auto_exit: false
 bypass_controller: true
 prob_r: 0.5
-prior_file_name: priors/prior6.jpg
-high_res_cells: 1
-time_limit: 600
+prior_file_name: priors/prior5.jpg
+high_res_cells: 3
+time_limit: 800
 average_speed: 1.0
-turning_time: 1.0
+turning_time: 5.0
 lm_tracks: 4
