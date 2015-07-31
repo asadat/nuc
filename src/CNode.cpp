@@ -345,7 +345,7 @@ void CNode::glDraw()
                 }
                 else
                 {
-                    TooN::Vector<3> cl = p_X*colorBasis;
+                    TooN::Vector<3> cl = TooN::makeVector(234.0/255.0,234.0/255.0,200.0/255.0);//p_X*colorBasis;
                     glColor4f(cl[0],cl[1],cl[2],1);
                 }
             }

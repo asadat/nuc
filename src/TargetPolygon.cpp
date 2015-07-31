@@ -628,48 +628,48 @@ void TargetPolygon::glDraw()
     //    return;
 
     //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
-    glColor3f(pc[0], pc[1], pc[2]);
-    glLineWidth(4);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glBegin(GL_POLYGON);
-    for(unsigned int i=0; i<ch.size();i++)
-    {
-        //glColor3f(RAND((i%5)/0.5,(i%5)/0.5+0.2),RAND(0,1),RAND(0,1));
-        TooN::Vector<3> p1 = ch[i]->GetMAVWaypoint();
-        glVertex3f(p1[0],p1[1],p1[2]);
-    }
-    glEnd();
+//    glColor3f(pc[0], pc[1], pc[2]);
+//    glLineWidth(4);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glBegin(GL_POLYGON);
+//    for(unsigned int i=0; i<ch.size();i++)
+//    {
+//        //glColor3f(RAND((i%5)/0.5,(i%5)/0.5+0.2),RAND(0,1),RAND(0,1));
+//        TooN::Vector<3> p1 = ch[i]->GetMAVWaypoint();
+//        glVertex3f(p1[0],p1[1],p1[2]);
+//    }
+//    glEnd();
 
-    if(base_idx[0] != -1 && base_idx[1]!=-1)
-    {
-        glColor3f(1,0,0);
-        glPointSize(10);
-        glBegin(GL_POINTS);
-        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
-        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
-        glColor3f(1,0,0);
-        glVertex3f(p1[0],p1[1],p1[2]);
-        glColor3f(0,1,0);
-        glVertex3f(p2[0],p2[1],p2[2]);
-        glEnd();
+//    if(base_idx[0] != -1 && base_idx[1]!=-1)
+//    {
+//        glColor3f(1,0,0);
+//        glPointSize(10);
+//        glBegin(GL_POINTS);
+//        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
+//        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
+//        glColor3f(1,0,0);
+//        glVertex3f(p1[0],p1[1],p1[2]);
+//        glColor3f(0,1,0);
+//        glVertex3f(p2[0],p2[1],p2[2]);
+//        glEnd();
 
-        if(lm.size() > 1)
-        {
-            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
-            glLineWidth(visited?7:4);
-            glBegin(GL_LINES);
-            //glPointSize(8);
-            //glBegin(GL_POINTS);
-            for(size_t i=0; i+1<lm.size(); i+=1)
-            {
-               TooN::Vector<3> p1 = lm[i];
-               TooN::Vector<3> p2 = lm[i+1];
-               glVertex3f(p1[0], p1[1], p1[2]+0.5);
-               glVertex3f(p2[0], p2[1], p2[2]+0.5);
-            }
-            glEnd();
-        }
-    }
+//        if(lm.size() > 1)
+//        {
+//            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
+//            glLineWidth(visited?7:4);
+//            glBegin(GL_LINES);
+//            //glPointSize(8);
+//            //glBegin(GL_POINTS);
+//            for(size_t i=0; i+1<lm.size(); i+=1)
+//            {
+//               TooN::Vector<3> p1 = lm[i];
+//               TooN::Vector<3> p2 = lm[i+1];
+//               glVertex3f(p1[0], p1[1], p1[2]+0.5);
+//               glVertex3f(p2[0], p2[1], p2[2]+0.5);
+//            }
+//            glEnd();
+//        }
+//    }
 
     for(int i=0; i <4; i++)
     {
