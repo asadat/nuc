@@ -114,7 +114,7 @@ void MAV::glDraw()
 
     glColor3f(0,0,1);
     glLineWidth(2);
-    double l=0.25;
+    double l=0.25 * NUCParam::area_length/32.0;
     glBegin(GL_LINES);
     Vector<3> p1,p2,p3,p4;
     Matrix<3> rot_m = Data(cos(-yaw), sin(-yaw), 0,
@@ -167,6 +167,15 @@ void MAV::SetGoal(TooN::Vector<3> goalpos, bool set_orig)
 
 }
 
+void MAV::JumpToGoal()
+{
+    if(simulation)
+    {
+        asctecPelican.SetPose(goal);
+        atGoal = true;
+    }
+}
+
 void MAV::Update(double dt)
 {
     if(simulation)
@@ -194,6 +203,11 @@ void MAV::AsctecFCU::Init(ros::NodeHandle *nh_)
     fcuPose_pub = nh_->advertise<geometry_msgs::PoseWithCovarianceStamped>("/fcu/gps_pose", 10);
     fcuMag_pub = nh_->advertise<geometry_msgs::Vector3Stamped>("/fcu/mag", 50);
     fcuCtrl_sub = nh_->subscribe("/fcu/control", 20, &MAV::AsctecFCU::fcuCtrlCallback, this);
+}
+
+void MAV::AsctecFCU::SetPose(TooN::Vector<3> pos)
+{
+    pose.slice<0,3>() = pos;
 }
 
 void MAV::AsctecFCU::Update()

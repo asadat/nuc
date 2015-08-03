@@ -692,6 +692,11 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
         //updateKey = false;
 
     }
+    else if(key['5'])
+    {
+        mav.JumpToGoal();
+        updateKey = false;
+    }
 
 
     traversal->hanldeKeyPressed(key, updateKey);

@@ -371,6 +371,19 @@ void CNode::glDraw()
 
         }
 
+        if(searchNode)
+        {
+            glColor3f(0,0,0);
+            glLineWidth(2);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glBegin(GL_QUADS);
+            glVertex3f(v1[0],v1[1], (0.6-depth/20.0));
+            glVertex3f(v2[0],v2[1], (0.6-depth/20.0));
+            glVertex3f(v3[0],v3[1], (0.6-depth/20.0));
+            glVertex3f(v4[0],v4[1], (0.6-depth/20.0));
+            glEnd();
+        }
+
 }
 
 void CNode::PropagateDepth()

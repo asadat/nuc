@@ -22,6 +22,7 @@ public:
             void Init(ros::NodeHandle* nh_);
             void fcuCtrlCallback(const asctec_hl_comm::mav_ctrl::Ptr &msg);
             void Update();
+            void SetPose(TooN::Vector<3>);
             TooN::Vector<4> vel;
             double delay;
         private:
@@ -38,6 +39,7 @@ public:
     void glDraw();
     void SetGoal(TooN::Vector<3> goalpos, bool set_orig=false);
     void Update(double dt);
+    void JumpToGoal();
     bool AtGoal(){return atGoal;}
     void atGoalCallback(const std_msgs::Bool::Ptr &msg);
     void gpsPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::Ptr &msg);

@@ -1450,7 +1450,8 @@ void SearchCoverageStrategy::glDraw()
         glEnd();
     }
 
-   // gc.glDraw();
+    for_each(search_grid.begin(), search_grid.end(), boost::bind(&CNode::glDraw,_1));
+    // gc.glDraw();
 
 //    for(size_t i=0; i < components.size(); i++)
 //        for(size_t j=0; j < components[i]->size(); j++)
