@@ -345,7 +345,7 @@ void CNode::glDraw()
                 }
                 else
                 {
-                    TooN::Vector<3> cl = TooN::makeVector(134.0/255.0,134.0/255.0,100.0/255.0);//p_X*colorBasis;
+                    TooN::Vector<3> cl = TooN::makeVector(254.0/255.0,254.0/255.0,250.0/255.0);//p_X*colorBasis;
                     glColor4f(cl[0],cl[1],cl[2],1);
                 }
             }
@@ -373,8 +373,8 @@ void CNode::glDraw()
 
         if(searchNode)
         {
-            glColor3f(0,0,0);
-            glLineWidth(2);
+            glColor3f(0.8,0.8,0.8);
+            glLineWidth(1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glBegin(GL_QUADS);
             glVertex3f(v1[0],v1[1], (0.6-depth/20.0));

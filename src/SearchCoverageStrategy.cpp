@@ -679,8 +679,11 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
                 {
                     if(targets2visit.find(extensible_compound_targets[i]) != targets2visit.end())
                     {
-                        extensible_compound_targets[i]->SetVisited();
-                        EnqueueCompoundTarget(extensible_compound_targets[i]);
+                        if(extensible_compound_targets[i]->cur_child)
+                        {
+                            extensible_compound_targets[i]->SetVisited();
+                            EnqueueCompoundTarget(extensible_compound_targets[i]);
+                        }
                     }
                     else if(extensible_compound_targets[i]->cur_child)
                     {
@@ -746,6 +749,9 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
     for(size_t i=0; i<cts.size(); i++)
     {
         CompoundTarget &ct = *cts[i];
+
+        ct.SetIgnored();
+        ct.SetVisited();
 
         vector<Vector<3> > partial_lm;
         double partial_cost = 0;
@@ -1434,24 +1440,24 @@ void SearchCoverageStrategy::glDraw()
     }
     glEnd();
 
-    if(nodeStack.size() > 2)
-    {
-        glColor3f(0.5,0.6,0.6);
-        glLineWidth(4);
-        glBegin(GL_LINES);
-        for(unsigned int i=0; i<nodeStack.size()-1;i++)
-        {
-            TooN::Vector<3> p1 = nodeStack[i+1]->GetMAVWaypoint();
-            TooN::Vector<3> p2 = nodeStack[i]->GetMAVWaypoint();
+//    if(nodeStack.size() > 2)
+//    {
+//        glColor3f(0.5,0.6,0.6);
+//        glLineWidth(4);
+//        glBegin(GL_LINES);
+//        for(unsigned int i=0; i<nodeStack.size()-1;i++)
+//        {
+//            TooN::Vector<3> p1 = nodeStack[i+1]->GetMAVWaypoint();
+//            TooN::Vector<3> p2 = nodeStack[i]->GetMAVWaypoint();
 
-            glVertex3f(p1[0],p1[1],p1[2]);
-            glVertex3f(p2[0],p2[1],p2[2]);
-        }
-        glEnd();
-    }
+//            glVertex3f(p1[0],p1[1],p1[2]);
+//            glVertex3f(p2[0],p2[1],p2[2]);
+//        }
+//        glEnd();
+//    }
 
     for_each(search_grid.begin(), search_grid.end(), boost::bind(&CNode::glDraw,_1));
-    // gc.glDraw();
+    gc.glDraw();
 
 //    for(size_t i=0; i < components.size(); i++)
 //        for(size_t j=0; j < components[i]->size(); j++)
@@ -1465,8 +1471,8 @@ void SearchCoverageStrategy::glDraw()
 //            glEnd();
 //        }
 
-    for(size_t i=0; i < integrated_components.size(); i++)
-        integrated_components[i]->glDraw();
+//    for(size_t i=0; i < integrated_components.size(); i++)
+//        integrated_components[i]->glDraw();
 
 //    glPointSize(20);
 //    glBegin(GL_POINTS);
@@ -1565,6 +1571,11 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
     if(key['4'])
     {
         drawFootprints = !drawFootprints;
+        updateKey = false;
+    }
+    else if(key['6'])
+    {
+        NUCParam::bypass_controller = true;
         updateKey = false;
     }
 }

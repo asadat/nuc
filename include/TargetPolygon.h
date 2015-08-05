@@ -19,6 +19,7 @@ class TargetPolygon
         void MarkAsVisited();
         void MarkIgnored();
         inline bool IsIgnored() const {return ignored;}
+        inline bool IsVisited() const {return visited;}
         Vector<3> GetMiddlePos();
         void ReverseLawnmower();
         inline Vector<3> FirstLMPos() const {return lm.front();}

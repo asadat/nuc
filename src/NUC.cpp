@@ -190,10 +190,14 @@ TooN::Vector<3> NUC::GetColor(double h)
         colors.push_back(makeVector(0.5,0.5,0.5));
         colors.push_back(makeVector(0,1,1));
         colors.push_back(makeVector(1,0,1));
-        colors.push_back(makeVector(1,1,0));
-        colors.push_back(makeVector(1,0,0));
         colors.push_back(makeVector(0,1,0));
         colors.push_back(makeVector(0,0,1));
+        colors.push_back(makeVector(1,1,0));
+        colors.push_back(makeVector(1,0,0));
+
+        colors.push_back(makeVector(160/255.0, 109/255.0, 21/255.0));
+        colors.push_back(makeVector(62/255.0, 102/255.0, 106/255.0));
+
 
         std::reverse(colors.begin(), colors.end());
     }
@@ -364,9 +368,9 @@ void NUC::glDraw()
      if(drawPath && pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
-         glLineWidth(3);
+         glLineWidth(2);
          glBegin(GL_LINES);
-         for(unsigned int i=1; i<pathHistory.size()-1;i++)
+         for(unsigned int i=1; i+2<pathHistory.size();i++)
          {
              TooN::Vector<3> p1 =pathHistory[i+1];
              TooN::Vector<3> p2 =pathHistory[i];
@@ -381,7 +385,7 @@ void NUC::glDraw()
          glEnd();
 
          glColor3f(0,0,0);
-         glPointSize(7);
+         glPointSize(3);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {
