@@ -88,8 +88,32 @@ void NUC::Cleanup()
     tree = NULL;
 }
 
+float normal_pdf(float x, float m, float s)
+{
+    static const float inv_sqrt_2pi = 0.3989422804014327;
+    float a = (x - m) / s;
+
+    return inv_sqrt_2pi / s * std::exp(-0.5f * a * a);
+}
+
 void NUC::LoadPriorFromFile()
 {
+//    ROS_INFO("PDF: %f %f", normal_pdf(0,0,1), normal_pdf(10,0,10));
+//    set<CNode*> leaves;
+//    tree->GetLeavesInRange(leaves, NUCParam::area_length*1.5, makeVector(0,0,0));
+
+//    for(auto it=leaves.begin(); it!= leaves.end(); it++)
+//    {
+//        Vector<3> wp = (*it)->GetMAVWaypoint();
+//        (*it)->SetPrior(0.5);
+//        float flip = 400000*(normal_pdf(wp[0]+wp[1], 0, 20)*normal_pdf(wp[1]-wp[0], 0, 15));
+//        (*it)->imgPrior = (flip > 0.2?1.0:0.5);
+//    }
+
+//    return;
+
+
+
     std::string fn = NUCParam::nuc_dir+"/";
     fn += NUCParam::prior_file_name;
     ROS_INFO("Opening prior %s", fn.c_str());
