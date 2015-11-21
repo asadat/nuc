@@ -4,7 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 1
 speed: 5
-policy: delayed_greedy
+policy: delayed
 strategy: scs
 area_length: 50.0
 area_rotation: 0.0
