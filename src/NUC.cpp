@@ -88,8 +88,32 @@ void NUC::Cleanup()
     tree = NULL;
 }
 
+float normal_pdf(float x, float m, float s)
+{
+    static const float inv_sqrt_2pi = 0.3989422804014327;
+    float a = (x - m) / s;
+
+    return inv_sqrt_2pi / s * std::exp(-0.5f * a * a);
+}
+
 void NUC::LoadPriorFromFile()
 {
+//    ROS_INFO("PDF: %f %f", normal_pdf(0,0,1), normal_pdf(10,0,10));
+//    set<CNode*> leaves;
+//    tree->GetLeavesInRange(leaves, NUCParam::area_length*1.5, makeVector(0,0,0));
+
+//    for(auto it=leaves.begin(); it!= leaves.end(); it++)
+//    {
+//        Vector<3> wp = (*it)->GetMAVWaypoint();
+//        (*it)->SetPrior(0.5);
+//        float flip = 400000*(normal_pdf(wp[0]+wp[1], 0, 20)*normal_pdf(wp[1]-wp[0], 0, 15));
+//        (*it)->imgPrior = (flip > 0.2?1.0:0.5);
+//    }
+
+//    return;
+
+
+
     std::string fn = NUCParam::nuc_dir+"/";
     fn += NUCParam::prior_file_name;
     ROS_INFO("Opening prior %s", fn.c_str());
@@ -190,10 +214,14 @@ TooN::Vector<3> NUC::GetColor(double h)
         colors.push_back(makeVector(0.5,0.5,0.5));
         colors.push_back(makeVector(0,1,1));
         colors.push_back(makeVector(1,0,1));
-        colors.push_back(makeVector(1,1,0));
-        colors.push_back(makeVector(1,0,0));
         colors.push_back(makeVector(0,1,0));
         colors.push_back(makeVector(0,0,1));
+        colors.push_back(makeVector(1,1,0));
+        colors.push_back(makeVector(1,0,0));
+
+        colors.push_back(makeVector(160/255.0, 109/255.0, 21/255.0));
+        colors.push_back(makeVector(62/255.0, 102/255.0, 106/255.0));
+
 
         std::reverse(colors.begin(), colors.end());
     }
@@ -364,9 +392,9 @@ void NUC::glDraw()
      if(drawPath && pathHistory.size() > 2 && !CNode::drawCoverage)
      {
          glColor3f(0,0,0);
-         glLineWidth(3);
+         glLineWidth(2);
          glBegin(GL_LINES);
-         for(unsigned int i=1; i<pathHistory.size()-1;i++)
+         for(unsigned int i=1; i+2<pathHistory.size();i++)
          {
              TooN::Vector<3> p1 =pathHistory[i+1];
              TooN::Vector<3> p2 =pathHistory[i];
@@ -381,7 +409,7 @@ void NUC::glDraw()
          glEnd();
 
          glColor3f(0,0,0);
-         glPointSize(7);
+         glPointSize(3);
          glBegin(GL_POINTS);
          for(unsigned int i=0; i<pathHistory.size();i++)
          {

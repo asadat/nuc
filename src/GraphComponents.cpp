@@ -129,7 +129,7 @@ void GraphComponents::GetConnectedComponents(vector<CompoundTarget*> &components
 
     for(size_t i=0; i<nodes.size(); i++)
     {
-        if(!nodes[i]->visited && !nodes[i]->tp->IsIgnored())
+        if(!nodes[i]->visited && !nodes[i]->tp->IsIgnored() && !nodes[i]->tp->IsVisited())
         {
             CompoundTarget * cmp = new CompoundTarget();
             DFS(nodes[i], cmp);
@@ -148,7 +148,7 @@ void GraphComponents::DFS(node *root, CompoundTarget *cmp)
     pair<multimap<node*,node*>::iterator, multimap<node*,node*>::iterator> r_it = edges.equal_range(root);
     for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)
     {
-        if(!it->second->visited && !it->second->tp->IsIgnored())
+        if(!it->second->visited && !it->second->tp->IsIgnored() && !it->second->tp->IsVisited())
         {
             DFS(it->second, cmp);
         }
@@ -157,7 +157,7 @@ void GraphComponents::DFS(node *root, CompoundTarget *cmp)
     r_it = virtual_edges.equal_range(root);
     for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)
     {
-        if(!it->second->visited && !it->second->tp->IsIgnored())
+        if(!it->second->visited && !it->second->tp->IsIgnored() && !it->second->tp->IsVisited())
         {
             DFS(it->second, cmp);
         }
