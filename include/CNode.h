@@ -21,6 +21,9 @@ class TargetPolygon;
 class CNode
 {
 public:
+    enum class DrawingMode {Interesting, gp_f, gp_var};
+    static DrawingMode drawing_mode;
+
     CNode(Rect target_foot_print, bool populateChildren = true);
     ~CNode();
 
@@ -101,6 +104,8 @@ public:
     void AddDependentPolygon(TargetPolygon* tp);
     void RemoveDependentPolygon(TargetPolygon *tp);
 
+    void UpdateGPValues();
+
 private:
 
     CNode* nextHilbertLeaf;
@@ -135,6 +140,9 @@ private:
     TooN::Vector<3> pos;
     bool isInteresting;
     static double rootHeight;
+
+    double gp_value;
+    double gp_var;
 
     TooN::Vector<3> colorBasis;
     double coverage;

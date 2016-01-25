@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(nuc)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -Wall") # For G++ <4.7; also appears to be supported in G++ 4.7+ as alias to c++11
+find_package(LIBGP)
 
-set(NUC_LIBRARIES GL GLU glut)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -g -Wall") # For G++ <4.7; also appears to be supported in G++ 4.7+ as alias to c++11
+
+set(NUC_LIBRARIES GL GLU glut gp)
 
 set(NUC_SOURCES
    # src/dubins.cpp
@@ -32,8 +34,10 @@ set(NUC_SOURCES
     src/TargetPolygon.cpp
     src/GraphComponents.cpp
     #src/Knapsack.cpp
+    src/ScalarField.cpp
     src/TargetTour.cpp
     src/CompoundTarget.cpp
+    include/ScalarField.h
     include/CompoundTarget.h
     include/TargetTour.h
     include/Knapsack.h
@@ -97,11 +101,12 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${LIBGP_INCLUDE_DIRS}
   )
 
   
 add_executable(NUC ${NUC_SOURCES})
-target_link_libraries(NUC  ${NUC_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(NUC  ${NUC_LIBRARIES} ${catkin_LIBRARIES} ${LIBGP_LIBRARIES})
 
 add_executable(ImagePublisher src/ImagePublisher.cpp)
 target_link_libraries(ImagePublisher ${catkin_LIBRARIES})

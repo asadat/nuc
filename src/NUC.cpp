@@ -575,7 +575,7 @@ bool NUC::VisitGoal()
     }
 
     if(NUCParam::simulation)
-    {       
+    {
         traversal->ReachedNode(curGoal);
         return true;
     }

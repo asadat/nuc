@@ -2,7 +2,7 @@ simulation: True
 visualization: True
 branching_sqrt: 2
 FOV: 1.57
-min_footprint: 1
+min_footprint: 2
 speed: 5
 policy: delayed
 strategy: scs

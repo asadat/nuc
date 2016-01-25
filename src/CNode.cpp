@@ -3,6 +3,7 @@
 #include <GL/glut.h>
 #include <algorithm>
 #include "NUCParam.h"
+#include "ScalarField.h"
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 #define D2_OF3(a,b) sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
@@ -19,7 +20,7 @@ bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
 int CNode::maxDepth = 0;
 double CNode::int_thr[20];
-
+CNode::DrawingMode CNode::drawing_mode=CNode::DrawingMode::Interesting;
 
 CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
 {
@@ -333,7 +334,15 @@ void CNode::glDraw()
         {
             glLineWidth(1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            if(!visited)
+            if(drawing_mode == DrawingMode::gp_f)
+            {
+                glColor4f(gp_value,gp_value,gp_value,1);
+            }
+            else if(drawing_mode == DrawingMode::gp_var)
+            {
+                glColor4f(gp_var,gp_var,gp_var,1);
+            }
+            else if(!visited)
             {
                 TooN::Vector<3> cl = TooN::makeVector(0,0,0);//colorBasis;
                 glColor4f(cl[0],cl[1],cl[2],1);
@@ -415,6 +424,21 @@ void CNode::GenerateTargets(double prob_cutoff)
         {
             children[i]->GenerateTargets(prob_cutoff);
         }
+    }
+}
+
+void CNode::UpdateGPValues()
+{
+    if(IsLeaf())
+    {
+        double x[]={pos[0], pos[1]};
+        gp_value = ScalarField::GetInstance()->f(x);
+        gp_var  = ScalarField::GetInstance()->var(x);
+    }
+    else
+    {
+        for(auto &c: children)
+            c->UpdateGPValues();
     }
 }
 

@@ -7,6 +7,7 @@
 #include "TSP.h"
 #include "TargetTour.h"
 #include "CompoundTarget.h"
+#include "ScalarField.h"
 
 using namespace std;
 using namespace TooN;
@@ -187,7 +188,26 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
     vector<TargetPolygon*> newTargets;
 
     if(reachedSearchNode)
-    {        
+    {
+        ROS_INFO("Start Observing ...");
+        Rect fp = node->GetFootPrint();
+        const int n = 5;
+        double dx = fabs(fp[0]-fp[2])/n;
+        double dy = fabs(fp[1]-fp[3])/n;
+        for(int i=0; i<n; i++)
+            for(int j=0; j<n; j++)
+            {
+                TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
+                auto leaf = node->GetNearestLeaf(p);
+                double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
+                ScalarField::GetInstance()->add_pattern(x, leaf->imgPrior);
+            }
+
+        ROS_INFO("End Observing ...");
+        ROS_INFO("Update GP ...");
+        tree->UpdateGPValues();
+        ROS_INFO("Updated GP ...");
+
         // in the NUC upon reaching a node all the descendants are visited
         // which is not what we want in this specific strategy, hence the
         // following hack
@@ -1576,6 +1596,18 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
     else if(key['6'])
     {
         NUCParam::bypass_controller = true;
+        updateKey = false;
+    }
+    else if(key['7'])
+    {
+        if(CNode::drawing_mode == CNode::DrawingMode::gp_f)
+            CNode::drawing_mode = CNode::DrawingMode::gp_var;
+        else if(CNode::drawing_mode == CNode::DrawingMode::gp_var)
+            CNode::drawing_mode = CNode::DrawingMode::Interesting;
+        else
+            CNode::drawing_mode = CNode::DrawingMode::gp_f;
+
+
         updateKey = false;
     }
 }
