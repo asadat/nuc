@@ -192,6 +192,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         ROS_INFO("Start Observing ...");
         Rect fp = node->GetFootPrint();
         const int n = 5;
+        double sigma = 0.1;
         double dx = fabs(fp[0]-fp[2])/n;
         double dy = fabs(fp[1]-fp[3])/n;
         for(int i=0; i<n; i++)
@@ -200,7 +201,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
                 TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
                 auto leaf = node->GetNearestLeaf(p);
                 double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
-                ScalarField::GetInstance()->add_pattern(x, leaf->imgPrior);
+                ScalarField::GetInstance()->add_pattern(x, leaf->imgPrior + sigma*RAND(-1,1));
             }
 
         ROS_INFO("End Observing ...");

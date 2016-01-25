@@ -4,7 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 2
 speed: 5
-policy: delayed
+policy: greedy
 strategy: scs
 area_length: 200.0
 area_rotation: 0.0
@@ -14,7 +14,7 @@ percent_interesting: 50.0
 auto_exit: false
 bypass_controller: false
 prob_r: 0.5
-prior_file_name: priors/prior5.jpg
+prior_file_name: priors/prior9.jpg
 high_res_cells: 3
 time_limit: 1500
 average_speed: 1.0

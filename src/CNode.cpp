@@ -415,8 +415,8 @@ void CNode::GenerateTargets(double prob_cutoff)
 {
     if(IsLeaf())
     {
-        p_X = (imgPrior < prob_cutoff)?0.0:1.0;
-        //p_X = imgPrior;
+        p_X = (gp_value < prob_cutoff)?0.0:1.0;
+        //p_X = (imgPrior < prob_cutoff)?0.0:1.0;
     }
     else
     {
