@@ -132,14 +132,14 @@ void NUC::LoadPriorFromFile()
     {
         double pr_r = priorImg.at<uchar>(w-i, (dir<0)?w-1:0)*(1.0/255.0);
         bl->SetPrior(0.5);
-        bl->imgPrior = pr_r;
+        bl->imgPrior = pr_r*0.5;
 
         for(int j=(dir>0)?1:w-2; (dir>0)?(j<w):(j>=0); j+=dir)
         {
             bl = bl->GetNeighbourLeaf((dir<0), (dir>0), false, false);
             double pr_round = priorImg.at<uchar>(w-i-1,j)*(1.0/255.0);
             bl->SetPrior(0.5);
-            bl->imgPrior = pr_round;
+            bl->imgPrior = pr_round*0.5;
         }
 
         if(i<w-1)
@@ -396,10 +396,17 @@ void NUC::glDraw()
          glBegin(GL_LINES);
          for(unsigned int i=1; i+2<pathHistory.size();i++)
          {
+
              TooN::Vector<3> p1 =pathHistory[i+1];
              TooN::Vector<3> p2 =pathHistory[i];
              TooN::Vector<3> c1 = GetColor(p1[2]);
              TooN::Vector<3> c2 = GetColor(p2[2]);
+
+             double d1 = (p1[2]-pathHistory[1][2])*(p1[2]-pathHistory[1][2]);
+             double d2 = (p2[2]-pathHistory[1][2])*(p2[2]-pathHistory[1][2]);
+
+             if(d1< 0.1 || d2 < 0.1)
+                 continue;
 
              glColor3f(c1[0], c1[1], c1[2]);
              glVertex3f(p1[0],p1[1],p1[2]);
@@ -407,6 +414,34 @@ void NUC::glDraw()
              glVertex3f(p2[0],p2[1],p2[2]);
          }
          glEnd();
+
+         glPushAttrib(GL_ENABLE_BIT);
+         glLineStipple(1, 0xAA);
+         glEnable(GL_LINE_STIPPLE);
+         glBegin(GL_LINES);
+         for(unsigned int i=1; i+2<pathHistory.size();i++)
+         {
+
+             TooN::Vector<3> p1 =pathHistory[i+1];
+             TooN::Vector<3> p2 =pathHistory[i];
+             TooN::Vector<3> c1 = GetColor(p1[2]);
+             TooN::Vector<3> c2 = GetColor(p2[2]);
+
+             double d1 = (p1[2]-pathHistory[1][2])*(p1[2]-pathHistory[1][2]);
+             double d2 = (p2[2]-pathHistory[1][2])*(p2[2]-pathHistory[1][2]);
+
+             if(d1> 0.1 && d2 > 0.1)
+                 continue;
+
+             glColor3f(c1[0], c1[1], c1[2]);
+             glVertex3f(p1[0],p1[1],p1[2]);
+             glColor3f(c2[0], c2[1], c2[2]);
+             glVertex3f(p2[0],p2[1],p2[2]);
+         }
+         glEnd();
+         glPopAttrib();
+
+
 
          glColor3f(0,0,0);
          glPointSize(3);

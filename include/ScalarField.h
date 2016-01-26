@@ -15,6 +15,8 @@ public:
 
     virtual ~ScalarField();
 
+    void glDraw();
+
 private:
     static std::shared_ptr<ScalarField> instance;
     ScalarField();

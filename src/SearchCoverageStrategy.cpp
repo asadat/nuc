@@ -8,6 +8,7 @@
 #include "TargetTour.h"
 #include "CompoundTarget.h"
 #include "ScalarField.h"
+#include <random>
 
 using namespace std;
 using namespace TooN;
@@ -27,7 +28,7 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 
     //cellW = 1;
     cluster_n=0;
-    cutoff_prob = 0.60;
+    cutoff_prob = 0.30;
     remaining_time = NUCParam::time_limit;
 
     tree = root;
@@ -189,9 +190,11 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 
     if(reachedSearchNode)
     {
+        std::random_device rd;
+        std::mt19937 e2(rd());
         ROS_INFO("Start Observing ...");
         Rect fp = node->GetFootPrint();
-        const int n = 5;
+        const int n = 2;
         double sigma = 0.1;
         double dx = fabs(fp[0]-fp[2])/n;
         double dy = fabs(fp[1]-fp[3])/n;
@@ -201,12 +204,15 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
                 TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
                 auto leaf = node->GetNearestLeaf(p);
                 double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
-                ScalarField::GetInstance()->add_pattern(x, leaf->imgPrior + sigma*RAND(-1,1));
+                std::normal_distribution<> dist(leaf->imgPrior, sigma);
+
+                ScalarField::GetInstance()->add_pattern(x, dist(e2));
             }
 
         ROS_INFO("End Observing ...");
         ROS_INFO("Update GP ...");
         tree->UpdateGPValues();
+        //node->GetNeighbourLeaf()
         ROS_INFO("Updated GP ...");
 
         // in the NUC upon reaching a node all the descendants are visited
@@ -263,7 +269,10 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
     {        
         CompoundTarget ct;
         for(size_t i=0; i<newTargets.size(); i++)
-            ct.AddTarget(newTargets[i]);
+        {
+            if(newTargets[i]->HasParent(node))
+                ct.AddTarget(newTargets[i]);
+        }
 
         TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
@@ -1410,6 +1419,8 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
 
 void SearchCoverageStrategy::glDraw()
 {
+    ScalarField::GetInstance()->glDraw();
+
     if(drawFootprints && hi_res_waypoints.size() > 2)
     {
         double half_fp = hi_res_waypoints[0][2] * tan(NUCParam::FOV*0.5);
@@ -1478,7 +1489,7 @@ void SearchCoverageStrategy::glDraw()
 //    }
 
     for_each(search_grid.begin(), search_grid.end(), boost::bind(&CNode::glDraw,_1));
-    gc.glDraw();
+    //gc.glDraw();
 
 //    for(size_t i=0; i < components.size(); i++)
 //        for(size_t j=0; j < components[i]->size(); j++)
