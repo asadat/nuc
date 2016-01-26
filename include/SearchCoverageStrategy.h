@@ -41,7 +41,7 @@ private:
 
     void FindSubCells(CNode* n);
 
-    void FindClusters(bool incremental, std::vector<TargetPolygon*> & newTargets);
+    void FindClusters(bool incremental, std::vector<TargetPolygon*> & newTargets, CNode* ancester=NULL);
 
     void CleanupTargets();
     void CleanupComponents();

@@ -238,23 +238,26 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         }
 
         //last_c = targets.size();
-        FindClusters(true, newTargets);
+
 
         //ROS_INFO("#clusters: %u", targets.size());
     }
 
     if(NUCParam::policy == "greedy")
     {
+        FindClusters(true, newTargets, node);
         OnReachedNode_GreedyPolicy(node, newTargets, reachedSearchNode);
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
+        FindClusters(true, newTargets, node);
         ROS_INFO("Calling delayed_greedy .. ");
         OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode);
         ROS_INFO("Returning from delayed_greedy .. ");
     }
     else if(NUCParam::policy == "delayed")
     {
+        FindClusters(true, newTargets);
         OnReachedNode_DelayedPolicy(node, newTargets, reachedSearchNode);
     }
 
@@ -1419,7 +1422,7 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
 
 void SearchCoverageStrategy::glDraw()
 {
-    ScalarField::GetInstance()->glDraw();
+    //ScalarField::GetInstance()->glDraw();
 
     if(drawFootprints && hi_res_waypoints.size() > 2)
     {
@@ -1689,13 +1692,15 @@ void SearchCoverageStrategy::FindSubCells(CNode *n)
     }
 }
 
-void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon*> &newTargets)
+void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon*> &newTargets, CNode* ancester)
 {
     static int cn = newTargets.size()-1;
     if(!incremental)
         cn = -1;
 
     size_t old_cluster_n = cn+1;
+
+    auto InAncester = [=](CNode* cnd){return ancester?IN(cnd->GetMAVWaypoint(), ancester->GetFootPrint()):true;};
 
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
@@ -1711,7 +1716,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
     {
         for(int j=0; j<s; j++)
         {
-            if(GetNode(i,j)->extra_info || GetNode(i,j)->p_X < 0.99 || GetNode(i,j)->visited || !GetNode(i,j)->ancestor_visited)
+            if(GetNode(i,j)->extra_info || GetNode(i,j)->p_X < 0.99 || GetNode(i,j)->visited || !GetNode(i,j)->ancestor_visited || !InAncester(GetNode(i,j)))
                 continue;
 
             std::vector<CNode*> stack;
@@ -1735,7 +1740,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
                 for(int ii=1; ii<5; ii++)
                 {
                     CNode * ne = nd->GetNeighbourLeaf(ii==1,ii==2,ii==3,ii==4);
-                    if( ne && !ne->extra_info && ne->p_X > 0.95 && !ne->visited && ne->ancestor_visited)
+                    if( ne && !ne->extra_info && ne->p_X > 0.95 && !ne->visited && ne->ancestor_visited && InAncester(GetNode(i,j)))
                     {
                         ne->extra_info = true;
                         stack.push_back(ne);
