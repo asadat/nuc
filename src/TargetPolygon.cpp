@@ -145,6 +145,16 @@ double TargetPolygon::GetTargetRegionsArea() const
     return ((double)cells.size())*cellW*cellW;
 }
 
+double TargetPolygon::GetTrueTargetRegionsArea() const
+{
+    int n=0;
+    for(const auto&c:cells)
+        if(c->p_X >= c->cut_off)
+            n++;
+
+    return n*cellW*cellW;
+}
+
 void TargetPolygon::GetCells(vector<CNode *> &v, const CNode* ofParent) const
 {
     if(!ofParent)

@@ -20,6 +20,7 @@ bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
 int CNode::maxDepth = 0;
 double CNode::int_thr[20];
+double CNode::cut_off;
 CNode::DrawingMode CNode::drawing_mode=CNode::DrawingMode::Interesting;
 
 CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
@@ -342,6 +343,14 @@ void CNode::glDraw()
             {
                 glColor4f(gp_var,gp_var,gp_var,1);
             }
+            else if(drawing_mode == DrawingMode::gp_f_var)
+            {
+                glColor4f(gp_var,((1-gp_var)<0?0:(1-gp_var))*gp_value,gp_var,1);
+            }
+            else if(drawing_mode == DrawingMode::gp_true_f)
+            {
+                glColor4f(imgPrior,imgPrior,imgPrior,1);
+            }
             else if(!visited)
             {
                 TooN::Vector<3> cl = TooN::makeVector(0,0,0);//colorBasis;
@@ -413,6 +422,7 @@ void CNode::PropagateDepth()
 
 void CNode::GenerateTargets(double prob_cutoff)
 {
+    cut_off = prob_cutoff;
     if(IsLeaf())
     {
         p_X = (gp_value < prob_cutoff)?0.0:1.0;

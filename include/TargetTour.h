@@ -30,6 +30,7 @@ class TargetTour
         static double GetPlanExecutionTime(std::vector<TooN::Vector<3> > & wps, bool ignoreFirstSegment, bool ignoreLastSegment);
 
         static double GetTargetTour(vector<TargetPolygon*> &targets, const Vector<3>& start, const Vector<3>& end);
+        static double GetTargetTour_Utility(vector<TargetPolygon*> &targets, const Vector<3>& start, const Vector<3>& end);
 
     private:
 

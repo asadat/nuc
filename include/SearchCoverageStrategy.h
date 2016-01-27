@@ -20,6 +20,7 @@ public:
 private:    
     CNode * GetNode(int i, int j) const;
     CNode * GetSearchNode(int i, int j) const;
+    void GenerateEnvironment();
     bool InSearchGridBoundary(int i, int j) const;
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
@@ -32,7 +33,7 @@ private:
 
     void UpdateRemainingTime(CNode* node);
 
-    double LawnmowerPlanValue(std::vector<TooN::Vector<3> > &lms, const CompoundTarget *ct);
+    double LawnmowerPlanValue(std::vector<TooN::Vector<3> > &lms, const CompoundTarget *ct, bool true_value = false);
     void PartiallyCoverTargets(vector<CompoundTarget*> &cts, const double budget, TooN::Vector<3> cur_pos, TooN::Vector<3> next_pos);
     void AddTargetsToComponentGenerators(vector<TargetPolygon*> &newTargets, CNode* node);
     void SetPolygonBoundaryFlags(TargetPolygon * plg, CNode* node, bool unvisitedBoundary, vector<CNode*> * bnodes=NULL);
@@ -85,6 +86,7 @@ private:
     // delayed_greedy
     set<CompoundTarget*> targets2visit;
     double high_res_coverage;
+    double high_res_coverage_true;
     std::vector<TooN::Vector<3> > turningLocations;
 };
 

@@ -56,6 +56,42 @@ double TargetTour::GetTargetTour(vector<TargetPolygon*> &targets, const Vector<3
     return cost;
 }
 
+double TargetTour::GetTargetTour_Utility(vector<TargetPolygon*> &targets, const Vector<3>& start, const Vector<3>& end)
+{
+    vector<TargetPolygon*> tmp;
+    copy(targets.begin(), targets.end(), back_inserter(tmp));
+    targets.clear();
+
+    while(!tmp.empty())
+    {
+        auto x_cur = start;
+        if(!targets.empty())
+        {
+            x_cur = targets.back()->LastLMPos();
+        }
+
+        auto next = tmp.begin();
+        double b_c=9999;
+        double b_v = 0;
+
+        for(auto it=tmp.begin(); it != tmp.end(); it++)
+        {
+            double c = sqrt((x_cur-(*it)->FirstLMPos())*(x_cur-(*it)->FirstLMPos()));
+            double v = (*it)->GetTargetRegionsArea();
+
+            if(v/c > b_v/b_c)
+            {
+                next = it;
+            }
+        }
+
+        targets.push_back(*next);
+        tmp.erase(next);
+    }
+
+    return 0;
+}
+
 double TargetTour::GetTourCost(vector<TargetPolygon *> &targets, const Vector<3>& start, const Vector<3>& end)
 {
     vector<Vector<3> > wps;

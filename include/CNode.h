@@ -21,7 +21,7 @@ class TargetPolygon;
 class CNode
 {
 public:
-    enum class DrawingMode {Interesting, gp_f, gp_var};
+    enum class DrawingMode {Interesting, gp_f, gp_var, gp_f_var, gp_true_f};
     static DrawingMode drawing_mode;
 
     CNode(Rect target_foot_print, bool populateChildren = true);
@@ -143,6 +143,9 @@ private:
 
     double gp_value;
     double gp_var;
+    double true_p_X;
+    double prior_cell;
+    static double cut_off;
 
     TooN::Vector<3> colorBasis;
     double coverage;

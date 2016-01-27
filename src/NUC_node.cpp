@@ -164,7 +164,7 @@ void render_event()
             Cam_Plane[0], Cam_Plane[1], Cam_Plane[2],
             Cam_Normal[0], Cam_Normal[1], Cam_Normal[2]);
 
-     // glOrtho(-64.0, 64.0, -64.0, 64.0, 1.0, 30.0);
+     //glOrtho(-64.0, 64.0, -64.0, 64.0, 1.0, 30.0);
 
 
    NUC::Instance()->glDraw();
@@ -193,7 +193,7 @@ void resize_event(int w, int h)
     // Set the correct perspective.
     // clipping plane = 1 to 1000
     gluPerspective(60,ratio,0.1,1000);
-
+    //gluOrtho2D(0,w,0,h);
     // Get Back to the Modelview
     glMatrixMode(GL_MODELVIEW);
 }

@@ -18,7 +18,7 @@ using namespace TooN;
 NUC * NUC::instance = NULL;
 
 NUC::NUC(int argc, char **argv):nh("NUC")
-{
+{    
     traversal = NULL;
     visitedFalsePositives = 0;
     drawPath = false;
@@ -357,7 +357,7 @@ void NUC::MarkNodesInterestingness()
 }
 
 void NUC::glDraw()
-{
+{   
     //ROS_INFO("rendering ....");
      double w = fabs(area[2]-area[0]);
      glLineWidth(4);

@@ -120,6 +120,15 @@ void CompoundTarget::GetLawnmowerPlan(vector<Vector<3> > &lm_plan) const
     }
 }
 
+double CompoundTarget::GetTrueValue() const
+{
+    double sum = 0;
+    for(const auto &c:targets)
+        sum += c->GetTrueTargetRegionsArea();
+
+    return sum;
+}
+
 bool CompoundTarget::IsInside(const CNode *cell) const
 {
     for(size_t i=0; i<targets.size(); i++)

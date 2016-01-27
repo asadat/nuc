@@ -30,6 +30,7 @@ class TargetPolygon
         bool IsNeighbour(TargetPolygon *tp);
         inline void SetVisited(bool visited_){visited = visited_;}
         double GetTargetRegionsArea() const;
+        double GetTrueTargetRegionsArea() const;
         void GetCells(vector<CNode*> &v, const CNode *ofParent) const;
         inline void SetPolygonColor(Vector<3> color){pc=color;}
 

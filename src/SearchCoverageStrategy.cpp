@@ -19,6 +19,7 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
     drawFootprints = false;
     high_res_coverage=0;
+    high_res_coverage_true=0;
 
     dummy = new CNode(makeVector(0,0,0,0));
     dummy->visited = false;
@@ -37,6 +38,8 @@ SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
     GenerateLawnmower();
     startPos = makeVector(0,0,0);
     prevGoal = startPos;
+
+    GenerateEnvironment();
 }
 
 SearchCoverageStrategy::~SearchCoverageStrategy()
@@ -60,6 +63,59 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     }
 
     delete dummy;
+}
+
+void SearchCoverageStrategy::GenerateEnvironment()
+{
+    srand(time(NULL));
+    for(auto &c: grid)
+    {
+        c->SetPrior(0.5);
+        c->prior_cell = 0;
+        if(RAND(0,1) < 0.0001)
+        {
+            c->prior_cell = 0.5;
+        }
+    }
+
+    for(int i=0; i<20; i++)
+    {
+        for(auto &c: grid)
+        {
+            if(c->prior_cell > 0.1 && RAND(0,1) < 0.3)
+            {
+                if(c->GetNeighbourLeaf(true,false,false,false))
+                    c->GetNeighbourLeaf(true,false,false,false)->prior_cell = 0.5;
+                if(c->GetNeighbourLeaf(false,true,false,false))
+                    c->GetNeighbourLeaf(false,true,false,false)->prior_cell = 0.5;
+                if(c->GetNeighbourLeaf(false,false,true,false))
+                    c->GetNeighbourLeaf(false,false,true,false)->prior_cell = 0.5;
+                if(c->GetNeighbourLeaf(false,false,false,true))
+                    c->GetNeighbourLeaf(false,false,false,true)->prior_cell = 0.5;
+            }
+        }
+    }
+
+    int d=5;
+    for(int i=0; i<s; i++)
+    {
+        for(int j=0; j<s; j++)
+        {
+            double p=0;
+            int n=0;
+            for(int ii=i-d; ii <= i+d; ii++)
+                for(int jj=j-d; jj <= j+d; jj++)
+                {
+                    if(ii>=0 && ii<s && jj>=0 && jj<s)
+                    {
+                        n++;
+                        p += GetNode(ii,jj)->prior_cell;
+                    }
+                }
+
+            GetNode(i,j)->imgPrior = p/n;
+        }
+    }
 }
 
 Vector<3> SearchCoverageStrategy::GetNextSearchPos()
@@ -140,7 +196,7 @@ CNode* SearchCoverageStrategy::GetNextNode()
 
     if(!result)
     {
-        ROS_INFO("Area covered with high resolution: %.2f m^2", high_res_coverage);
+        ROS_INFO("Area covered with high resolution: (%.2f,%.2f) m^2", high_res_coverage, high_res_coverage_true);
     }
 
     UpdateRemainingTime(result);
@@ -195,7 +251,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         ROS_INFO("Start Observing ...");
         Rect fp = node->GetFootPrint();
         const int n = 2;
-        double sigma = 0.1;
+        double sigma = 0.2;
         double dx = fabs(fp[0]-fp[2])/n;
         double dy = fabs(fp[1]-fp[3])/n;
         for(int i=0; i<n; i++)
@@ -277,7 +333,7 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
                 ct.AddTarget(newTargets[i]);
         }
 
-        TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+        TargetTour::GetTargetTour_Utility(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
@@ -448,7 +504,8 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
             for(size_t i=0; i<targets.size(); i++)
                 ct.AddTarget(targets[i]);
 
-            TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+            //TargetTour::GetTargetTour(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+            TargetTour::GetTargetTour_Utility(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
 
             //double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
             double time_budget = remaining_time;
@@ -744,7 +801,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     }
 }
 
-double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, const CompoundTarget* ct)
+double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, const CompoundTarget* ct, bool true_value)
 {
     double value = 0;
     set<CNode*> covered_cells;
@@ -765,7 +822,7 @@ double SearchCoverageStrategy::LawnmowerPlanValue(std::vector<Vector<3> > &lms, 
     }
 
     for(auto it = covered_cells.begin(); it != covered_cells.end(); ++it)
-        if(ct->IsInside(*it))
+        if(ct->IsInside(*it) && (!true_value || (*it)->imgPrior>=cutoff_prob))
         {
             value += ((*it)->footPrint[0]-(*it)->footPrint[2])*((*it)->footPrint[0]-(*it)->footPrint[2]);
         }
@@ -778,6 +835,7 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
 {
     vector<Vector<3> > best_partial_lm;
     double best_partial_value = 0;
+    double partial_value_true=0;
 
     for(size_t i=0; i<cts.size(); i++)
     {
@@ -830,6 +888,7 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
 
         if(partial_value > best_partial_value)
         {
+            partial_value_true = LawnmowerPlanValue(partial_lm, &ct, true);
             best_partial_value = partial_value;
             best_partial_lm.clear();
             copy(partial_lm.begin(), partial_lm.end(), back_inserter(best_partial_lm));
@@ -837,6 +896,7 @@ void SearchCoverageStrategy::PartiallyCoverTargets(vector<CompoundTarget*> &cts,
     }
 
     high_res_coverage += best_partial_value;
+    high_res_coverage_true += partial_value_true;
     copy(best_partial_lm.begin(), best_partial_lm.end(), back_inserter(target_lms));
     ROS_INFO("Partial Coverage Value: %.2f", best_partial_value);
 }
@@ -970,6 +1030,7 @@ void SearchCoverageStrategy::AddTargetsToComponentGenerators(vector<TargetPolygo
 void SearchCoverageStrategy::EnqueueCompoundTarget(const CompoundTarget *ct)
 {
     high_res_coverage += ct->value;
+    high_res_coverage_true += ct->GetTrueValue();
     ct->GetLawnmowerPlan(target_lms);
 }
 
@@ -1605,7 +1666,8 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
 {
     if(key['4'])
     {
-        drawFootprints = !drawFootprints;
+        //drawFootprints = !drawFootprints;
+        GenerateEnvironment();
         updateKey = false;
     }
     else if(key['6'])
@@ -1618,6 +1680,10 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
         if(CNode::drawing_mode == CNode::DrawingMode::gp_f)
             CNode::drawing_mode = CNode::DrawingMode::gp_var;
         else if(CNode::drawing_mode == CNode::DrawingMode::gp_var)
+            CNode::drawing_mode = CNode::DrawingMode::gp_f_var;
+        else if(CNode::drawing_mode == CNode::DrawingMode::gp_f_var)
+            CNode::drawing_mode = CNode::DrawingMode::gp_true_f;
+        else if(CNode::drawing_mode == CNode::DrawingMode::gp_true_f)
             CNode::drawing_mode = CNode::DrawingMode::Interesting;
         else
             CNode::drawing_mode = CNode::DrawingMode::gp_f;
@@ -1705,10 +1771,14 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
        {
-           if(!incremental || GetNode(i,j)->label==-1)
+           if(!incremental || GetNode(i,j)->label==-1 && InAncester(GetNode(i,j)))
            {
                 GetNode(i,j)->extra_info = false;
                 GetNode(i,j)->label = -1;
+           }
+           else
+           {
+                GetNode(i,j)->extra_info = true;
            }
        }
 
