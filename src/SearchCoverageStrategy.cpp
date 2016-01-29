@@ -65,15 +65,20 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     delete dummy;
 }
 
-void SearchCoverageStrategy::GenerateEnvironment()
+void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
 {
-    srand(time(NULL));
+    if(NUCParam::random_seed > 0 && !randomize)
+        srand(NUCParam::random_seed);
+    else
+        srand(time(NULL));
+
     for(auto &c: grid)
     {
         c->SetPrior(0.5);
         c->prior_cell = 0;
-        if(RAND(0,1) < 0.0001)
+        if(RAND(0,1) < 0.001)
         {
+            ROS_INFO("XXXX");
             c->prior_cell = 0.5;
         }
     }
@@ -82,7 +87,7 @@ void SearchCoverageStrategy::GenerateEnvironment()
     {
         for(auto &c: grid)
         {
-            if(c->prior_cell > 0.1 && RAND(0,1) < 0.3)
+            if(c->prior_cell > 0.1 && RAND(0,1) < 0.31)
             {
                 if(c->GetNeighbourLeaf(true,false,false,false))
                     c->GetNeighbourLeaf(true,false,false,false)->prior_cell = 0.5;
@@ -251,7 +256,6 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         ROS_INFO("Start Observing ...");
         Rect fp = node->GetFootPrint();
         const int n = 2;
-        double sigma = 0.2;
         double dx = fabs(fp[0]-fp[2])/n;
         double dy = fabs(fp[1]-fp[3])/n;
         for(int i=0; i<n; i++)
@@ -260,7 +264,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
                 TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
                 auto leaf = node->GetNearestLeaf(p);
                 double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
-                std::normal_distribution<> dist(leaf->imgPrior, sigma);
+                std::normal_distribution<> dist(leaf->imgPrior, NUCParam::gp_sigma);
 
                 ScalarField::GetInstance()->add_pattern(x, dist(e2));
             }
@@ -1667,7 +1671,7 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
     if(key['4'])
     {
         //drawFootprints = !drawFootprints;
-        GenerateEnvironment();
+        GenerateEnvironment(true);
         updateKey = false;
     }
     else if(key['6'])
@@ -1771,7 +1775,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
     for(int i=0; i<s; i++)
        for(int j=0; j<s; j++)
        {
-           if(!incremental || GetNode(i,j)->label==-1 && InAncester(GetNode(i,j)))
+           if(!incremental || (GetNode(i,j)->label==-1 && InAncester(GetNode(i,j))))
            {
                 GetNode(i,j)->extra_info = false;
                 GetNode(i,j)->label = -1;

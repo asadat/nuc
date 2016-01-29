@@ -57,6 +57,9 @@ public:
     static double average_speed;
     static double turning_time;
 
+    static double random_seed;
+    static double gp_sigma;
+
 };
 
 #endif

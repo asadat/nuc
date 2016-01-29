@@ -20,4 +20,6 @@ public:
 private:
     static std::shared_ptr<ScalarField> instance;
     ScalarField();
+
+    double sigma;
 };

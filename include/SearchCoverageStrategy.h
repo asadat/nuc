@@ -20,7 +20,7 @@ public:
 private:    
     CNode * GetNode(int i, int j) const;
     CNode * GetSearchNode(int i, int j) const;
-    void GenerateEnvironment();
+    void GenerateEnvironment(bool randomize=false);
     bool InSearchGridBoundary(int i, int j) const;
     void SetupGrid(CNode* root);
     void GenerateLawnmower();

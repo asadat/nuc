@@ -1,5 +1,6 @@
 #include "ScalarField.h"
 #include "GL/glut.h"
+#include "NUCParam.h"
 
 using namespace std;
 
@@ -8,7 +9,7 @@ shared_ptr<ScalarField> ScalarField::instance;
 ScalarField::ScalarField():GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)")
 {
     Eigen::VectorXd params(covf().get_param_dim());
-    params << 4.0, 1.5, -0.7;
+    params << 3.5, 1.5, log10(NUCParam::gp_sigma);
     covf().set_loghyper(params);
 }
 

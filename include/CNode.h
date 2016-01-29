@@ -15,7 +15,7 @@ class NUC;
 class GNode;
 class TargetPolygon;
 
-#define RAND(x,y) (x+((double)(rand()%1000)*0.001*(y-x)))
+#define RAND(x,y) (x+((double)(rand()%1000000)*0.000001*(y-x)))
 
 
 class CNode

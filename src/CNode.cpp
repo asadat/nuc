@@ -327,6 +327,7 @@ void CNode::glDraw()
         glEnd();
     }
 
+    double df = 0.05;
 
     for(unsigned int i=0; i<children.size(); i++)
         children[i]->glDraw();
@@ -337,7 +338,7 @@ void CNode::glDraw()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             if(drawing_mode == DrawingMode::gp_f)
             {
-                glColor4f(gp_value,gp_value,gp_value,1);
+                glColor4f(ceil(gp_value/df)*df,ceil(gp_value/df)*df,ceil(gp_value/df)*df,1);
             }
             else if(drawing_mode == DrawingMode::gp_var)
             {
