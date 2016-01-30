@@ -22,7 +22,7 @@ TargetPolygon::TargetPolygon()
     ignored = false;
 }
 
-TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode)
+TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode, std::function<CNode *(int, int)> gn): GetNode(gn)
 {
     SetBoundaryFlag(ALL, false);
     pc = makeVector(1,1,1);
@@ -109,6 +109,7 @@ void TargetPolygon::ProcessPolygon()
     FindBaseEdge();
     PlanLawnmower();
     SetLawnmowerHeight();
+    FindApproximatePolygon();
 }
 
 bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
@@ -221,6 +222,115 @@ Vector<3> TargetPolygon::GetMiddlePos()
 void TargetPolygon::ReverseLawnmower()
 {
     reverse(lm.begin(), lm.end());
+}
+
+void TargetPolygon::FindApproximatePolygon()
+{
+
+    for(auto nd:cells)
+    {
+        nd->approx_label = nd->label;
+    }
+
+
+    // remove the parts with 1-cell width
+//    auto approx_cells = cells;
+//    bool flag = false;
+//    while(!flag)
+//    {
+//        flag = true;
+//        for(size_t i=0; i<approx_cells.size(); i++)
+//        {
+//            for(int i=0; i<8; i+=2)
+//            {
+//                auto c = GetNeighbour_8(approx_cells[i], i);
+//                if(!c || c->label == )
+//            }
+//        }
+//    }
+
+    set<CNode*> nds;
+
+    for(const auto &nd:cells)
+    {
+        auto c = GetNode(nd->grd_x+1, nd->grd_y);
+        if(!c || c->label != this->label)
+        {
+            nds.insert(nd);
+            continue;
+        }
+
+        c = GetNode(nd->grd_x-1, nd->grd_y);
+        if(!c || c->label != this->label)
+        {
+            nds.insert(nd);
+            continue;
+        }
+
+        c = GetNode(nd->grd_x, nd->grd_y-1);
+        if(!c || c->label != this->label)
+        {
+            nds.insert(nd);
+            continue;
+        }
+
+        c = GetNode(nd->grd_x, nd->grd_y+1);
+        if(!c || c->label != this->label)
+        {
+            nds.insert(nd);
+            continue;
+        }
+    }
+
+
+    copy(nds.begin(), nds.end(), back_inserter(boundaryNodes));
+
+    auto minit = std::min_element(nds.begin(), nds.end(), [](CNode* x, CNode* y)
+    {
+        if(x->grd_y < y->grd_y) return true;
+        if(x->grd_y > y->grd_y) return false;
+        return (x->grd_x < y->grd_x);
+    });
+
+
+    approxPoly.clear();
+    approxPoly.push_back(*minit);
+    nds.erase(minit);
+
+    while(!nds.empty())
+    {
+        CNode* node = approxPoly.back();
+        size_t i=0;
+        for(; i<8; i++)
+        {
+            auto nb = GetNeighbour_8(node, i);
+            if(nb == NULL) continue;
+
+            auto nb_it = nds.find(nb);
+            if(nb_it != nds.end())
+            {
+                approxPoly.push_back(*nb_it);
+                nds.erase(nb_it);
+                break;
+            }
+        }
+
+        if(i>=8)
+        {
+            ROS_ERROR("incomplete approximate polygon!!!!!!!!!!!!! %d %d", node->grd_x, node->grd_y);
+            break;
+        }
+    }
+}
+
+CNode* TargetPolygon::GetNeighbour_8(CNode* node, int i)
+{
+    //static int n_i[][8] ={{0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1}};
+    static int n_i[2][8] ={{0,1,1,1,0,-1,-1,-1}, {-1,-1,0,1,1,1,0,-1}};
+
+    if(i >= 8) return NULL;
+    ROS_WARN("n_i : %u %d %d", i, n_i[0][i], n_i[1][i]);
+    return GetNode(node->grd_x+n_i[0][i],node->grd_y+n_i[1][i]);
 }
 
 void TargetPolygon::ConvexHull()
@@ -348,6 +458,8 @@ void TargetPolygon::ConvexHull()
     }
 
     center = (1.0/(float)ch.size())*center;
+
+    std::reverse(ch.begin(), ch.end());
 }
 
 void TargetPolygon::FindBaseEdge()
@@ -618,8 +730,8 @@ void TargetPolygon::PlanLawnmower()
 
 void TargetPolygon::glDraw()
 {    
-    if(ignored)
-        return;
+//    if(ignored)
+//        return;
 
 //    glLineWidth(4);
 //    glColor3f(0,0,1);
@@ -638,17 +750,42 @@ void TargetPolygon::glDraw()
     //    return;
 
     //glColor3f(ch[0]->colorBasis[0], ch[0]->colorBasis[1], ch[0]->colorBasis[2]);
-//    glColor3f(pc[0], pc[1], pc[2]);
-//    glLineWidth(4);
+//    glColor3f(1, 0.1, 0.1);
+//    glLineWidth(15);
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//    glBegin(GL_POLYGON);
+//    //glBegin(GL_POLYGON);
+//    glBegin(GL_POINTS);
 //    for(unsigned int i=0; i<ch.size();i++)
 //    {
-//        //glColor3f(RAND((i%5)/0.5,(i%5)/0.5+0.2),RAND(0,1),RAND(0,1));
+//        glColor3f(((double)i)/ch.size(), 0,0);
 //        TooN::Vector<3> p1 = ch[i]->GetMAVWaypoint();
 //        glVertex3f(p1[0],p1[1],p1[2]);
 //    }
 //    glEnd();
+
+    glColor3f(0, 0, 1);
+    glLineWidth(5);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_POLYGON);
+    for(unsigned int i=0; i<approxPoly.size();i++)
+    {
+        glColor3f(0,0,1);
+        TooN::Vector<3> p1 = approxPoly[i]->GetMAVWaypoint();
+        glVertex3f(p1[0],p1[1],p1[2]);
+    }
+    glEnd();
+
+    glColor3f(0, 0, 1);
+    glPointSize(15);
+    glBegin(GL_POINTS);
+    for(unsigned int i=0; i<boundaryNodes.size();i++)
+    {
+        glColor3f(0,((double)i)/boundaryNodes.size(),((double)i)/boundaryNodes.size());
+        TooN::Vector<3> p1 = boundaryNodes[i]->GetMAVWaypoint();
+        glVertex3f(p1[0],p1[1],p1[2]);
+    }
+    glEnd();
+
 
 //    if(base_idx[0] != -1 && base_idx[1]!=-1)
 //    {

@@ -78,7 +78,6 @@ void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
         c->prior_cell = 0;
         if(RAND(0,1) < 0.001)
         {
-            ROS_INFO("XXXX");
             c->prior_cell = 0.5;
         }
     }
@@ -87,7 +86,7 @@ void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
     {
         for(auto &c: grid)
         {
-            if(c->prior_cell > 0.1 && RAND(0,1) < 0.31)
+            if(c->prior_cell > 0.1 && RAND(0,1) < 0.25)
             {
                 if(c->GetNeighbourLeaf(true,false,false,false))
                     c->GetNeighbourLeaf(true,false,false,false)->prior_cell = 0.5;
@@ -1571,8 +1570,11 @@ void SearchCoverageStrategy::glDraw()
 //            glEnd();
 //        }
 
-//    for(size_t i=0; i < integrated_components.size(); i++)
-//        integrated_components[i]->glDraw();
+    for(auto tg: targets)
+        tg->glDraw();
+
+    for(size_t i=0; i < integrated_components.size(); i++)
+        integrated_components[i]->glDraw();
 
 //    glPointSize(20);
 //    glBegin(GL_POINTS);
@@ -1839,7 +1841,7 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
             it++;
         }
 
-        TargetPolygon *t = new TargetPolygon(v, visitedNodes.back());
+        TargetPolygon *t = new TargetPolygon(v, visitedNodes.back(),[&](int i_, int j_){ return this->GetNode(i_,j_);});
         newTargets.push_back(t);
     }
 }

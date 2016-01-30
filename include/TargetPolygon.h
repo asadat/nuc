@@ -2,6 +2,7 @@
 #define _TARGETPOLYGON_H
 #include "CNode.h"
 #include <set>
+#include <functional>
 
 using namespace std;
 using namespace TooN;
@@ -11,7 +12,7 @@ class TargetPolygon
     public:
         enum SIDE {L=0,R,U,D, ALL};
         TargetPolygon();
-        TargetPolygon(vector<CNode*> &cs, CNode* parentNode);
+        TargetPolygon(vector<CNode*> &cs, CNode* parentNode, std::function<CNode*(int,int)> gn);
         ~TargetPolygon();
 
         void glDraw();
@@ -44,6 +45,7 @@ class TargetPolygon
         inline bool HasParent(CNode* par) const {return parentSearchNodes.find(par)!=parentSearchNodes.end();}
         inline Vector<3> GetCenter() const {return center;}
         bool IsInside(const CNode *cell) const;
+        void FindApproximatePolygon();
 
     private:
         void ConvexHull();
@@ -56,6 +58,7 @@ class TargetPolygon
         void SetLawnmowerHeight();
         inline void PushLMwWypoint(TooN::Vector<3> v, const double wheight){lm.push_back(TooN::makeVector(v[0],v[1],wheight));}
         bool boundaryFLags[5];
+        CNode* GetNeighbour_8(CNode* node, int i);
 
         bool ignored;
         int label;
@@ -70,6 +73,11 @@ class TargetPolygon
         Vector<3> pc;
         Vector<3> center;
         bool isLine;
+        vector<CNode*> approxPoly;
+        vector<CNode*> boundaryNodes;
+
+
+        std::function<CNode*(int,int)> GetNode;
 
         friend class SearchCoverageStrategy;
 };
