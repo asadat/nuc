@@ -48,6 +48,8 @@ class TargetPolygon
         void FindApproximatePolygon();
 
     private:
+        int GetApproxNeighboursOfLabel(CNode* node, bool neighbour_8);
+        void RemoveSkinnyPart(CNode* tip_node);
         void ConvexHull();
         void FindBaseEdge();
         double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x) const;
@@ -77,7 +79,7 @@ class TargetPolygon
         vector<CNode*> boundaryNodes;
 
 
-        std::function<CNode*(int,int)> GetNode;
+        static std::function<CNode*(int,int)> GetNode;
 
         friend class SearchCoverageStrategy;
 };

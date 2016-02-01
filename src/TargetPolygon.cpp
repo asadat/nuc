@@ -10,6 +10,8 @@
 #define D2(a,b) (a-b)*(a-b)
 
 double TargetPolygon::cellW=0;
+std::function<CNode*(int,int)> TargetPolygon::GetNode;
+
 using namespace std;
 
 TargetPolygon::TargetPolygon()
@@ -22,8 +24,9 @@ TargetPolygon::TargetPolygon()
     ignored = false;
 }
 
-TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode, std::function<CNode *(int, int)> gn): GetNode(gn)
+TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode, std::function<CNode *(int, int)> gn)
 {
+    GetNode = gn;
     SetBoundaryFlag(ALL, false);
     pc = makeVector(1,1,1);
 
@@ -109,7 +112,9 @@ void TargetPolygon::ProcessPolygon()
     FindBaseEdge();
     PlanLawnmower();
     SetLawnmowerHeight();
+    ROS_INFO("H 1.1");
     FindApproximatePolygon();
+
 }
 
 bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
@@ -224,64 +229,103 @@ void TargetPolygon::ReverseLawnmower()
     reverse(lm.begin(), lm.end());
 }
 
+int TargetPolygon::GetApproxNeighboursOfLabel(CNode* node, bool neighbour_8)
+{
+    int di = neighbour_8?1:2;
+    int n=0;
+    for(int i=0; i<8; i+=di)
+    {
+        auto nb = GetNeighbour_8(node, i);
+        if(nb && nb->label==node->label && nb->approx_label==nb->label)
+        {
+            n++;
+        }
+    }
+
+    return n;
+}
+
+void TargetPolygon::RemoveSkinnyPart(CNode* tip_node)
+{
+    if(!tip_node)
+        return;
+
+    if(tip_node->checked_for_skinny)
+        return;
+
+    tip_node->checked_for_skinny = true;
+    for(int i=0; i<8; i+=2)
+    {
+        auto nb = GetNeighbour_8(tip_node, i);
+        if(nb && nb->label == tip_node->label && nb->approx_label==nb->label)
+        {
+            if(GetApproxNeighboursOfLabel(nb, false) <= 1)
+            {
+                nb->approx_label = -1;
+                RemoveSkinnyPart(nb);
+            }
+        }
+    }
+}
+
 void TargetPolygon::FindApproximatePolygon()
 {
-
     for(auto nd:cells)
     {
         nd->approx_label = nd->label;
+        nd->checked_for_skinny = false;
     }
-
 
     // remove the parts with 1-cell width
-//    auto approx_cells = cells;
-//    bool flag = false;
-//    while(!flag)
-//    {
-//        flag = true;
-//        for(size_t i=0; i<approx_cells.size(); i++)
-//        {
-//            for(int i=0; i<8; i+=2)
-//            {
-//                auto c = GetNeighbour_8(approx_cells[i], i);
-//                if(!c || c->label == )
-//            }
-//        }
-//    }
-
-    set<CNode*> nds;
-
-    for(const auto &nd:cells)
+    for(size_t i=0; i<cells.size(); i++)
     {
-        auto c = GetNode(nd->grd_x+1, nd->grd_y);
-        if(!c || c->label != this->label)
+        int nbs=0;
+        for(int j=0; j<8; j+=2)
         {
-            nds.insert(nd);
-            continue;
+            ROS_INFO("H 1.0.0 %u %u", i,j);
+            auto c = GetNeighbour_8(cells[i], j);
+            if(c && c->label == cells[i]->label)
+            {
+                nbs++;
+            }
+            ROS_INFO("H 1.0.05");
+
         }
 
-        c = GetNode(nd->grd_x-1, nd->grd_y);
-        if(!c || c->label != this->label)
+        if(nbs <= 1)
         {
-            nds.insert(nd);
-            continue;
-        }
+            cells[i]->approx_label = -1;
+            ROS_INFO("H 1.0.1");
+            RemoveSkinnyPart(cells[i]);
+            ROS_INFO("H 1.0.2");
 
-        c = GetNode(nd->grd_x, nd->grd_y-1);
-        if(!c || c->label != this->label)
-        {
-            nds.insert(nd);
-            continue;
-        }
-
-        c = GetNode(nd->grd_x, nd->grd_y+1);
-        if(!c || c->label != this->label)
-        {
-            nds.insert(nd);
-            continue;
         }
     }
 
+    ROS_INFO("H 1.1.1");
+
+    set<CNode*> nds;
+    for(auto &nd:cells)
+    {
+        if(nd->approx_label != nd->label)
+            continue;
+
+        for(int i=0; i<8; i+=2)
+        {
+            auto c = GetNeighbour_8(nd, i);
+
+            if(!c || (c->label!=this->label) || (c->approx_label != nd->label))
+            {
+                nds.insert(nd);
+                break;
+            }
+        }
+    }
+
+    if(nds.empty())
+        return;
+
+    ROS_INFO("H 1.2");
 
     copy(nds.begin(), nds.end(), back_inserter(boundaryNodes));
 
@@ -292,10 +336,10 @@ void TargetPolygon::FindApproximatePolygon()
         return (x->grd_x < y->grd_x);
     });
 
-
     approxPoly.clear();
     approxPoly.push_back(*minit);
     nds.erase(minit);
+
 
     while(!nds.empty())
     {
@@ -329,7 +373,7 @@ CNode* TargetPolygon::GetNeighbour_8(CNode* node, int i)
     static int n_i[2][8] ={{0,1,1,1,0,-1,-1,-1}, {-1,-1,0,1,1,1,0,-1}};
 
     if(i >= 8) return NULL;
-    ROS_WARN("n_i : %u %d %d", i, n_i[0][i], n_i[1][i]);
+    //ROS_WARN("n_i : %u %d %d", i, n_i[0][i], n_i[1][i]);
     return GetNode(node->grd_x+n_i[0][i],node->grd_y+n_i[1][i]);
 }
 
@@ -776,7 +820,7 @@ void TargetPolygon::glDraw()
     glEnd();
 
     glColor3f(0, 0, 1);
-    glPointSize(15);
+    glPointSize(6);
     glBegin(GL_POINTS);
     for(unsigned int i=0; i<boundaryNodes.size();i++)
     {

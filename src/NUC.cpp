@@ -61,7 +61,7 @@ NUC::NUC(int argc, char **argv):nh("NUC")
 
     if(NUCParam::simulation || NUCParam::interesting_simulation)
     {
-        LoadPriorFromFile();        
+        LoadPriorFromFile();
     }
 
     assert(NUCParam::strategy == "scs");
