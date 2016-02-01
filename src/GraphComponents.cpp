@@ -96,9 +96,7 @@ void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &component
             {
                 TargetPolygon * t = new TargetPolygon();
                 Integrating_DFS(nd, t);
-                ROS_INFO("H 1");
                 t->ProcessPolygon();
-                ROS_INFO("H 2");
                 integrated_comp->AddTarget(t);
             }
         }

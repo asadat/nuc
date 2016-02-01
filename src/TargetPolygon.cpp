@@ -112,7 +112,6 @@ void TargetPolygon::ProcessPolygon()
     FindBaseEdge();
     PlanLawnmower();
     SetLawnmowerHeight();
-    ROS_INFO("H 1.1");
     FindApproximatePolygon();
 
 }
@@ -282,27 +281,19 @@ void TargetPolygon::FindApproximatePolygon()
         int nbs=0;
         for(int j=0; j<8; j+=2)
         {
-            ROS_INFO("H 1.0.0 %u %u", i,j);
             auto c = GetNeighbour_8(cells[i], j);
             if(c && c->label == cells[i]->label)
             {
                 nbs++;
             }
-            ROS_INFO("H 1.0.05");
-
         }
 
         if(nbs <= 1)
         {
             cells[i]->approx_label = -1;
-            ROS_INFO("H 1.0.1");
             RemoveSkinnyPart(cells[i]);
-            ROS_INFO("H 1.0.2");
-
         }
     }
-
-    ROS_INFO("H 1.1.1");
 
     set<CNode*> nds;
     for(auto &nd:cells)
@@ -324,8 +315,6 @@ void TargetPolygon::FindApproximatePolygon()
 
     if(nds.empty())
         return;
-
-    ROS_INFO("H 1.2");
 
     copy(nds.begin(), nds.end(), back_inserter(boundaryNodes));
 
@@ -809,12 +798,12 @@ void TargetPolygon::glDraw()
 
     glColor3f(0, 0, 1);
     glLineWidth(5);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT, GL_LINE);
     glBegin(GL_POLYGON);
-    for(unsigned int i=0; i<approxPoly.size();i++)
+    for(auto nd:approxPoly)
     {
         glColor3f(0,0,1);
-        TooN::Vector<3> p1 = approxPoly[i]->GetMAVWaypoint();
+        TooN::Vector<3> p1 = nd->GetMAVWaypoint();
         glVertex3f(p1[0],p1[1],p1[2]);
     }
     glEnd();

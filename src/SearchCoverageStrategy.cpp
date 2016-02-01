@@ -1634,7 +1634,7 @@ CNode * SearchCoverageStrategy::GetNode(int i, int j) const
         return grid[n];
     else
     {
-        ROS_WARN("GetNode: out of boundary access ...");
+        //ROS_WARN("GetNode: out of boundary access ...");
         return NULL;
     }
 }

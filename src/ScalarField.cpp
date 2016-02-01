@@ -9,7 +9,7 @@ shared_ptr<ScalarField> ScalarField::instance;
 ScalarField::ScalarField():GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)")
 {
     Eigen::VectorXd params(covf().get_param_dim());
-    params << 3.5, 1.5, log10(NUCParam::gp_sigma);
+    params << log(NUCParam::min_footprint*10), log(1), log(NUCParam::gp_sigma);
     covf().set_loghyper(params);
 }
 
