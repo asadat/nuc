@@ -329,7 +329,6 @@ void TargetPolygon::FindApproximatePolygon()
     approxPoly.push_back(*minit);
     nds.erase(minit);
 
-
     while(!nds.empty())
     {
         CNode* node = approxPoly.back();
@@ -350,10 +349,53 @@ void TargetPolygon::FindApproximatePolygon()
 
         if(i>=8)
         {
-            ROS_ERROR("incomplete approximate polygon!!!!!!!!!!!!! %d %d", node->grd_x, node->grd_y);
+            //ROS_ERROR("incomplete approximate polygon!!!!!!!!!!!!! %d %d", node->grd_x, node->grd_y);
             break;
         }
     }
+
+    vector<CNode*> simplified_approx_polygon;
+    simplified_approx_polygon.push_back(approxPoly.front());
+    for(auto it = approxPoly.begin(); it!= approxPoly.end();)
+    {
+        const double mean_dist_threshold = NUCParam::min_footprint/2;
+        for(auto it_end = it+1; it_end != approxPoly.end(); it_end++)
+        {
+            auto it_next = it_end+1;
+            if(it_next == approxPoly.end())
+            {
+                simplified_approx_polygon.push_back(*it_end);
+                it = it_next;
+                break;
+            }
+            else
+            {
+                double mean_dist = 0;
+                double sz = 0;
+                for(auto it_tmp=it+1; it_tmp!=it_next; it_tmp++)
+                {
+                    sz+=1;
+                    mean_dist += pointToLineDist((*it)->GetMAVWaypoint(), (*it_next)->GetMAVWaypoint(), (*it_tmp)->GetMAVWaypoint());
+                }
+
+                if(sz < 1.0)
+                    sz = 1.0;
+
+                mean_dist /= sz;
+
+                if(mean_dist > mean_dist_threshold)
+                {
+                    ROS_INFO("************ mean_dist: %f", mean_dist);
+                    it = it_end;
+                    simplified_approx_polygon.push_back(*it_end);
+                    break;
+                }
+            }
+        }
+    }
+
+    approxPoly.clear();
+    copy(simplified_approx_polygon.begin(), simplified_approx_polygon.end(), back_inserter(approxPoly));
 }
 
 CNode* TargetPolygon::GetNeighbour_8(CNode* node, int i)
@@ -576,7 +618,7 @@ void TargetPolygon::FindBaseEdge()
     }
 }
 
-double TargetPolygon::pointToLineDist(Vector<3> p1, Vector<3> p2, Vector<3> x) const
+double TargetPolygon::pointToLineDist(Vector<3> p1, Vector<3> p2, Vector<3> x)
 {
     double d = fabs((p2[0]-p1[0])*(p1[1]-x[1]) - (p1[0]-x[0])*(p2[1]-p1[1]))/sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
     return d;
@@ -799,12 +841,15 @@ void TargetPolygon::glDraw()
     glColor3f(0, 0, 1);
     glLineWidth(5);
     glPolygonMode(GL_FRONT, GL_LINE);
-    glBegin(GL_POLYGON);
-    for(auto nd:approxPoly)
+    //glBegin(GL_POLYGON);
+    glBegin(GL_LINES);
+    for(size_t i=0; i<approxPoly.size(); i++)
     {
         glColor3f(0,0,1);
-        TooN::Vector<3> p1 = nd->GetMAVWaypoint();
+        TooN::Vector<3> p1 = approxPoly[i]->GetMAVWaypoint();
+        TooN::Vector<3> p2 = approxPoly[(i+1)%approxPoly.size()]->GetMAVWaypoint();
         glVertex3f(p1[0],p1[1],p1[2]);
+        glVertex3f(p2[0],p2[1],p2[2]);
     }
     glEnd();
 
@@ -820,36 +865,36 @@ void TargetPolygon::glDraw()
     glEnd();
 
 
-//    if(base_idx[0] != -1 && base_idx[1]!=-1)
-//    {
-//        glColor3f(1,0,0);
-//        glPointSize(10);
-//        glBegin(GL_POINTS);
-//        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
-//        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
-//        glColor3f(1,0,0);
-//        glVertex3f(p1[0],p1[1],p1[2]);
-//        glColor3f(0,1,0);
-//        glVertex3f(p2[0],p2[1],p2[2]);
-//        glEnd();
+    if(base_idx[0] != -1 && base_idx[1]!=-1)
+    {
+        glColor3f(1,0,0);
+        glPointSize(10);
+        glBegin(GL_POINTS);
+        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
+        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
+        glColor3f(1,0,0);
+        glVertex3f(p1[0],p1[1],p1[2]);
+        glColor3f(0,1,0);
+        glVertex3f(p2[0],p2[1],p2[2]);
+        glEnd();
 
-//        if(lm.size() > 1)
-//        {
-//            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
-//            glLineWidth(visited?7:4);
-//            glBegin(GL_LINES);
-//            //glPointSize(8);
-//            //glBegin(GL_POINTS);
-//            for(size_t i=0; i+1<lm.size(); i+=1)
-//            {
-//               TooN::Vector<3> p1 = lm[i];
-//               TooN::Vector<3> p2 = lm[i+1];
-//               glVertex3f(p1[0], p1[1], p1[2]+0.5);
-//               glVertex3f(p2[0], p2[1], p2[2]+0.5);
-//            }
-//            glEnd();
-//        }
-//    }
+        if(lm.size() > 1)
+        {
+            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
+            glLineWidth(visited?7:4);
+            glBegin(GL_LINES);
+            //glPointSize(8);
+            //glBegin(GL_POINTS);
+            for(size_t i=0; i+1<lm.size(); i+=1)
+            {
+               TooN::Vector<3> p1 = lm[i];
+               TooN::Vector<3> p2 = lm[i+1];
+               glVertex3f(p1[0], p1[1], p1[2]+0.5);
+               glVertex3f(p2[0], p2[1], p2[2]+0.5);
+            }
+            glEnd();
+        }
+    }
 
     for(int i=0; i <4; i++)
     {

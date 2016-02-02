@@ -91,6 +91,8 @@ private:
     double high_res_coverage;
     double high_res_coverage_true;
     std::vector<TooN::Vector<3> > turningLocations;
+
+    long int used_seed;
 };
 
 #endif

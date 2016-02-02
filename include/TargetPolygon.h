@@ -47,12 +47,12 @@ class TargetPolygon
         bool IsInside(const CNode *cell) const;
         void FindApproximatePolygon();
 
+        static double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x);
     private:
         int GetApproxNeighboursOfLabel(CNode* node, bool neighbour_8);
         void RemoveSkinnyPart(CNode* tip_node);
         void ConvexHull();
         void FindBaseEdge();
-        double pointToLineDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x) const;
         double pointToLineSignedDist(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> x) const;
         bool GetLineSegmentIntersection(TooN::Vector<3> p1, TooN::Vector<3> p2, TooN::Vector<3> p3,
                                         TooN::Vector<3> p4, TooN::Vector<3> &intersection_p) const;

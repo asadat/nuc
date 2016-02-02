@@ -101,9 +101,17 @@ void SearchCoverageStrategy::CellularAutomataStep(vector<CNode*>&regions)
 void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
 {
     if(NUCParam::random_seed > 0 && !randomize)
-        srand(NUCParam::random_seed);
+    {
+        used_seed = NUCParam::random_seed;
+    }
     else
-        srand(time(NULL));
+    {
+        used_seed = time(NULL);
+        ROS_INFO("Randomization Seed: %ld", used_seed);
+    }
+
+    srand(used_seed);
+
 
     for(auto &c: grid)
     {
@@ -132,7 +140,7 @@ void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
     int iterations_count = ComputeCellularAutomataSteps(s*s*NUCParam::percent_interesting/100.0, cluster_count);
     for(int i=0; i<4*iterations_count; i++)
     {
-        ROS_INFO("iteration: %d", i);
+        //ROS_INFO("iteration: %d", i);
         CellularAutomataStep(growing_regions);
     }
 
@@ -254,7 +262,8 @@ CNode* SearchCoverageStrategy::GetNextNode()
 
     if(!result)
     {
-        ROS_INFO("Area covered with high resolution: (%.2f,%.2f) m^2", high_res_coverage, high_res_coverage_true);
+        ROS_INFO("Area covered with high resolution: (%.2f,%.2f) percent: %0.2f policy: %s time_left: %0.2f seed: %ld", high_res_coverage, high_res_coverage_true, NUCParam::percent_interesting,
+                 NUCParam::policy.c_str(), remaining_time, used_seed);
     }
 
     UpdateRemainingTime(result);
@@ -311,6 +320,7 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
         const int n = 2;
         double dx = fabs(fp[0]-fp[2])/n;
         double dy = fabs(fp[1]-fp[3])/n;
+        //for(int k=0; k<5; k++)
         for(int i=0; i<n; i++)
             for(int j=0; j<n; j++)
             {
@@ -1684,7 +1694,7 @@ void SearchCoverageStrategy::SetupGrid(CNode *root)
 CNode * SearchCoverageStrategy::GetNode(int i, int j) const
 {
     int n = i*s+j;
-    if(n >=0 && n < grid.size())
+    if(n >=0 && n < (int)grid.size())
         return grid[n];
     else
     {
