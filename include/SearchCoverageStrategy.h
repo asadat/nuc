@@ -21,6 +21,7 @@ private:
     CNode * GetNode(int i, int j) const;
     CNode * GetSearchNode(int i, int j) const;
     void GenerateEnvironment(bool randomize=false);
+    void CellularAutomataStep(vector<CNode*>&regions);
     bool InSearchGridBoundary(int i, int j) const;
     void SetupGrid(CNode* root);
     void GenerateLawnmower();
@@ -53,6 +54,8 @@ private:
     void SeparateCompoundTargets(const vector<CompoundTarget *> &all_targets, CNode* cur_search_node,
                                  vector<CompoundTarget*> &cur_targets, vector<CompoundTarget*> &extensible_targets);
     bool NeighboursNode(const CNode *n1, const CNode *n2) const;
+
+    int ComputeCellularAutomataSteps(int fib, int clusters_count);
 
     std::vector<CNode*> nodeStack;
     std::vector<CNode*> visitedNodes;

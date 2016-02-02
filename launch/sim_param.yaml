@@ -10,7 +10,7 @@ area_length: 200.0
 area_rotation: 0.0
 logging: false
 patches: 3
-percent_interesting: 50.0
+percent_interesting: 20.0
 auto_exit: false
 bypass_controller: false
 prob_r: 0.5

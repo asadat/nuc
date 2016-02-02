@@ -21,7 +21,7 @@ double CNode::rootHeight = 0;
 int CNode::maxDepth = 0;
 double CNode::int_thr[20];
 double CNode::cut_off;
-CNode::DrawingMode CNode::drawing_mode=CNode::DrawingMode::Interesting;
+CNode::DrawingMode CNode::drawing_mode=CNode::DrawingMode::gp_true_f;
 
 CNode::CNode(Rect target_foot_print, bool populateChildren):parent(NULL)
 {

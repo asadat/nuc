@@ -9,6 +9,7 @@
 #include "CompoundTarget.h"
 #include "ScalarField.h"
 #include <random>
+#include <functional>
 
 using namespace std;
 using namespace TooN;
@@ -17,6 +18,7 @@ extern void glVertex(Vector<3>);
 
 SearchCoverageStrategy::SearchCoverageStrategy(CNode *root)
 {
+
     drawFootprints = false;
     high_res_coverage=0;
     high_res_coverage_true=0;
@@ -65,6 +67,37 @@ SearchCoverageStrategy::~SearchCoverageStrategy()
     delete dummy;
 }
 
+void SearchCoverageStrategy::CellularAutomataStep(vector<CNode*>&regions)
+{
+    vector<CNode*> newregions;
+
+    for(auto c: regions)
+    {
+        for(char selector = 1; selector <= 8; selector = selector<<1)
+        {
+            auto nb = c->GetNeighbourLeaf(selector&1,selector&2,selector&4,selector&8);
+            if(nb)
+            {
+                if(nb->prior_cell < 0.4 && nb->imgPrior < 0.4)
+                {
+                    if(RAND(0,100) < 50)
+                    {
+                        nb->imgPrior = 0.5;
+                        newregions.push_back(nb);
+                    }
+                }
+            }
+         }
+    }
+
+    regions.clear();
+    for(auto c: newregions)
+    {
+        c->prior_cell = c->imgPrior;
+        regions.push_back(c);
+    }
+}
+
 void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
 {
     if(NUCParam::random_seed > 0 && !randomize)
@@ -76,29 +109,33 @@ void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
     {
         c->SetPrior(0.5);
         c->prior_cell = 0;
-        if(RAND(0,1) < 0.001)
-        {
-            c->prior_cell = 0.5;
-        }
+        c->imgPrior = 0.0;
     }
 
-    for(int i=0; i<20; i++)
+    int cluster_count = 4;
+    vector<CNode*> growing_regions;
+    for(int i=0; i<cluster_count; i++)
     {
-        for(auto &c: grid)
-        {
-            if(c->prior_cell > 0.1 && RAND(0,1) < 0.25)
-            {
-                if(c->GetNeighbourLeaf(true,false,false,false))
-                    c->GetNeighbourLeaf(true,false,false,false)->prior_cell = 0.5;
-                if(c->GetNeighbourLeaf(false,true,false,false))
-                    c->GetNeighbourLeaf(false,true,false,false)->prior_cell = 0.5;
-                if(c->GetNeighbourLeaf(false,false,true,false))
-                    c->GetNeighbourLeaf(false,false,true,false)->prior_cell = 0.5;
-                if(c->GetNeighbourLeaf(false,false,false,true))
-                    c->GetNeighbourLeaf(false,false,false,true)->prior_cell = 0.5;
-            }
-        }
+       int gx = RAND(0, s);
+       int gy = RAND(0, s);
+
+       auto c = GetNode(gx, gy);
+       if(c)
+       {
+            c->prior_cell = 0.5;
+            c->imgPrior = 0.5;
+            growing_regions.push_back(c);
+       }
+
     }
+
+    int iterations_count = ComputeCellularAutomataSteps(s*s*NUCParam::percent_interesting/100.0, cluster_count);
+    for(int i=0; i<4*iterations_count; i++)
+    {
+        ROS_INFO("iteration: %d", i);
+        CellularAutomataStep(growing_regions);
+    }
+
 
     int d=5;
     for(int i=0; i<s; i++)
@@ -120,6 +157,23 @@ void SearchCoverageStrategy::GenerateEnvironment(bool randomize)
             GetNode(i,j)->imgPrior = p/n;
         }
     }
+
+}
+
+int SearchCoverageStrategy::ComputeCellularAutomataSteps(int fib, int clusters_count)
+{
+    std::function<int(int)> fidx = [](int sum)->int
+    {
+        int s=1;
+        for(int i=1; ;i++)
+        {
+            s += i*4;
+            if(s > sum)
+                return i;
+        }
+    };
+
+    return fidx(fib/clusters_count);
 }
 
 Vector<3> SearchCoverageStrategy::GetNextSearchPos()
@@ -1629,8 +1683,8 @@ void SearchCoverageStrategy::SetupGrid(CNode *root)
 
 CNode * SearchCoverageStrategy::GetNode(int i, int j) const
 {
-    size_t n = i*s+j;
-    if(n < grid.size())
+    int n = i*s+j;
+    if(n >=0 && n < grid.size())
         return grid[n];
     else
     {
@@ -1683,16 +1737,16 @@ void SearchCoverageStrategy::hanldeKeyPressed(std::map<unsigned char, bool> &key
     }
     else if(key['7'])
     {
-        if(CNode::drawing_mode == CNode::DrawingMode::gp_f)
+        if(CNode::drawing_mode == CNode::DrawingMode::gp_true_f)
+            CNode::drawing_mode = CNode::DrawingMode::gp_f;
+        else if(CNode::drawing_mode == CNode::DrawingMode::gp_f)
             CNode::drawing_mode = CNode::DrawingMode::gp_var;
         else if(CNode::drawing_mode == CNode::DrawingMode::gp_var)
             CNode::drawing_mode = CNode::DrawingMode::gp_f_var;
         else if(CNode::drawing_mode == CNode::DrawingMode::gp_f_var)
-            CNode::drawing_mode = CNode::DrawingMode::gp_true_f;
-        else if(CNode::drawing_mode == CNode::DrawingMode::gp_true_f)
             CNode::drawing_mode = CNode::DrawingMode::Interesting;
         else
-            CNode::drawing_mode = CNode::DrawingMode::gp_f;
+            CNode::drawing_mode = CNode::DrawingMode::gp_true_f;
 
 
         updateKey = false;
