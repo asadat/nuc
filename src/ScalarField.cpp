@@ -20,6 +20,7 @@ ScalarField::~ScalarField()
 
 void ScalarField::glDraw()
 {
+    return;
     auto s = this->sampleset->size();
     glPointSize(5);
     glColor3f(1,0.5,0);

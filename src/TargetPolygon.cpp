@@ -373,7 +373,7 @@ void TargetPolygon::FindApproximatePolygon()
     simplified_approx_polygon.push_back(approxPoly.front());
     for(auto it = approxPoly.begin(); it!= approxPoly.end();)
     {
-        const double mean_dist_threshold = NUCParam::min_footprint/2;
+        const double mean_dist_threshold = NUCParam::min_footprint*0.5;
         for(auto it_end = it+1; it_end != approxPoly.end(); it_end++)
         {
             auto it_next = it_end+1;
@@ -876,16 +876,16 @@ void TargetPolygon::glDraw()
     }
     glEnd();
 
-//    glColor3f(0, 0, 1);
-//    glPointSize(6);
-//    glBegin(GL_POINTS);
-//    for(unsigned int i=0; i<boundaryNodes.size();i++)
-//    {
-//        glColor3f(0,((double)i)/boundaryNodes.size(),((double)i)/boundaryNodes.size());
-//        TooN::Vector<3> p1 = boundaryNodes[i]->GetMAVWaypoint();
-//        glVertex3f(p1[0],p1[1],p1[2]);
-//    }
-//    glEnd();
+    glColor3f(0, 0, 1);
+    glPointSize(6);
+    glBegin(GL_POINTS);
+    for(unsigned int i=0; i<boundaryNodes.size();i++)
+    {
+        glColor3f(0,((double)i)/boundaryNodes.size(),((double)i)/boundaryNodes.size());
+        TooN::Vector<3> p1 = boundaryNodes[i]->GetMAVWaypoint();
+        glVertex3f(p1[0],p1[1],p1[2]);
+    }
+    glEnd();
 
 
 //    if(base_idx[0] != -1 && base_idx[1]!=-1)
