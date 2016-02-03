@@ -305,6 +305,40 @@ void SearchCoverageStrategy::UpdateRemainingTime(CNode *node)
 
 }
 
+void SearchCoverageStrategy::SensingUpdate(TooN::Vector<3> pos)
+{
+    std::random_device rd;
+    std::mt19937 e2(rd());
+    ROS_INFO("Start Observing ...");
+    Rect fp = GetCourseSurveyFootprint();
+    TooN::Vector<2> fc = makeVector(0.5*(fp[0]+fp[2]), 0.5*(fp[1]+fp[3]));
+    fp[0] -= fc[0] - pos[0];
+    fp[1] -= fc[1] - pos[1];
+    fp[2] -= fc[0] - pos[0];
+    fp[3] -= fc[1] - pos[1];
+
+    const int n = 2;
+    double dx = fabs(fp[0]-fp[2])/n;
+    double dy = fabs(fp[1]-fp[3])/n;
+    //for(int k=0; k<5; k++)
+    for(int i=0; i<n; i++)
+        for(int j=0; j<n; j++)
+        {
+            TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
+            auto leaf = tree->GetNearestLeaf(p);
+            double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
+            std::normal_distribution<> dist(leaf->imgPrior, NUCParam::gp_sigma);
+
+            ScalarField::GetInstance()->add_pattern(x, dist(e2));
+        }
+
+    ROS_INFO("End Observing ...");
+    ROS_INFO("Update GP ...");
+    tree->UpdateGPValues();
+    //node->GetNeighbourLeaf()
+    ROS_INFO("Updated GP ...");
+}
+
 void SearchCoverageStrategy::ReachedNode(CNode *node)
 {
     bool reachedSearchNode = node->searchNode;
@@ -313,30 +347,32 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 
     if(reachedSearchNode)
     {
-        std::random_device rd;
-        std::mt19937 e2(rd());
-        ROS_INFO("Start Observing ...");
-        Rect fp = node->GetFootPrint();
-        const int n = 2;
-        double dx = fabs(fp[0]-fp[2])/n;
-        double dy = fabs(fp[1]-fp[3])/n;
-        //for(int k=0; k<5; k++)
-        for(int i=0; i<n; i++)
-            for(int j=0; j<n; j++)
-            {
-                TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
-                auto leaf = node->GetNearestLeaf(p);
-                double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
-                std::normal_distribution<> dist(leaf->imgPrior, NUCParam::gp_sigma);
+//        std::random_device rd;
+//        std::mt19937 e2(rd());
+//        ROS_INFO("Start Observing ...");
+//        Rect fp = node->GetFootPrint();
+//        const int n = 2;
+//        double dx = fabs(fp[0]-fp[2])/n;
+//        double dy = fabs(fp[1]-fp[3])/n;
+//        //for(int k=0; k<5; k++)
+//        for(int i=0; i<n; i++)
+//            for(int j=0; j<n; j++)
+//            {
+//                TooN::Vector<3> p= makeVector(fp[0]+dx*(0.5+i), fp[1]+dy*(0.5+j), 0.0);
+//                auto leaf = node->GetNearestLeaf(p);
+//                double x[]={leaf->GetMAVWaypoint()[0],leaf->GetMAVWaypoint()[1]};
+//                std::normal_distribution<> dist(leaf->imgPrior, NUCParam::gp_sigma);
 
-                ScalarField::GetInstance()->add_pattern(x, dist(e2));
-            }
+//                ScalarField::GetInstance()->add_pattern(x, dist(e2));
+//            }
 
-        ROS_INFO("End Observing ...");
-        ROS_INFO("Update GP ...");
-        tree->UpdateGPValues();
-        //node->GetNeighbourLeaf()
-        ROS_INFO("Updated GP ...");
+//        ROS_INFO("End Observing ...");
+//        ROS_INFO("Update GP ...");
+//        tree->UpdateGPValues();
+//        //node->GetNeighbourLeaf()
+//        ROS_INFO("Updated GP ...");
+
+        SensingUpdate(node->GetMAVWaypoint());
 
         // in the NUC upon reaching a node all the descendants are visited
         // which is not what we want in this specific strategy, hence the
@@ -368,12 +404,18 @@ void SearchCoverageStrategy::ReachedNode(CNode *node)
 
     if(NUCParam::policy == "greedy")
     {
+        ROS_INFO("start find cluster .. ");
         FindClusters(true, newTargets, node);
+        ROS_INFO("end find cluster ... greedy policy ");
         OnReachedNode_GreedyPolicy(node, newTargets, reachedSearchNode);
+        ROS_INFO("end greedy policy .. ");
     }
     else if(NUCParam::policy == "delayed_greedy")
     {
+        ROS_INFO("start find cluster .. ");
         FindClusters(true, newTargets, node);
+        ROS_INFO("end find cluster .. ");
+
         ROS_INFO("Calling delayed_greedy .. ");
         OnReachedNode_DelayedGreedyPolicy(node, newTargets, reachedSearchNode);
         ROS_INFO("Returning from delayed_greedy .. ");
@@ -396,165 +438,23 @@ void SearchCoverageStrategy::OnReachedNode_GreedyPolicy(CNode *node, vector<Targ
         CompoundTarget ct;
         for(size_t i=0; i<newTargets.size(); i++)
         {
+            ROS_INFO("Target size: %lu lm: %lu", newTargets[i]->ch.size(), newTargets[i]->lm.size());
             if(newTargets[i]->HasParent(node))
                 ct.AddTarget(newTargets[i]);
         }
-
+        ROS_INFO("G1 ");
         TargetTour::GetTargetTour_Utility(ct.targets, node->GetMAVWaypoint(), GetNextSearchPos());
+        ROS_INFO("G1.5 ");
 
         double coverage_time = TargetTour::GetPlanExecutionTime(nodeStack, node->GetMAVWaypoint(), startPos, true, false);
         double time_budget = remaining_time - coverage_time;
-
+        ROS_INFO("G2 ");
         vector<CompoundTarget*> cts;
         cts.push_back(&ct);
         PartiallyCoverTargets(cts, time_budget, node->GetMAVWaypoint(), GetNextSearchPos());
 
         std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
 
-//        long int selector = 1;
-//        long int maxSelector = 1 << newTargets.size();
-//        long int bestSelector = 0;
-//        double bestArea = 0;
-
-//        // keep track of the min cost plan
-//        // in case cannot make complete coverage
-//        double minCost = 99999999;
-//        long int minCostSelector = 0;
-
-//        bool flagAll = false;
-//        if(newTargets.size() > 63)
-//            flagAll = true;
-
-//        for(; selector < maxSelector && !flagAll; selector++)
-//        {
-//            double area=0;
-//            vector<CNode*> unionCells;
-//            for(size_t i=0; i < newTargets.size(); i++ )
-//            {
-//                long int b = 1 << (i);
-//                if(b & selector)
-//                {
-//                    newTargets[i]->GetCells(unionCells, NULL);
-//                    area += newTargets[i]->GetTargetRegionsArea();
-//                }
-//            }
-
-//            if(unionCells.empty())
-//                continue;
-
-//            TargetPolygon * tmpPoly = new TargetPolygon(unionCells, NULL);
-//            vector<Vector<3> > tmp_target_lm;
-//            tmpPoly->GetLawnmowerPlan(tmp_target_lm);
-
-//            // generate a plan which visits the current target and the rest of the search pattern
-//            vector<Vector<3> > tmp_plan;
-//            tmp_plan.push_back(prevGoal);
-//            tmp_plan.push_back(node->GetMAVWaypoint());
-//            copy(tmp_target_lm.begin(), tmp_target_lm.end(), back_inserter(tmp_plan));
-//            for(size_t i = 0; i < nodeStack.size(); i++)
-//                tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-//            tmp_plan.push_back(startPos);
-
-//            double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
-
-//            if(total_time < remaining_time)
-//            {
-//                if(bestArea < area)
-//                {
-//                    bestArea = area;
-//                    bestSelector = selector;
-//                }
-//            }
-
-//            if(total_time < minCost)
-//            {
-//                minCost = total_time;
-//                minCostSelector = selector;
-//            }
-//        }
-
-
-//        // if complete coverage was impossible
-//        // create partial coverage
-//        if(bestSelector == 0)
-//            bestSelector = minCostSelector;
-
-//        int firstTarget = -1;
-
-//        if(flagAll)
-//            firstTarget = 0;
-
-//        // Add the selected polygons to the first selected polygon
-//        for(size_t i=0; i < newTargets.size(); i++ )
-//        {
-//            long int b = 1 << (i);
-//            if(b & bestSelector || flagAll)
-//            {
-//                if(firstTarget > -1)
-//                {
-//                    newTargets[firstTarget]->AddPolygon(newTargets[i]);
-//                }
-//                else
-//                {
-//                    firstTarget = i;
-//                }
-//            }
-//        }
-
-
-//        if(firstTarget == -1)
-//        {
-//            ///for(size_t i=0; i < newTargets.size(); i++)
-//            //    targets.push_back(newTargets[i]);
-//            return;
-//        }
-
-//        // delete the selected polygons except the first one
-//        int sze = newTargets.size()-1;
-//        for(int i=sze; i > 0; i-- )
-//        {
-//            long int b = 1 << (i);
-//            if(b & bestSelector || flagAll)
-//            {
-//                TargetPolygon * tmp = newTargets[i];
-//                newTargets.erase(newTargets.begin()+i);
-//                delete tmp;
-//            }
-//        }
-
-//        // add the aggregate lawnmower plan to the current plan
-//        for(size_t i=0; i < newTargets.size(); i++)
-//        {
-//            if((int)i == firstTarget)
-//            {
-//                newTargets[i]->GetLawnmowerPlan(target_lms);
-//                newTargets[i]->MarkAsVisited();
-//                high_res_coverage += newTargets[i]->GetTargetRegionsArea();
-
-//                while(!target_lms.empty())
-//                {
-//                    //check if we should create partial plan
-//                    vector<Vector<3> > tmp_plan;
-//                    tmp_plan.push_back(prevGoal);
-//                    tmp_plan.push_back(node->GetMAVWaypoint());
-//                    copy(target_lms.begin(), target_lms.end(), back_inserter(tmp_plan));
-//                    for(size_t i = 0; i < nodeStack.size(); i++)
-//                        tmp_plan.push_back(nodeStack[i]->GetMAVWaypoint());
-//                    tmp_plan.push_back(startPos);
-
-//                    double total_time = TargetTour::GetPlanExecutionTime(tmp_plan, true, false);
-
-//                    if(total_time < remaining_time)
-//                    {
-//                        targets.push_back(newTargets[i]);
-//                        break;
-//                    }
-//                    else
-//                       target_lms.pop_back();
-//                }
-
-//            }
-//        }
     }
 }
 
@@ -580,104 +480,6 @@ void SearchCoverageStrategy::OnReachedNode_DelayedPolicy(CNode *node, vector<Tar
             vector<CompoundTarget*> cts;
             cts.push_back(&ct);
             PartiallyCoverTargets(cts, time_budget, node->GetMAVWaypoint(), GetNextSearchPos());
-
-            //std::copy(newTargets.begin(), newTargets.end(), std::back_inserter(targets));
-
-//            vector<Entity*> t_list;
-//            vector<Entity*> tsp_list;
-
-//            Entity * sn = new Entity();
-//            sn->start = true;
-//            sn->end = false;
-//            sn->pos = node->GetMAVWaypoint();
-//            t_list.push_back(sn);
-
-//            Entity * en = new Entity();
-//            en->start = false;
-//            en->end = true;
-//            en->pos = visitedNodes.front()->GetMAVWaypoint();
-//            t_list.push_back(en);
-
-//            for(size_t i=0; i < targets.size(); i++)
-//            {
-//                if(targets[i]->LawnmowerSize() <= 0)
-//                    continue;
-
-//                Entity * n = new Entity();
-//                n->start = false;
-//                n->end = false;
-//                n->pos = targets[i]->GetMiddlePos();
-//                n->nodeIdx = i;
-//                t_list.push_back(n);
-//            }
-
-//            TSP tsp;
-//            tsp.GetShortestPath(t_list, tsp_list);
-
-//            vector<TargetPolygon*> tsp_target;
-//            for(size_t i=0; i < tsp_list.size(); i++)
-//            {
-//                if(tsp_list[i]->start || tsp_list[i]->end)
-//                    continue;
-//                tsp_target.push_back(targets[tsp_list[i]->nodeIdx]);
-//            }
-
-//            // optimizing target lawnmower start and end
-//            for(size_t i=0; i < tsp_target.size(); i++)
-//            {
-//                bool flag = false;
-
-//                if(i==0)
-//                {
-//                    if(D2(node->GetMAVWaypoint(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
-//                            D2(node->GetMAVWaypoint(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
-//                    {
-//                        tsp_target[i]->ReverseLawnmower();
-//                        flag = true;
-//                    }
-//                }
-//                else if(i+1 == tsp_target.size())
-//                {
-//                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), en->pos) >
-//                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), en->pos))
-//                    {
-//                        tsp_target[i]->ReverseLawnmower();
-//                        flag = true;
-//                    }
-//                }
-//                else
-//                {
-//                    if(D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->FirstLMPos()) + D2(tsp_target[i]->LastLMPos(), tsp_target[i+1]->FirstLMPos()) >
-//                            D2(tsp_target[i-1]->LastLMPos(), tsp_target[i]->LastLMPos()) + D2(tsp_target[i]->FirstLMPos(), tsp_target[i+1]->FirstLMPos()))
-//                    {
-//                        tsp_target[i]->ReverseLawnmower();
-//                        flag = true;
-//                    }
-//                }
-
-//                if(flag)
-//                    i++;
-//            }
-
-//            for(size_t i=0; i < tsp_target.size(); i++)
-//            {
-//                tsp_target[i]->GetLawnmowerPlan(target_lms);
-//                tsp_target[i]->MarkAsVisited();
-//            }
-
-
-//            delete sn;
-//            delete en;
-
-//            tsp_list.clear();
-//            while(t_list.empty())
-//            {
-//                Entity* e = t_list.back();
-//                t_list.pop_back();
-//                delete e;
-//            }
-
-//            reverse(target_lms.begin(), target_lms.end());
         }
     }
 }
@@ -688,14 +490,17 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
     {
         for(size_t i=0; i<targets.size(); i++)
             targets[i]->UpdateIsVisited();
+        ROS_INFO("DG 0.1 ");
 
         AddTargetsToComponentGenerators(newTargets, node);
+        ROS_INFO("DG 0.2 ");
 
         targets2visit.clear();
         CleanupComponents();
 
         // get the targets
         gc.GetIntegratedComponents(integrated_components);
+        ROS_INFO("DG1 ");
 
         for(size_t i=0; i<integrated_components.size(); i++)
         {
@@ -708,7 +513,7 @@ void SearchCoverageStrategy::OnReachedNode_DelayedGreedyPolicy(CNode *node, vect
 
         vector<CompoundTarget*> cur_compound_targets;
         vector<CompoundTarget*> extensible_compound_targets;
-
+ROS_INFO("DG2 ");
         SeparateCompoundTargets(integrated_components, node, cur_compound_targets, extensible_compound_targets);
         bool case_1 = true;
         for(size_t i=0; i<extensible_compound_targets.size() && case_1; i++)
@@ -1550,7 +1355,7 @@ void SearchCoverageStrategy::SetPolygonBoundaryFlags(TargetPolygon * plg, CNode*
 
 void SearchCoverageStrategy::glDraw()
 {
-    //ScalarField::GetInstance()->glDraw();
+    ScalarField::GetInstance()->glDraw();
 
     if(drawFootprints && hi_res_waypoints.size() > 2)
     {
@@ -1689,6 +1494,14 @@ void SearchCoverageStrategy::SetupGrid(CNode *root)
             n->grd_y = j;
             grid.push_back(n);
         }
+}
+
+Rect SearchCoverageStrategy::GetCourseSurveyFootprint()
+{
+    if(!search_grid.empty())
+        return search_grid.front()->GetFootPrint();
+    else
+        return Rect();
 }
 
 CNode * SearchCoverageStrategy::GetNode(int i, int j) const
@@ -1906,6 +1719,9 @@ void SearchCoverageStrategy::FindClusters(bool incremental, vector<TargetPolygon
         }
 
         TargetPolygon *t = new TargetPolygon(v, visitedNodes.back(),[&](int i_, int j_){ return this->GetNode(i_,j_);});
-        newTargets.push_back(t);
+        if(!t->lm.empty())
+            newTargets.push_back(t);
+        else
+            delete t;
     }
 }

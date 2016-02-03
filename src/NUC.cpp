@@ -689,6 +689,7 @@ void NUC::Update()
     static double ros_p = 1/rosFreq;
     static ros::Time lastTime = ros::Time::now();
     static ros::Time lastTimeMav = ros::Time::now();
+    static ros::Time lastSensing = ros::Time::now();
 
     //static int i=0;
     double dt = (ros::Time::now()-lastTime).toSec();
@@ -710,7 +711,14 @@ void NUC::Update()
     {
         lastTimeMav = ros::Time::now();
         if(!NUCParam::bypass_controller)
+        {
             mav.Update(dtmav);
+            if((lastTimeMav-lastSensing).toSec() > 2)
+            {
+                lastSensing = lastTimeMav;
+                //traversal->SensingUpdate(mav.GetPos());
+            }
+        }
 
         if(NUCParam::bypass_controller || mav.AtGoal())
         {

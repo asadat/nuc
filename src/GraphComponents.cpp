@@ -95,22 +95,35 @@ void GraphComponents::GetIntegratedComponents(vector<CompoundTarget*> &component
             if(!nd->visited)
             {
                 TargetPolygon * t = new TargetPolygon();
+                ROS_INFO("DG 0.21 ");
                 Integrating_DFS(nd, t);
+                ROS_INFO("DG 0.22 ");
                 t->ProcessPolygon();
-                integrated_comp->AddTarget(t);
+                ROS_INFO("DG 0.23 ");
+                if(t->LawnmowerSize() > 0)
+                    integrated_comp->AddTarget(t);
+                else
+                    delete t;
+
+                ROS_INFO("DG 0.24 ");
             }
         }
 
         //ROS_INFO("INTCOMP: %d %", integrated_comp->size(), integrated_comp->IsNonBoundary());
-        components.push_back(integrated_comp);
+        if(integrated_comp->size() > 0)
+            components.push_back(integrated_comp);
+        else
+            delete integrated_comp;
+        ROS_INFO("DG 0.3 ");
     }
 }
 
 void GraphComponents::Integrating_DFS(node *root, TargetPolygon *target)
 {
+    ROS_INFO("DFS 0 ");
     root->visited = true;
     target->AddPolygon(root->tp, false, false);
-
+    ROS_INFO("DFS 5 ");
     pair<multimap<node*,node*>::iterator, multimap<node*,node*>::iterator> r_it = edges.equal_range(root);
     for(multimap<node*,node*>::iterator it=r_it.first; it != r_it.second; it++)
     {
@@ -119,6 +132,8 @@ void GraphComponents::Integrating_DFS(node *root, TargetPolygon *target)
             Integrating_DFS(it->second, target);
         }
     }
+
+    ROS_INFO("DFS 10 ");
 }
 
 void GraphComponents::GetConnectedComponents(vector<CompoundTarget*> &components)

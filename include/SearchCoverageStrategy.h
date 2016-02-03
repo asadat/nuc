@@ -17,7 +17,9 @@ public:
     CNode* GetNextNode();
     void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey);
     void ReachedNode(CNode *node);
-private:    
+    void SensingUpdate(TooN::Vector<3> pos);
+private:
+    Rect GetCourseSurveyFootprint();
     CNode * GetNode(int i, int j) const;
     CNode * GetSearchNode(int i, int j) const;
     void GenerateEnvironment(bool randomize=false);

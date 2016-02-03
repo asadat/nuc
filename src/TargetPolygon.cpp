@@ -45,6 +45,14 @@ TargetPolygon::TargetPolygon(vector<CNode *> &cs, CNode *parentNode, std::functi
 
 TargetPolygon::~TargetPolygon()
 {
+    for(auto pn:parentSearchNodes)
+    {
+        auto it = find(pn->targets.begin(), pn->targets.end(), this);
+        if(it != pn->targets.end())
+        {
+            pn->targets.erase(it);
+        }
+    }
 }
 
 void TargetPolygon::SetBoundaryFlag(SIDE side, bool val)
@@ -108,11 +116,17 @@ void TargetPolygon::ProcessPolygon()
     Vector<4> fp = cells.back()->footPrint;
     cellW = fp[2]-fp[0];
 
-    ConvexHull();
-    FindBaseEdge();
-    PlanLawnmower();
-    SetLawnmowerHeight();
+    ROS_INFO("here 1");
     FindApproximatePolygon();
+    ROS_INFO("here 2");
+    ConvexHull();
+    ROS_INFO("here 3");
+    FindBaseEdge();
+    ROS_INFO("here 4");
+    PlanLawnmower();
+    ROS_INFO("here 5");
+    SetLawnmowerHeight();
+    ROS_INFO("here 6");
 
 }
 
@@ -128,8 +142,9 @@ bool TargetPolygon::IsNeighbour(TargetPolygon *tp)
 
 void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels, bool process)
 {
+    ROS_INFO("AT 0 ");
     parentSearchNodes.insert(p->parentSearchNodes.begin(), p->parentSearchNodes.end());
-
+    ROS_INFO("AT 1 ");
     for(int i=0; i<ALL; i++)
         boundaryFLags[i] = boundaryFLags[i] || p->boundaryFLags[i];
 
@@ -140,10 +155,10 @@ void TargetPolygon::AddPolygon(TargetPolygon *p, bool changeLabels, bool process
 
         cells.push_back(p->cells[i]);
     }
-
+ROS_INFO("AT 2 ");
     if(process)
         ProcessPolygon();
-}
+ROS_INFO("AT 3 ");                }
 
 double TargetPolygon::GetTargetRegionsArea() const
 {
@@ -411,18 +426,23 @@ CNode* TargetPolygon::GetNeighbour_8(CNode* node, int i)
 void TargetPolygon::ConvexHull()
 {
     ch.clear();
+    if(approxPoly.size()<3)
+    {
+        return;
+    }
+
     // first node is the bottom most node
     unsigned first=0;
-    for(unsigned int i=1; i<cells.size(); i++)
-        if(cells[first]->pos[1]> cells[i]->pos[1])
+    for(unsigned int i=1; i<approxPoly.size(); i++)
+        if(approxPoly[first]->pos[1]> approxPoly[i]->pos[1])
             first = i;
 
-    ch.push_back(cells[first]);
+    ch.push_back(approxPoly[first]);
     //v.erase(v.begin()+first);
 
-    center = cells[0]->pos;
+    center = approxPoly[0]->pos;
 
-    if(cells.size()<=1)
+    if(approxPoly.size()<=1)
         return;
 
     //second node
@@ -430,10 +450,10 @@ void TargetPolygon::ConvexHull()
     Vector<3> p1 = ch[0]->pos - makeVector(-1, 0, 0);
     Vector<3> p2 = ch.back()->pos;
 
-    double ang = ANGLE(p1, p2, cells[1]->pos);
-    for(unsigned int i=2; i<cells.size(); i++)
+    double ang = ANGLE(p1, p2, approxPoly[1]->pos);
+    for(unsigned int i=2; i<approxPoly.size(); i++)
     {
-        double a = ANGLE(p1, p2, cells[i]->pos);
+        double a = ANGLE(p1, p2, approxPoly[i]->pos);
         if(a> ang)
         {
             ang = a;
@@ -441,19 +461,19 @@ void TargetPolygon::ConvexHull()
         }
     }
 
-    ch.push_back(cells[second]);
+    ch.push_back(approxPoly[second]);
 
-    if(cells.size() <=2)
+    if(approxPoly.size() <=2)
         return;
 
     //check if the cells form a line a line
     isLine = true;
-    Vector<3> p_0 = cells[0]->pos;
-    Vector<3> p_1 = cells[1]->pos;
+    Vector<3> p_0 = approxPoly[0]->pos;
+    Vector<3> p_1 = approxPoly[1]->pos;
 
-    for(size_t i=2; i < cells.size() && isLine; i++)
+    for(size_t i=2; i < approxPoly.size() && isLine; i++)
     {
-        Vector<3> p_n = cells[i]->pos;
+        Vector<3> p_n = approxPoly[i]->pos;
         if(fabs((p_0[1]-p_1[1])*(p_0[0]-p_n[0]) - (p_0[1]-p_n[1])*(p_0[0]-p_1[0])) > 0.01)
         {
             isLine = false;
@@ -463,7 +483,7 @@ void TargetPolygon::ConvexHull()
     if(isLine)
     {
         ch.clear();
-        std::copy(cells.begin(), cells.end(), std::back_inserter(ch));
+        std::copy(approxPoly.begin(), approxPoly.end(), std::back_inserter(ch));
     }
     else
     {
@@ -475,12 +495,12 @@ void TargetPolygon::ConvexHull()
             p2 = ch.back()->pos;
             int next = -1;
             ang = -1;
-            for(unsigned int i=0; i<cells.size(); i++)
+            for(unsigned int i=0; i<approxPoly.size(); i++)
             {
-                if(cells[i] == ch.back())
+                if(approxPoly[i] == ch.back())
                     continue;
 
-                double a = ANGLE(p1, p2, cells[i]->pos);
+                double a = ANGLE(p1, p2, approxPoly[i]->pos);
                 if(a> ang)
                 {
                     ang = a;
@@ -490,10 +510,10 @@ void TargetPolygon::ConvexHull()
 
             if(next > -1)
             {
-                if(std::find(ch.begin(), ch.end(), cells[next]) != ch.end())
+                if(std::find(ch.begin(), ch.end(), approxPoly[next]) != ch.end())
                     break;
                 else
-                    ch.push_back(cells[next]);
+                    ch.push_back(approxPoly[next]);
             }
             else
             {
@@ -538,9 +558,12 @@ void TargetPolygon::ConvexHull()
 }
 
 void TargetPolygon::FindBaseEdge()
-{
+{    
     base_idx[0] = -1;
     base_idx[1] = -1;
+
+    if(ch.size()<3)
+        return;
 
     if(isLine)
     {
@@ -673,7 +696,7 @@ void TargetPolygon::PlanLawnmower()
 
     double interlap_d = NUCParam::high_res_cells*cellW;
 
-    if(ch.size() == 0)
+    if(ch.size() < 3)
     {
         return;
     }
@@ -853,63 +876,63 @@ void TargetPolygon::glDraw()
     }
     glEnd();
 
-    glColor3f(0, 0, 1);
-    glPointSize(6);
-    glBegin(GL_POINTS);
-    for(unsigned int i=0; i<boundaryNodes.size();i++)
-    {
-        glColor3f(0,((double)i)/boundaryNodes.size(),((double)i)/boundaryNodes.size());
-        TooN::Vector<3> p1 = boundaryNodes[i]->GetMAVWaypoint();
-        glVertex3f(p1[0],p1[1],p1[2]);
-    }
-    glEnd();
+//    glColor3f(0, 0, 1);
+//    glPointSize(6);
+//    glBegin(GL_POINTS);
+//    for(unsigned int i=0; i<boundaryNodes.size();i++)
+//    {
+//        glColor3f(0,((double)i)/boundaryNodes.size(),((double)i)/boundaryNodes.size());
+//        TooN::Vector<3> p1 = boundaryNodes[i]->GetMAVWaypoint();
+//        glVertex3f(p1[0],p1[1],p1[2]);
+//    }
+//    glEnd();
 
 
-    if(base_idx[0] != -1 && base_idx[1]!=-1)
-    {
-        glColor3f(1,0,0);
-        glPointSize(10);
-        glBegin(GL_POINTS);
-        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
-        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
-        glColor3f(1,0,0);
-        glVertex3f(p1[0],p1[1],p1[2]);
-        glColor3f(0,1,0);
-        glVertex3f(p2[0],p2[1],p2[2]);
-        glEnd();
+//    if(base_idx[0] != -1 && base_idx[1]!=-1)
+//    {
+//        glColor3f(1,0,0);
+//        glPointSize(10);
+//        glBegin(GL_POINTS);
+//        TooN::Vector<3> p1 = ch[base_idx[0]]->GetMAVWaypoint();
+//        TooN::Vector<3> p2 = ch[base_idx[1]]->GetMAVWaypoint();
+//        glColor3f(1,0,0);
+//        glVertex3f(p1[0],p1[1],p1[2]);
+//        glColor3f(0,1,0);
+//        glVertex3f(p2[0],p2[1],p2[2]);
+//        glEnd();
 
-        if(lm.size() > 1)
-        {
-            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
-            glLineWidth(visited?7:4);
-            glBegin(GL_LINES);
-            //glPointSize(8);
-            //glBegin(GL_POINTS);
-            for(size_t i=0; i+1<lm.size(); i+=1)
-            {
-               TooN::Vector<3> p1 = lm[i];
-               TooN::Vector<3> p2 = lm[i+1];
-               glVertex3f(p1[0], p1[1], p1[2]+0.5);
-               glVertex3f(p2[0], p2[1], p2[2]+0.5);
-            }
-            glEnd();
-        }
-    }
+//        if(lm.size() > 1)
+//        {
+//            glColor4f(0.5,0.5,1, (visited?1.0:0.4));
+//            glLineWidth(visited?7:4);
+//            glBegin(GL_LINES);
+//            //glPointSize(8);
+//            //glBegin(GL_POINTS);
+//            for(size_t i=0; i+1<lm.size(); i+=1)
+//            {
+//               TooN::Vector<3> p1 = lm[i];
+//               TooN::Vector<3> p2 = lm[i+1];
+//               glVertex3f(p1[0], p1[1], p1[2]+0.5);
+//               glVertex3f(p2[0], p2[1], p2[2]+0.5);
+//            }
+//            glEnd();
+//        }
+//    }
 
-    for(int i=0; i <4; i++)
-    {
-        if(boundaryFLags[i])
-        {
-            double dx = (i==0)?-3:((i==1)?3:0);
-            double dy = (i==2)? 3:((i==3)?-3:0);
+//    for(int i=0; i <4; i++)
+//    {
+//        if(boundaryFLags[i])
+//        {
+//            double dx = (i==0)?-3:((i==1)?3:0);
+//            double dy = (i==2)? 3:((i==3)?-3:0);
 
-            glLineWidth(5);
-            glBegin(GL_LINES);
-            glColor3f(1,1,0);
-            glVertex3f(center[0], center[1], center[2]);
-            glColor3f(0,1,1);
-            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
-            glEnd();
-        }
-    }
+//            glLineWidth(5);
+//            glBegin(GL_LINES);
+//            glColor3f(1,1,0);
+//            glVertex3f(center[0], center[1], center[2]);
+//            glColor3f(0,1,1);
+//            glVertex3f(center[0]+dx , center[1]+dy, center[2]);
+//            glEnd();
+//        }
+//    }
 }

@@ -11,6 +11,7 @@ public:
     virtual void ReachedNode(CNode* node){}
     virtual void glDraw()=0;
     virtual void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey){}
+    virtual void SensingUpdate(TooN::Vector<3> pos){}
 };
 
 #endif
