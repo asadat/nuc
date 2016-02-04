@@ -82,6 +82,8 @@ double TargetTour::GetTargetTour_Utility(vector<TargetPolygon*> &targets, const 
             if(v/c > b_v/b_c)
             {
                 next = it;
+                b_v = v;
+                b_c = c;
             }
         }
 

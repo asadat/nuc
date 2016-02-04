@@ -4,7 +4,7 @@ branching_sqrt: 2
 FOV: 1.57
 min_footprint: 2
 speed: 0
-policy: greedy
+policy: delayed
 strategy: scs
 area_length: 200.0
 area_rotation: 0.0
@@ -20,5 +20,5 @@ time_limit: 3500
 average_speed: 1.0
 turning_time: 5.0
 lm_tracks: 8
-random_seed: 1454522476
+random_seed: -1
 gp_sigma: 0.2
