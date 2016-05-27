@@ -657,7 +657,7 @@ void PlayLog::glDraw()
 
          glColor4f(1,1,1,1);
          glPointSize(10);
-         double ep=0.1;
+         //double ep=0.1;
          double fl = 1.8;
          for(unsigned int i=0; i<waypoints.size();i++)
          {

@@ -10,6 +10,7 @@ set(NUC_SOURCES
     src/NUC.cpp
     src/NUC_node.cpp
     src/CNode.cpp
+    src/BreadthFirstStrategy.cpp
     src/DepthFirstStrategy.cpp
     src/ShortCutStrategy.cpp
     src/LawnmowerStrategy.cpp
@@ -18,6 +19,7 @@ set(NUC_SOURCES
     src/slic.cpp
     src/SuperPixelFeatures.cpp
     src/NUCParam.cpp
+    src/TSP.cpp
     #src/HuskyInterface.cpp
     src/TestStrategy.cpp
     src/HilbertStrategy.cpp
@@ -29,12 +31,14 @@ set(NUC_SOURCES
     include/InterestingnessSensor.h
     include/NUC.h
     include/CNode.h
+    include/BreadthFirstStrategy.h
     include/DepthFirstStrategy.h
     include/ShortCutStrategy.h
     include/LawnmowerStrategy.h
     include/TraversalStrategy.h
     include/MAV.h
     include/NUCParam.h
+    include/TSP.h
 )
 
 

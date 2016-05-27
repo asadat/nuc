@@ -4,6 +4,7 @@
 #include "GL/glut.h"
 #include "CNode.h"
 #include "TooN/TooN.h"
+#include "BreadthFirstStrategy.h"
 #include "DepthFirstStrategy.h"
 #include "LawnmowerStrategy.h"
 #include "ShortCutStrategy.h"
@@ -77,6 +78,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     {
         traversalStrategy = 0;
     }
+    else if(NUCParam::strategy == "bf")
+    {
+        traversalStrategy = 5;
+    }
     else if(NUCParam::strategy == "sc")
     {
         traversalStrategy = 1;
@@ -122,6 +127,10 @@ NUC::NUC(int argc, char **argv):nh("NUC")
     else if(traversalStrategy == 4)
     {
         traversal = new HilbertStrategy(tree);
+    }
+    else if(traversalStrategy == 5)
+    {
+        traversal = new BreadthFirstStrategy(tree);
     }
     else
     {

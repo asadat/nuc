@@ -7,6 +7,7 @@
 class TraversalStrategy
 {
 public:
+    virtual ~TraversalStrategy(){}
     virtual CNode* GetNextNode()=0;
     virtual void glDraw()=0;
     virtual void hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey){}

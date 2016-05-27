@@ -571,6 +571,8 @@ CNode* HilbertStrategy::GetLMLParent(CNode *node)
 
         return p;
     }
+
+    return NULL;
 }
 
 CNode * HilbertStrategy::GetLastLMNode(CNode *node)
