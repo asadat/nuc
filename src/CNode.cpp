@@ -658,7 +658,7 @@ void CNode::RecomputeProbability()
 
 void CNode::PropagateObservation(bool X)
 {
-    double p_X_1 = GetLocalPrior();// p_X;
+    double p_X_1 = p_X; //GetLocalPrior();// p_X;
 
     //ROS_INFO("Prior_X: %.2f", p_X_1);
 
