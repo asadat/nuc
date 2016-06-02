@@ -571,6 +571,9 @@ void NUC::OnTraverseEnd()
     int UFN=0;
     tree->GetUnvisitedFalseNegatives(UFN);
 
+    double fn_ratio = UFN*AREA(tree->GetNearestLeaf(makeVector(0,0,0))->GetFootPrint())/(0.01*NUCParam::percent_interesting*AREA(tree->GetFootPrint()));
+    double fp_ratio = visitedFalsePositives*AREA(tree->GetNearestLeaf(makeVector(0,0,0))->GetFootPrint())/(AREA(tree->GetFootPrint()));
+
     if(pathHistory.size()>1)
     {
         for(unsigned int i=0; i<pathHistory.size()-1; i++)
@@ -584,9 +587,9 @@ void NUC::OnTraverseEnd()
     }
 
     endTime = ros::Time::now();
-    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d UFN:%d\n",
+    ROS_INFO("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION: %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d UFN: %d FPP: %f FNP: %f \n",
              NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
-             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives, UFN);
+             asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives, UFN, fp_ratio, fn_ratio);
     NUC_LOG("STRATEGY:%s PATCHES:%d PERCENT:%f DURATION %f LENGTH %f ASC: %f DESC: %f Z_LENGTH: %f XY_LENGTH: %f Prob_ratio:%.2f VFP: %d UFN:%d\n",
         NUCParam::strategy.c_str(), NUCParam::patches, NUCParam::percent_interesting, (endTime-startTime).toSec(), traverseLength,
         asclength, desclength, asclength+desclength, xylength, NUCParam::prob_r, visitedFalsePositives, UFN);
