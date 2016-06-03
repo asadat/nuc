@@ -102,6 +102,7 @@ private:
     TooN::Vector<3> pos;
     bool isInteresting;
     static double rootHeight;
+    static double leafHeight;
 
     double coverage;
 

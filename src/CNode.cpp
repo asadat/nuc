@@ -5,8 +5,8 @@
 
 #define IN(x,y)    (y[0] <= x[0] && x[0] <= y[2] && y[1] <= x[1] && x[1] <= y[3])
 
-#define nuc_alpha(h,mh)   (NUCParam::alpha_h0 + (h/mh)*(NUCParam::alpha_hm-NUCParam::alpha_h0))
-#define nuc_beta(h,mh)    (NUCParam::beta_h0 + (h/mh)*(NUCParam::beta_hm-NUCParam::beta_h0))
+#define nuc_alpha(h, h0, mh)   (NUCParam::alpha_h0 + ((h-h0)/(mh-h0))*(NUCParam::alpha_hm-NUCParam::alpha_h0))
+#define nuc_beta(h, h0, mh)   (NUCParam::beta_h0  + ((h-h0)/(mh-h0))*(NUCParam::beta_hm -NUCParam::beta_h0))
 
 #define PRIOR_INTERESTING 0.5
 #define PRIOR_UNINTERESTING 0.5
@@ -16,6 +16,7 @@
 bool CNode::drawEdges = false;
 bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
+double CNode::leafHeight = 0;
 int CNode::maxDepth = 0;
 double CNode::int_thr[20];
 
@@ -183,6 +184,7 @@ void CNode::PopulateChildren()
     double fps = (footPrint[2]-footPrint[0]);
     if(fps <= NUCParam::min_footprint)
     {
+        leafHeight = pos[2];
         ROS_INFO_ONCE("leaf: fp:%f height:%f", fps, pos[2]);
         return;
     }
@@ -258,8 +260,8 @@ void CNode::PopulateInt_Thr(int maxdepth)
 
 void CNode::PrintoutParams()
 {
-    float al = nuc_alpha(pos[2],rootHeight);
-    float be = nuc_beta(pos[2],rootHeight);
+    float al = nuc_alpha(pos[2], leafHeight, rootHeight);
+    float be = nuc_beta(pos[2], leafHeight, rootHeight);
     ROS_INFO("D:%d \t H:%.2f \t alpha:%.2f \t beta:%.2f", depth, pos[2], al, be);
     if(!IsLeaf())
         children[0]->PrintoutParams();
@@ -307,7 +309,7 @@ void CNode::glDraw()
     //if(children.empty())
     {
 
-        double dc = 0.01;
+        double dc = 0.0;
         glLineWidth(1+5 - 1*depth);
         //glLineWidth(2);
         if(drawCoverage)
@@ -346,7 +348,7 @@ void CNode::glDraw()
             if(IsLeaf())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                if(visited)
+                if(false&&visited)
                     glColor4f(1,1,1,1);
                 else
                     glColor4f(p_X,p_X,p_X,1);
@@ -597,11 +599,11 @@ void CNode::GenerateObservationAndPropagate()
             bool observation = false;
             if(children[i]->trueIsInteresting)
             {
-                observation = (RAND(0,1) < nuc_beta(pos[2],rootHeight)) ? false : true;
+                observation = (RAND(0,1) < nuc_beta(pos[2], leafHeight, rootHeight)) ? false : true;
             }
             else
             {
-                observation = (RAND(0,1) < nuc_alpha(pos[2],rootHeight)) ? true : false;
+                observation = (RAND(0,1) < nuc_alpha(pos[2], leafHeight, rootHeight)) ? true : false;
             }
 
             obs[children[i]->grd_x][children[i]->grd_y] = observation;
@@ -666,11 +668,13 @@ void CNode::PropagateObservation(bool X)
 
     if(X)
     {
-        new_p_X = (p_X_1 * (1-nuc_beta(pos[2],rootHeight)))/(p_X_1*(1-nuc_beta(pos[2],rootHeight)) + (1-p_X_1)*nuc_alpha(pos[2],rootHeight));
+        new_p_X = (p_X_1 * (1-nuc_beta(pos[2], leafHeight, rootHeight)))/(p_X_1*(1-nuc_beta(pos[2], leafHeight, rootHeight)) +
+                (1-p_X_1)*nuc_alpha(pos[2], leafHeight, rootHeight));
     }
     else
     {
-        new_p_X = (p_X_1 * nuc_beta(pos[2],rootHeight))/(p_X_1*nuc_beta(pos[2],rootHeight) + (1-p_X_1)*(1-nuc_alpha(pos[2],rootHeight)));
+        new_p_X = (p_X_1 * nuc_beta(pos[2], leafHeight, rootHeight))/(p_X_1*nuc_beta(pos[2], leafHeight, rootHeight) +
+                (1-p_X_1)*(1-nuc_alpha(pos[2], leafHeight, rootHeight)));
     }
 
     UpdateProbability(new_p_X);
