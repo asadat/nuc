@@ -12,9 +12,9 @@ bypass_controller: true
 int_prob_thr: 0.3
 prob_r: 0.9
 patches: 1
-percent_interesting: 10
-alpha_h0: 0.001
-alpha_hm: 0.01
-beta_h0: 0.001
-beta_hm: 0.01
+percent_interesting: 60
+alpha_h0: 0.2
+alpha_hm: 0.3
+beta_h0: 0.2
+beta_hm: 0.3
 strategy: hi
