@@ -30,6 +30,7 @@ then
 	
 else
 	echo "set key left">>gp
+	echo "set key horizontal maxrows 2">>gp
         echo "set title \"$P interesting patch\"" >>gp
 	echo "set rmargin .8">> gp
 fi
@@ -42,6 +43,8 @@ echo "plot 'c1' using 2:(\$1==$P?\$3:1/0) with lines ls 3 notitle, \\">>gp
 echo       "'c2' using 2:(\$1==$P?\$3:1/0) with lines ls 9 notitle, \\">>gp
 echo       "'c3' using 2:(\$1==$P?\$3:1/0) with lines ls 25 notitle, \\">>gp
 echo       "'c4' using 2:(\$1==$P?\$3:1/0) with lines ls 23 notitle, \\">>gp
+echo       "'c5' using 2:(\$1==$P?\$3:1/0) with lines ls 18 notitle, \\">>gp
+echo       "'c5' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 14 title 'c5', \\">>gp
 echo       "'c4' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 5 title 'c4', \\">>gp
 echo       "'c3' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 3 title 'c3', \\">>gp
 echo       "'c2' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 9 title 'c2', \\">>gp

@@ -6,10 +6,10 @@ for P in `seq 1 1 4`
 do
 echo "set title font \"Time-Roman, 5\"">>gp
 echo "set key font \"Time-Roman, 4\"">>gp
-echo "set key at -10, 9000">>gp
+#echo "set key at -10, 9000">>gp
 
-#echo "set yrange [0:8900]">>gp
-#echo "set xrange [0:99]">>gp
+echo "set yrange [0:40]">>gp
+echo "set xrange [0:99]">>gp
 echo "set xtics font \"Time-Roman, 4\"">>gp
 echo "set ytics font \"Time-Roman, 4\"">>gp
 echo "set xlabel font \"Time-Roman, 4\"">>gp
@@ -42,6 +42,8 @@ echo "plot 'fp1' using 2:(\$1==$P?\$3*100:1/0) with lines ls 3 notitle, \\">>gp
 echo       "'fp2' using 2:(\$1==$P?\$3*100:1/0) with lines ls 9 notitle, \\">>gp
 echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0) with lines ls 25 notitle, \\">>gp
 echo       "'fp4' using 2:(\$1==$P?\$3*100:1/0) with lines ls 23 notitle, \\">>gp
+echo       "'fp5' using 2:(\$1==$P?\$3*100:1/0) with lines ls 28 notitle, \\">>gp
+echo       "'fp5' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 8 title 'c5', \\">>gp
 echo       "'fp4' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 5 title 'c4', \\">>gp
 echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 3 title 'c3', \\">>gp
 echo       "'fp2' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 9 title 'c2', \\">>gp
