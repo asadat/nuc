@@ -38,12 +38,14 @@ echo "f(x)=4180">>gp
 #echo "set xlabel \"% of the environment that is interesting\" font \",8\"">>gp
 #echo "set ylabel \"Length of the coverage path (m)\" font \",8\"">>gp
 echo "set pointsize 1">>gp
-echo "plot 'hi-1-4-1-4' using 2:(\$1==$P?\$3:1/0) with lines ls 3 notitle, \\">>gp
-#echo       "'sc' using 2:(\$1==$P?\$3:1/0) with lines ls 9 notitle, \\">>gp
-#echo       "'hi' using 2:(\$1==$P?\$3:1/0) with lines ls 25 notitle, \\">>gp
-#echo       "'df' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 3 title 'Depth-First', \\">>gp
-#echo       "'sc' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 9 title 'Shortcut', \\">>gp
-echo       "'hi-1-4-1-4' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 25 title 'Hilbert (0.1,0.4) (0.1,0.4)', \\">>gp
+echo "plot 'c1' using 2:(\$1==$P?\$3:1/0) with lines ls 3 notitle, \\">>gp
+echo       "'c2' using 2:(\$1==$P?\$3:1/0) with lines ls 9 notitle, \\">>gp
+echo       "'c3' using 2:(\$1==$P?\$3:1/0) with lines ls 25 notitle, \\">>gp
+echo       "'c4' using 2:(\$1==$P?\$3:1/0) with lines ls 23 notitle, \\">>gp
+echo       "'c4' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 5 title 'c4', \\">>gp
+echo       "'c3' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 3 title 'c3', \\">>gp
+echo       "'c2' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 9 title 'c2', \\">>gp
+echo       "'c1' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 25 title 'Hilbert c1', \\">>gp
 #echo 	   "'per' using 1:(\$2+\$3) with lines title 'min bound', \\">>gp
 echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
 done
