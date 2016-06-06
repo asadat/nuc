@@ -11,8 +11,8 @@ auto_exit: true
 bypass_controller: true
 int_prob_thr: 0.3
 prob_r: 0.9
-patches: 1
-percent_interesting: 60
+patches: 4
+percent_interesting: 90
 alpha_h0: 0.2
 alpha_hm: 0.3
 beta_h0: 0.2
