@@ -12,9 +12,9 @@ patches: 1
 percent_interesting: 10.0
 auto_exit: false
 bypass_controller: true
-int_prob_thr: 0.3
+int_prob_thr: 0.89
 alpha_h0: 0.1
-alpha_hm: 0.4
+alpha_hm: 0.11
 beta_h0: 0.1
-beta_hm: 0.4
+beta_hm: 0.11
 prob_r: 0.9

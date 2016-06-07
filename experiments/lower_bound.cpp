@@ -21,7 +21,7 @@ double DiagonalLength(int level, double lower_cell_l)
 
 int main(int argc, char ** argv)
 {
-    double ln = 2;
+    double ln = 4;
     for(int p = 10; p < 100; p += 10)
     {
         double length = 0;
