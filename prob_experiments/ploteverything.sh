@@ -1,4 +1,4 @@
-echo "set terminal pdf size 12cm, 5cm" > gp
+echo "set terminal pdf size 12cm, 6cm" > gp
 echo "set output 'graph.pdf'" >> gp
 echo "set lmargin 4">> gp
 echo "set multiplot layout 1,2" >>gp
@@ -6,9 +6,9 @@ for P in `seq 1 3 4`
 do
 echo "set title font \"Time-Roman, 7\"">>gp
 echo "set key font \"Time-Roman, 6\"">>gp
-echo "set key at 80, 7800">>gp
+echo "set key at 80, 7100">>gp
 
-echo "set yrange [0:7900]">>gp
+echo "set yrange [0:7199]">>gp
 echo "set xrange [0:99]">>gp
 echo "set xtics font \"Time-Roman, 6\"">>gp
 echo "set ytics font \"Time-Roman, 6\"">>gp
@@ -17,7 +17,7 @@ echo "set ylabel font \"Time-Roman, 6\"">>gp
 echo "set xlabel '% of interesting regions'" >>gp
 echo "set ylabel 'path length (m)'">>gp
 echo "set xtics (\"10%%\" 10, \"20%%\" 20, \"30%%\" 30, \"40%%\" 40, \"50%%\" 50, \"60%%\" 60, \"70%%\" 70, \"80%%\" 80, \"90%%\" 90, \"100%%\" 100)">>gp
-echo "set ytics ( \"1Km\" 1000, \"2km\" 2000, \"3km\" 3000, \"4km\" 4000, \"5km\" 5000, \"6km\" 6000, \"7km\" 7000, \"8km\"  8000, \"9km\"  9000, \"10km\" 10000)">>gp
+echo "set ytics ( \"1Km\" 1000, \"2km\" 2000, \"3km\" 3000, \"4km\" 4000, \"5km\" 5000, \"6km\" 6000, \"7km\" 7000, \"9km\"  9000, \"10km\" 10000)">>gp
 echo "set ytics offset 0.7">> gp
 echo "set tics nomirror">> gp
 if [ $P -gt 1 ]
@@ -45,8 +45,10 @@ echo "plot 'c1' using 2:(\$1==$P?\$3:1/0) with lines ls 3 notitle, \\">>gp
 echo       "'c2' using 2:(\$1==$P?\$3:1/0) with lines ls 9 notitle, \\">>gp
 echo       "'c3' using 2:(\$1==$P?\$3:1/0) with lines ls 25 notitle, \\">>gp
 echo       "'c4' using 2:(\$1==$P?\$3:1/0) with lines ls 4 notitle, \\">>gp
-echo       "'c5' using 2:(\$1==$P?\$3:1/0) with lines ls 16 notitle, \\">>gp
-echo       "'c5' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 16 title 'C(0.2,0.3,0.2,0.3)', \\">>gp
+echo       "'c6' using 2:(\$1==$P?\$3:1/0) with lines ls 16 notitle, \\">>gp
+echo       "'c7' using 2:(\$1==$P?\$3:1/0) with lines ls 21 notitle, \\">>gp
+echo       "'c7' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 21 title 'C(0.2,0.4,0.2,0.4)', \\">>gp
+echo       "'c6' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 16 title 'C(0.15,0.4,0.15,0.4)', \\">>gp
 echo       "'c4' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 4 title 'C(0.01,0.001,0.1,0.4)', \\">>gp
 echo       "'c3' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 25 title 'C(0.1,0.4,0.001,0.01)', \\">>gp
 echo       "'c2' using 2:(\$1==$P?\$3:1/0):4 with yerrorbars ls 9 title 'C(0.1,0.4,0.1,0.4)', \\">>gp

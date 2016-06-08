@@ -7,7 +7,7 @@ localros
 roslaunch pelican_ctrl sim.launch &
 sleep 5.0
 
-for CONF in `seq 1 1 5`
+for CONF in `seq 6 1 7`
 do
 
 echo > "results-$CONF"
@@ -59,6 +59,20 @@ do
 				echo "alpha_hm: 0.3" >> ../launch/batchrun_param.yaml
 				echo "beta_h0: 0.2" >> ../launch/batchrun_param.yaml
 				echo "beta_hm: 0.3" >> ../launch/batchrun_param.yaml
+			    fi
+
+			    if [ $CONF -eq 6 ]; then
+				echo "alpha_h0: 0.15" >> ../launch/batchrun_param.yaml
+				echo "alpha_hm: 0.4" >> ../launch/batchrun_param.yaml
+				echo "beta_h0: 0.15" >> ../launch/batchrun_param.yaml
+				echo "beta_hm: 0.4" >> ../launch/batchrun_param.yaml
+			    fi
+
+			    if [ $CONF -eq 7 ]; then
+				echo "alpha_h0: 0.2" >> ../launch/batchrun_param.yaml
+				echo "alpha_hm: 0.4" >> ../launch/batchrun_param.yaml
+				echo "beta_h0: 0.2" >> ../launch/batchrun_param.yaml
+				echo "beta_hm: 0.4" >> ../launch/batchrun_param.yaml
 			    fi
 
 			    echo "strategy: hi"
