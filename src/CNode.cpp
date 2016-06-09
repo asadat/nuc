@@ -13,6 +13,7 @@
 #define INTERESTING_THRESHOLD   NUCParam::int_prob_thr
 
 
+bool CNode::drawObservations = false;
 bool CNode::drawEdges = false;
 bool CNode::drawCoverage = false;
 double CNode::rootHeight = 0;
@@ -27,6 +28,7 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    observations = 0;
     coverage = 0;
     isInterestingnessSet = false;
     visited = false;
@@ -382,7 +384,7 @@ void CNode::glDraw()
         {
             glLineWidth(1);
             glColor4f(0,0,0,1);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glBegin(GL_POLYGON);
             glVertex3f(v1[0],v1[1], 0.25);
             glVertex3f(v2[0],v2[1], 0.25);
@@ -390,6 +392,48 @@ void CNode::glDraw()
             glVertex3f(v4[0],v4[1], 0.25);
             glVertex3f(v1[0],v1[1], 0.25);
             glEnd();
+        }
+
+        if(drawObservations && !IsLeaf())
+        {
+            for(size_t i=0; i<children.size(); i++)
+            {
+
+                double w=1-depth/10.0, h=1-depth/10.0;
+                double sx=0, sy=0;
+
+                if(i==0)
+                {
+                    sx=-2;sy=-2;
+                }
+                else if(i==1)
+                {
+                    sx=-2;sy=2;
+                }
+                else if(i==2)
+                {
+                    sx=2;sy=-2;
+                }
+                else if(i==3)
+                {
+                    sx=2;sy=2;
+                }
+
+                if(observations&(1<<i))
+                    glColor3f(0,1,0);
+                else
+                    glColor3f(1,0,0);
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glBegin(GL_POLYGON);
+                glVertex3f(pos[0]-w+sx,pos[1]-h+sy,pos[2]);
+                glVertex3f(pos[0]+w+sx,pos[1]-h+sy,pos[2]);
+                glVertex3f(pos[0]+w+sx,pos[1]+h+sy,pos[2]);
+                glVertex3f(pos[0]-w+sx,pos[1]+h+sy,pos[2]);
+                glVertex3f(pos[0]-w+sx,pos[1]-h+sy,pos[2]);
+                glEnd();
+            }
+
         }
     }
 
@@ -607,6 +651,10 @@ void CNode::GenerateObservationAndPropagate()
             }
 
             obs[children[i]->grd_x][children[i]->grd_y] = observation;
+            if(observation)
+                observations = observations | (1<<i);
+            else
+                observations = observations & ~(1<<i);
         }
 
         for(unsigned int i=0; i<children.size();i++)

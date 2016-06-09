@@ -45,12 +45,12 @@ echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0) with lines ls 25 notitle, \\">>g
 echo       "'fp4' using 2:(\$1==$P?\$3*100:1/0) with lines ls 4 notitle, \\">>gp
 echo       "'fp6' using 2:(\$1==$P?\$3*100:1/0) with lines ls 16 notitle, \\">>gp
 echo       "'fp7' using 2:(\$1==$P?\$3*100:1/0) with lines ls 21 notitle, \\">>gp
-echo       "'fp7' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 21 title 'C(0.2,0.4,0.2,0.4)', \\">>gp
-echo       "'fp6' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 16 title 'C(0.15,0.4,0.15,0.4)', \\">>gp
-echo       "'fp4' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 4 title 'C(0.01,0.001,0.1,0.4)', \\">>gp
-echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 25 title 'C(0.1,0.4,0.01,0.001)', \\">>gp
-echo       "'fp2' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 9 title 'C(0.1,0.4,0.1,0.4)', \\">>gp
-echo       "'fp1' using 2:(\$1==$P?\$3*100:1/0):4 with yerrorbars ls 3 title 'C(0.001,0.01,0.001,0.01)' ">>gp
+echo       "'fp7' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 21 title 'C(0.2,0.4,0.2,0.4)', \\">>gp
+echo       "'fp6' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 16 title 'C(0.15,0.4,0.15,0.4)', \\">>gp
+echo       "'fp4' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 4 title 'C(0.01,0.001,0.1,0.4)', \\">>gp
+echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 25 title 'C(0.1,0.4,0.01,0.001)', \\">>gp
+echo       "'fp2' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 9 title 'C(0.1,0.4,0.1,0.4)', \\">>gp
+echo       "'fp1' using 2:(\$1==$P?\$3*100:1/0):(\$4*100) with yerrorbars ls 3 title 'C(0.001,0.01,0.001,0.01)' ">>gp
 #echo "plot 'fp1' using 2:(\$1==$P?\$3*100:1/0) with lines ls 3 notitle, \\">>gp
 #echo       "'fp2' using 2:(\$1==$P?\$3*100:1/0) with lines ls 9 notitle, \\">>gp
 #echo       "'fp3' using 2:(\$1==$P?\$3*100:1/0) with lines ls 25 notitle, \\">>gp

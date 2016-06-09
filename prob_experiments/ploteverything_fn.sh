@@ -45,12 +45,12 @@ echo       "'fn3' using 2:(\$1==$P?\$3*\$2:1/0) with lines ls 25 notitle, \\">>g
 echo       "'fn4' using 2:(\$1==$P?\$3*\$2:1/0) with lines ls 4 notitle, \\">>gp
 echo       "'fn6' using 2:(\$1==$P?\$3*\$2:1/0) with lines ls 16 notitle, \\">>gp
 echo       "'fn7' using 2:(\$1==$P?\$3*\$2:1/0) with lines ls 21 notitle, \\">>gp
-echo       "'fn7' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 21 title 'C(0.2,0.4,0.2,0.4)', \\">>gp
-echo       "'fn6' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 16 title 'C(0.15,0.4,0.15,0.4)', \\">>gp
-echo       "'fn4' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 4 title 'C(0.01,0.001,0.1,0.4)', \\">>gp
-echo       "'fn3' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 25 title 'C(0.1,0.4,0.01,0.001)', \\">>gp
-echo       "'fn2' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 9 title 'C(0.1,0.4,0.1,0.4)', \\">>gp
-echo       "'fn1' using 2:(\$1==$P?\$3*\$2:1/0):4 with yerrorbars ls 3 title 'C(0.001,0.01,0.001,0.01)' ">>gp
+echo       "'fn7' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 21 title 'C(0.2,0.4,0.2,0.4)', \\">>gp
+echo       "'fn6' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 16 title 'C(0.15,0.4,0.15,0.4)', \\">>gp
+echo       "'fn4' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 4 title 'C(0.01,0.001,0.1,0.4)', \\">>gp
+echo       "'fn3' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 25 title 'C(0.1,0.4,0.01,0.001)', \\">>gp
+echo       "'fn2' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 9 title 'C(0.1,0.4,0.1,0.4)', \\">>gp
+echo       "'fn1' using 2:(\$1==$P?\$3*\$2:1/0):(\$4*\$2) with yerrorbars ls 3 title 'C(0.001,0.01,0.001,0.01)' ">>gp
 #echo 	   "'per' using 1:(\$2+\$3) with lines title 'min bound', \\">>gp
 #echo 	   "f(x) with lines title 'Lawnmower'"	     >>gp
 done

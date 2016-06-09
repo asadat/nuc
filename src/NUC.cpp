@@ -783,6 +783,12 @@ void NUC::hanldeKeyPressed(std::map<unsigned char, bool> &key, bool &updateKey)
         //updateKey = false;
 
     }
+    else if(key['6'])
+    {
+        CNode::drawObservations = !CNode::drawObservations;
+        //updateKey = false;
+
+    }
 
     traversal->hanldeKeyPressed(key, updateKey);
 }

@@ -71,6 +71,7 @@ public:
 
     static bool drawEdges;
     static bool drawCoverage;
+    static bool drawObservations;
     double p_X;
 
 private:
@@ -103,7 +104,7 @@ private:
     bool isInteresting;
     static double rootHeight;
     static double leafHeight;
-
+    char observations;
     double coverage;
 
     friend class HilbertStrategy;
