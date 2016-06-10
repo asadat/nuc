@@ -28,6 +28,7 @@ double CNode::int_thr[20];
 
 CNode::CNode(Rect target_foot_print):parent(NULL)
 {
+    intended_high_res = false;
     observations = 0;
     coverage = 0;
     isInterestingnessSet = false;
@@ -350,8 +351,8 @@ void CNode::glDraw()
             if(IsLeaf())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                if(false&&visited)
-                    glColor4f(1,1,1,1);
+                if(intended_high_res && !trueIsInteresting)
+                    glColor4f(0,0,1,1);
                 else
                     glColor4f(p_X,p_X,p_X,1);
             }

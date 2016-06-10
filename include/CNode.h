@@ -106,6 +106,7 @@ private:
     static double leafHeight;
     char observations;
     double coverage;
+    bool intended_high_res;
 
     friend class HilbertStrategy;
     friend class LawnmowerStrategy;

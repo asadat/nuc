@@ -250,6 +250,8 @@ bool HilbertStrategy::UpdateIterator()
         else
         {
             flag = true;
+            if(nseek==1 && (*it)->IsLeaf())
+                (*it)->intended_high_res = true;
         }
     }
 
