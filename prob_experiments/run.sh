@@ -7,10 +7,10 @@ localros
 roslaunch pelican_ctrl sim.launch &
 sleep 5.0
 
-for CONF in `seq 6 1 7`
+for CONF in `seq 1 1 6`
 do
 
-echo > "results-$CONF"
+echo > "newresults-$CONF"
 
 for PATCHES in `seq 1 1 4` 
 do
@@ -55,20 +55,13 @@ do
 			    fi
 
 			    if [ $CONF -eq 5 ]; then
-				echo "alpha_h0: 0.2" >> ../launch/batchrun_param.yaml
-				echo "alpha_hm: 0.3" >> ../launch/batchrun_param.yaml
-				echo "beta_h0: 0.2" >> ../launch/batchrun_param.yaml
-				echo "beta_hm: 0.3" >> ../launch/batchrun_param.yaml
-			    fi
-
-			    if [ $CONF -eq 6 ]; then
 				echo "alpha_h0: 0.15" >> ../launch/batchrun_param.yaml
 				echo "alpha_hm: 0.4" >> ../launch/batchrun_param.yaml
 				echo "beta_h0: 0.15" >> ../launch/batchrun_param.yaml
 				echo "beta_hm: 0.4" >> ../launch/batchrun_param.yaml
 			    fi
 
-			    if [ $CONF -eq 7 ]; then
+			    if [ $CONF -eq 6 ]; then
 				echo "alpha_h0: 0.2" >> ../launch/batchrun_param.yaml
 				echo "alpha_hm: 0.4" >> ../launch/batchrun_param.yaml
 				echo "beta_h0: 0.2" >> ../launch/batchrun_param.yaml
@@ -81,7 +74,7 @@ do
                  
 
 			    echo "run:$i strategy:$STRATEGY patches:$PATCHES percent:$PERCENT CONF:$CONF" 
-			    roslaunch nuc batchrun.launch  | grep "STRATEGY" >> "results-$CONF"
+			    roslaunch nuc batchrun.launch  | grep "STRATEGY" >> "newresults-$CONF"
  			    
 			done
 		done
