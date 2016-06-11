@@ -351,7 +351,7 @@ void CNode::glDraw()
             if(IsLeaf())
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                if(intended_high_res && !trueIsInteresting)
+                if(false && intended_high_res && !trueIsInteresting)
                     glColor4f(0,0,1,1);
                 else
                     glColor4f(p_X,p_X,p_X,1);
@@ -660,7 +660,7 @@ void CNode::GenerateObservationAndPropagate()
 
         for(unsigned int i=0; i<children.size();i++)
         {
-            children[i]->PropagateObservation(obs[children[i]->grd_x][children[i]->grd_y]);
+            children[i]->PropagateObservation(obs[children[i]->grd_x][children[i]->grd_y], pos[2]);
         }
 
         this->RecomputeProbability();
@@ -675,16 +675,16 @@ void CNode::GenerateObservationAndPropagate()
     {
         bool X=trueIsInteresting;
 
-//        if(trueIsInteresting)
-//        {
-//            X = (RAND(0,1) < nuc_beta(pos[2],rootHeight)) ? false : true;
-//        }
-//        else
-//        {
-//            X = (RAND(0,1) < nuc_alpha(pos[2],rootHeight)) ? true : false;
-//        }
+        if(trueIsInteresting)
+        {
+            X = (RAND(0,1) < nuc_beta(pos[2],leafHeight, rootHeight)) ? false : true;
+        }
+        else
+        {
+            X = (RAND(0,1) < nuc_alpha(pos[2],leafHeight, rootHeight)) ? true : false;
+        }
 
-        this->PropagateObservation(X);
+        this->PropagateObservation(X, pos[2]);
         parent->RecomputeProbability();
         //ROS_INFO("p_X: %.2f", p_X);
     }
@@ -707,7 +707,7 @@ void CNode::RecomputeProbability()
         parent->RecomputeProbability();
 }
 
-void CNode::PropagateObservation(bool X)
+void CNode::PropagateObservation(bool X, double observation_height)
 {
     double p_X_1 = p_X; //GetLocalPrior();// p_X;
 
@@ -717,13 +717,13 @@ void CNode::PropagateObservation(bool X)
 
     if(X)
     {
-        new_p_X = (p_X_1 * (1-nuc_beta(pos[2], leafHeight, rootHeight)))/(p_X_1*(1-nuc_beta(pos[2], leafHeight, rootHeight)) +
-                (1-p_X_1)*nuc_alpha(pos[2], leafHeight, rootHeight));
+        new_p_X = (p_X_1 * (1-nuc_beta(observation_height, leafHeight, rootHeight)))/(p_X_1*(1-nuc_beta(observation_height, leafHeight, rootHeight)) +
+                (1-p_X_1)*nuc_alpha(observation_height, leafHeight, rootHeight));
     }
     else
     {
-        new_p_X = (p_X_1 * nuc_beta(pos[2], leafHeight, rootHeight))/(p_X_1*nuc_beta(pos[2], leafHeight, rootHeight) +
-                (1-p_X_1)*(1-nuc_alpha(pos[2], leafHeight, rootHeight)));
+        new_p_X = (p_X_1 * nuc_beta(observation_height, leafHeight, rootHeight))/(p_X_1*nuc_beta(observation_height, leafHeight, rootHeight) +
+                (1-p_X_1)*(1-nuc_alpha(observation_height, leafHeight, rootHeight)));
     }
 
     UpdateProbability(new_p_X);
@@ -735,15 +735,16 @@ void CNode::UpdateProbability(double new_p_X)
     double a = 0;
     //ROS_INFO("P_X_NEW: %.2f", new_p_X);
 
-    if(fabs(new_p_X-p_X) > 0.005 && fabs(1-p_X) > 0.01)
+    if(fabs(new_p_X-p_X) > 0.00000005 && fabs(1-p_X) > 0.00000001)
     {
 
-        a = sqrt(sqrt((1-new_p_X)/(1-p_X)));
+        //a = sqrt(sqrt((1-new_p_X)/(1-p_X)));
+        a = log(1-new_p_X)/log(1-p_X);
 
         for(unsigned int i=0; i<children.size();i++)
         {
             double px = children[i]->p_X;
-            double newpx = 1- a*(1-px);
+            double newpx = 1- pow((1-px),a);
             newpx = newpx < 0.0 ? 0.0: newpx;
             //ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
             //children[i]->UpdateProbability(newpx);
@@ -761,12 +762,12 @@ void CNode::UpdateProbability(double new_p_X)
 
 
 
-    if(fabs(new_p_X-p_X) > 0.005  && fabs(1-p_X) > 0.01)
+    if(fabs(new_p_X-p_X) > 0.00000005  && fabs(1-p_X) > 0.00000001)
     {
         for(unsigned int i=0; i<children.size();i++)
         {
             double px = children[i]->p_X;
-            double newpx = 1- a*(1-px);
+            double newpx = 1- pow(1-px,a);
             newpx = newpx < 0.0 ? 0.0: newpx;
             //ROS_INFO("child: a: %.2f p_X: %.2f new_p_X: %.2f", a, px, newpx);
             children[i]->UpdateProbability(newpx);

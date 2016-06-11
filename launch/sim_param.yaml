@@ -8,8 +8,8 @@ strategy: hi
 area_length: 128.0
 area_rotation: 0.0
 logging: false
-patches: 1
-percent_interesting: 10.0
+patches: 4
+percent_interesting: 30.0
 auto_exit: false
 bypass_controller: true
 int_prob_thr: 0.3

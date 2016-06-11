@@ -46,7 +46,7 @@ public:
     void propagateCoverage(double height);
 
     void GenerateObservationAndPropagate();
-    void PropagateObservation(bool X);
+    void PropagateObservation(bool X, double observation_height);
     void UpdateProbability(double new_p_X);
     void RecomputeProbability();
 
