@@ -6,7 +6,7 @@ for P in `seq 1 3 4`
 do
 echo "set title font \"Time-Roman, 9\"">>gp
 echo "set key font \"Time-Roman, 7\"">>gp
-echo "set key at -20, 50">>gp
+echo "set key at -10, 50">>gp
 
 echo "set yrange [0:50]">>gp
 echo "set xrange [0:99]">>gp

@@ -6,7 +6,7 @@ for P in `seq 1 3 4`
 do
 echo "set title font \"Time-Roman, 9\"">>gp
 echo "set key font \"Time-Roman, 7\"">>gp
-echo "set key at -50, 35">>gp
+echo "set key at -20, 35">>gp
 
 echo "set yrange [0:35]">>gp
 echo "set xrange [0:99]">>gp
@@ -15,7 +15,7 @@ echo "set ytics font \"Time-Roman, 8\"">>gp
 echo "set xlabel font \"Time-Roman, 9\"">>gp
 echo "set ylabel font \"Time-Roman, 9\"">>gp
 echo "set xlabel '% of interesting regions'" >>gp
-echo "set ylabel '% of the environment that was missed'">>gp
+echo "set ylabel '% of the missed interesting regions'">>gp
 echo "set xtics (\"10%%\" 10, \"20%%\" 20, \"30%%\" 30, \"40%%\" 40, \"50%%\" 50, \"60%%\" 60, \"70%%\" 70, \"80%%\" 80, \"90%%\" 90, \"100%%\" 100)">>gp
 echo "set ytics (\"5%%\" 5, \"10%%\" 10, \"15%%\" 15, \"20%%\" 20, \"25%%\" 25, \"30%%\" 30, \"35%%\" 35)" >> gp
 echo "set ytics offset 0.7">> gp
