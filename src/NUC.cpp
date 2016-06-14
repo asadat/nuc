@@ -507,7 +507,7 @@ void NUC::glDraw()
              glVertex3f(r2[0],r2[1], 0.7511);
              glVertex3f(r3[0],r3[1], 0.7511);
              glVertex3f(r4[0],r4[1], 0.7511);
-             glVertex3f(r1[0],r1[1], 0.7511);
+             //glVertex3f(r1[0],r1[1], 0.7511);
 
              glEnd();
 

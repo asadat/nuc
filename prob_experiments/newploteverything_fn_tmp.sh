@@ -1,23 +1,23 @@
-echo "set terminal pdf size 20cm, 5cm" > gp
+echo "set terminal pdf size 12cm, 5cm" > gp
 echo "set output 'graph.pdf'" >> gp
 echo "set lmargin 4">> gp
-echo "set multiplot layout 1,4" >>gp
-for P in `seq 1 1 4`
+echo "set multiplot layout 1,2" >>gp
+for P in `seq 1 3 4`
 do
 echo "set title font \"Time-Roman, 9\"">>gp
 echo "set key font \"Time-Roman, 7\"">>gp
-echo "set key at -55, 35">>gp
+echo "set key at -50, 35">>gp
 
 echo "set yrange [0:35]">>gp
 echo "set xrange [0:99]">>gp
-echo "set xtics font \"Time-Roman, 9\"">>gp
-echo "set ytics font \"Time-Roman, 9\"">>gp
+echo "set xtics font \"Time-Roman, 8\"">>gp
+echo "set ytics font \"Time-Roman, 8\"">>gp
 echo "set xlabel font \"Time-Roman, 9\"">>gp
 echo "set ylabel font \"Time-Roman, 9\"">>gp
 echo "set xlabel '% of interesting regions'" >>gp
 echo "set ylabel '% of the environment that was missed'">>gp
-#echo "set xtics (\"10%%\" 10, \"20%%\" 20, \"30%%\" 30, \"40%%\" 40, \"50%%\" 50, \"60%%\" 60, \"70%%\" 70, \"80%%\" 80, \"90%%\" 90, \"100%%\" 100)">>gp
-#echo "set ytics ( \"1Km\" 1000, \"2km\" 2000, \"3km\" 3000, \"4km\" 4000, \"5km\" 5000, \"6km\" 6000, \"7km\" 7000, \"8km\"  8000, \"9km\"  9000, \"10km\" 10000)">>gp
+echo "set xtics (\"10%%\" 10, \"20%%\" 20, \"30%%\" 30, \"40%%\" 40, \"50%%\" 50, \"60%%\" 60, \"70%%\" 70, \"80%%\" 80, \"90%%\" 90, \"100%%\" 100)">>gp
+echo "set ytics (\"5%%\" 5, \"10%%\" 10, \"15%%\" 15, \"20%%\" 20, \"25%%\" 25, \"30%%\" 30, \"35%%\" 35)" >> gp
 echo "set ytics offset 0.7">> gp
 echo "set tics nomirror">> gp
 if [ $P -gt 1 ]
@@ -32,7 +32,7 @@ else
 	echo "set key left">>gp
         echo "set title \"$P interesting patch\"" >>gp
 	#echo "set rmargin .8">> gp
-	echo "set ylabel offset 2.7">>gp
+	echo "set ylabel offset 2.5">>gp
 fi
 
 echo "f(x)=4180">>gp

@@ -289,7 +289,7 @@ void mainLoop()
 
     glutIgnoreKeyRepeat(true);
 
-    translateCamera(0, 0, 60);
+    translateCamera(0, 0, 120);
     rotateCamera(0,-1.57,0);
 
     // run glut

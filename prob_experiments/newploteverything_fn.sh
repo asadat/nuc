@@ -1,14 +1,14 @@
-echo "set terminal pdf size 20cm, 5cm" > gp
+echo "set terminal pdf size 10cm, 6cm" > gp
 echo "set output 'graph.pdf'" >> gp
 echo "set lmargin 4">> gp
-echo "set multiplot layout 1,4" >>gp
-for P in `seq 1 1 4`
+echo "set multiplot layout 1,2" >>gp
+for P in `seq 1 3 4`
 do
 echo "set title font \"Time-Roman, 9\"">>gp
 echo "set key font \"Time-Roman, 7\"">>gp
-echo "set key at -55, 10">>gp
+echo "set key at -55, 20">>gp
 
-echo "set yrange [0:10]">>gp
+echo "set yrange [0:20]">>gp
 echo "set xrange [0:99]">>gp
 echo "set xtics font \"Time-Roman, 9\"">>gp
 echo "set ytics font \"Time-Roman, 9\"">>gp
