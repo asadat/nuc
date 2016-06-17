@@ -24,10 +24,10 @@ float var(vector<float> &v)
         return 0;
 
     float m=mean(v);
-    float difsum;
+    float difsum=0;
     for(unsigned int i=0; i<v.size(); i++)
     {
-        difsum = (m-v[i])*(m-v[i]);
+        difsum += (m-v[i])*(m-v[i]);
     }
 
     return sqrt(difsum/(v.size()-1));
